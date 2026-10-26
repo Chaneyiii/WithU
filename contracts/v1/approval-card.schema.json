@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/approval-card",
+  "title": "typed action approval card",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "approval_id",
+    "action",
+    "mode",
+    "decision",
+    "policy_version",
+    "authorization_version",
+    "expires_at",
+    "decided_at",
+    "explicit_user_allow"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "approval_id": { "type": "string", "minLength": 1 },
+    "action": { "$ref": "./action-execution.schema.json" },
+    "mode": { "enum": ["manual", "auto"] },
+    "decision": { "enum": ["pending", "allow", "deny", "expired"] },
+    "policy_version": { "type": "integer", "minimum": 1 },
+    "authorization_version": { "type": "integer", "minimum": 1 },
+    "expires_at": { "type": "integer", "minimum": 1 },
+    "decided_at": { "type": ["integer", "null"] },
+    "explicit_user_allow": { "type": "boolean" }
+  },
+  "additionalProperties": false
+}

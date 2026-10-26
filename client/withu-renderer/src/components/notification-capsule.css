@@ -1,0 +1,200 @@
+/* 通知单元，按用户给的案例视频做：
+   一叠卡片浮在侧栏底部上方（absolute，不影响布局），最新一张完整展开——
+   加粗标题 + 右上角 × + 两行正文 + 一条通栏深色胶囊按钮；
+   更旧的卡只在顶上露出两条圆边（可点击切换）；滚轮也能翻卡。
+   容器本身不带底色边框，只展示卡片。 */
+.notification-capsule {
+  position: relative;
+  z-index: 30;
+  -webkit-app-region: no-drag;
+  display: flex;
+  flex-direction: column;
+}
+.capsule-stack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 2;
+  padding-top: 14px;
+}
+/* 后面两张卡只露顶边：越靠上越窄、逐层抬高 7px；点露出的这一截也能翻到那张。 */
+.capsule-lip {
+  position: absolute;
+  top: calc((var(--lip) - 1) * 7px);
+  left: calc(14px * (3 - var(--lip)));
+  right: calc(14px * (3 - var(--lip)));
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--withu-stage);
+  box-shadow: 0 1px 2px #1111120a;
+  cursor: pointer;
+  transition: background-color 0.14s ease;
+}
+.capsule-lip:hover {
+  background: var(--fill-secondary-elevated);
+}
+/* 暗色模式下 stage 和侧栏底色太接近，露边看不见：给后面两张卡提亮 + 勾边。 */
+[data-theme="dark"] .capsule-lip {
+  background: #34343a;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09), 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+[data-theme="dark"] .capsule-lip:hover {
+  background: #3d3d44;
+}
+[data-theme="dark"] .capsule-lip:nth-child(2) {
+  background: #2d2d32;
+}
+.capsule-card {
+  position: relative;
+  z-index: 3;
+  padding: 13px 14px 12px;
+  border-radius: 14px;
+  background: var(--withu-stage);
+  box-shadow:
+    0 1px 2px #1111120a,
+    0 8px 22px #11181214;
+  transition:
+    translate 0.28s cubic-bezier(0.34, 1.45, 0.64, 1),
+    opacity 0.18s ease,
+    scale 0.28s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+.capsule-card.is-leaving {
+  translate: 0 -16px;
+  scale: 0.97;
+  opacity: 0;
+}
+.capsule-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.capsule-card-top strong {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.capsule-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: -1px -2px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.14s ease;
+}
+.capsule-close:hover {
+  background: var(--fill-secondary-elevated);
+}
+.capsule-close svg {
+  width: 13px;
+  height: 13px;
+}
+.capsule-card-body {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--desktop-muted);
+}
+/* 通栏深色胶囊按钮，案例里的 "Learn More"。 */
+.capsule-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 34px;
+  margin-top: 11px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #17181c;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.14s ease;
+}
+.capsule-cta:hover {
+  filter: brightness(1.25);
+}
+.capsule-cta:active {
+  filter: brightness(0.92);
+}
+/* Footer 行：白色圆形铃铛（收起/放出整叠），红色数字角标，靠左放。 */
+.capsule-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 48px;
+  padding: 2px 0 0;
+}
+.capsule-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--withu-stage);
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow:
+    0 1px 2px #1111120a,
+    0 4px 12px #11181214;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.capsule-bell:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px #1111120f,
+    0 7px 18px #1118121c;
+}
+.capsule-bell:active {
+  transform: translateY(0);
+}
+.capsule-bell svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+}
+/* 红色数字角标：压在圆钮右上角，和案例一致。 */
+.capsule-bell-count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #e5326e;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+  box-shadow: 0 2px 6px #e5326e40;
+}

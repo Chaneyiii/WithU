@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "realtime-command",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scope",
+    "command"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "scope": {
+      "$ref": "./realtime-scope.schema.json"
+    },
+    "command": {
+      "enum": [
+        "interrupt",
+        "mute",
+        "unmute",
+        "end",
+        "playback_completed"
+      ]
+    },
+    "response_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    }
+  },
+  "additionalProperties": false,
+  "$id": "withu://contracts/v1/realtime-command"
+}

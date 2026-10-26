@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/life-reminder",
+  "title": "D5 local reminder",
+  "type": "object",
+  "required": ["schema_version", "id", "scope", "text", "due_at", "timezone", "status", "version", "schedule_task_id", "schedule_version"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "text": { "type": "string", "minLength": 1 },
+    "due_at": { "type": "integer", "minimum": 1 },
+    "timezone": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["active", "paused", "deleted"] },
+    "version": { "type": "integer", "minimum": 1 },
+    "schedule_task_id": { "type": "string", "minLength": 1 },
+    "schedule_version": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

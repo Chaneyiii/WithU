@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/affect-turn",
+  "title": "affect-turn",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "turn_id",
+    "user_signal",
+    "observations",
+    "hypothesis",
+    "support_plan",
+    "response_outcome",
+    "relationship_state"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "turn_id": {"type": "string"},
+    "user_signal": {
+      "type": "object",
+      "required": ["stated_emotion", "stated_need", "boundary", "blocked_actions", "correction", "explicit_transaction_request"],
+      "properties": {
+        "stated_emotion": {
+          "type": ["string", "null"],
+          "enum": ["sadness", "anxiety", "anger", "shame", "loneliness", "joy", "tired", "mixed", "unclear", null]
+        },
+        "stated_need": {
+          "type": ["string", "null"],
+          "enum": ["listening", "emotional_confirmation", "companionship", "shared_quiet", "distraction", "advice", "transaction_help", "pause_interaction", null]
+        },
+        "boundary": {"type": ["string", "null"]},
+        "blocked_actions": {
+          "type": "array",
+          "items": {
+            "enum": ["reflect_confirm", "listen", "accompany", "shared_quiet", "clarify", "distract", "advice", "transaction", "pause_interaction"]
+          }
+        },
+        "correction": {
+          "type": ["object", "null"],
+          "required": ["turn_id", "corrected_emotion", "corrected_need", "boundary", "recorded_at"],
+          "properties": {
+            "turn_id": {"type": "string"},
+            "corrected_emotion": {
+              "type": ["string", "null"],
+              "enum": ["sadness", "anxiety", "anger", "shame", "loneliness", "joy", "tired", "mixed", "unclear", null]
+            },
+            "corrected_need": {
+              "type": ["string", "null"],
+              "enum": ["listening", "emotional_confirmation", "companionship", "shared_quiet", "distraction", "advice", "transaction_help", "pause_interaction", null]
+            },
+            "boundary": {"type": ["string", "null"]},
+            "recorded_at": {"type": "string"}
+          },
+          "additionalProperties": false
+        },
+        "explicit_transaction_request": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "observations": {
+      "type": "array",
+      "items": {"$ref": "./affect-observation.schema.json"}
+    },
+    "hypothesis": {"$ref": "./affect-hypothesis.schema.json"},
+    "support_plan": {"$ref": "./support-plan.schema.json"},
+    "response_outcome": {"$ref": "./response-outcome.schema.json"},
+    "relationship_state": {"$ref": "./relationship-state.schema.json"}
+  },
+  "additionalProperties": false
+}

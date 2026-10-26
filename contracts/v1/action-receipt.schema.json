@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/action-receipt",
+  "title": "action result or error receipt",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "action_id",
+    "idempotency_key",
+    "status",
+    "result",
+    "error",
+    "effect_committed",
+    "observed_at"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "action_id": { "type": "string", "minLength": 1 },
+    "idempotency_key": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["applied", "failed", "rejected"] },
+    "result": {
+      "type": ["object", "null"],
+      "required": ["summary", "affected_targets"],
+      "properties": {
+        "summary": { "type": "string" },
+        "affected_targets": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": ["object", "null"],
+      "required": ["schema_version", "code", "message", "retryable", "action_id", "committed_targets"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "code": { "enum": ["validation", "authorization", "scope", "version", "expired", "revoked", "duplicate", "cancelled", "connector_failure", "lifecycle"] },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "action_id": { "type": "string" },
+        "committed_targets": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "effect_committed": { "type": "boolean" },
+    "observed_at": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

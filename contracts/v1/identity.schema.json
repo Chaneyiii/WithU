@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/identity",
+  "title": "identity",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "text",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "enum": [
+        "SOUL",
+        "MEMORY"
+      ]
+    },
+    "text": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

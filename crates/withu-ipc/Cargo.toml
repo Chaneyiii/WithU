@@ -1,0 +1,8 @@
+[package]
+name = "withu-ipc"
+version.workspace = true
+edition.workspace = true
+
+
+[dependencies]
+serde_json = '1'

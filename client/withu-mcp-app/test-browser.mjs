@@ -1,0 +1,12 @@
+import {build} from 'vite';
+import react from '@vitejs/plugin-react';
+import {withuMcpAppResource} from './vite-plugin.mjs';
+import {spawn} from 'node:child_process';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+process.chdir(fileURLToPath(new URL('../../', import.meta.url)));
+const require = createRequire(import.meta.url);
+await build({configFile:false, root:'client/withu-mcp-app/test', base:'./', plugins:[react(),withuMcpAppResource()], build:{outDir:'../dist/browser-test', emptyOutDir:true, rollupOptions:{input:'client/withu-mcp-app/test/browser.html'}}});
+const child = spawn(require('electron'), ['client/withu-mcp-app/test/browser-runner.cjs', 'client/withu-mcp-app/dist/browser-test/browser.html'], {stdio:'inherit', windowsHide:true});
+const code = await new Promise((resolve,reject) => {child.on('error',reject);child.on('exit',resolve);});
+process.exitCode = code || 0;

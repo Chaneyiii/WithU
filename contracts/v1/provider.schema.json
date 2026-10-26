@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/provider",
+  "title": "provider",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "provider_id",
+    "endpoint",
+    "protocol",
+    "capabilities",
+    "credential_ref",
+    "service"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "endpoint": {
+      "type": "string"
+    },
+    "protocol": {
+      "type": "string",
+      "enum": [
+        "openai-compatible",
+        "compatible",
+        "openai",
+        "anthropic",
+        "xai",
+        "openai-responses",
+        "azure",
+        "bedrock",
+        "qwen-realtime",
+        "volc-realtime",
+        "openai-realtime",
+        "gemini-live",
+        "custom-realtime"
+      ]
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "llm",
+          "realtime"
+        ]
+      }
+    },
+    "credential_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "service": {
+      "enum": [
+        "llm",
+        "realtime"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

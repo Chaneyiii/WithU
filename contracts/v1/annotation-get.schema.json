@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/annotation-get",
+  "title": "Read owner local annotation",
+  "type": "object",
+  "required": ["schema_version", "scope", "target_id"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "target_id": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

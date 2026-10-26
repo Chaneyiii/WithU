@@ -1,0 +1,12 @@
+[package]
+name = "withu-memory"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+withu-runtime = { path = "../withu-runtime" }
+withu-storage = { path = "../withu-storage" }
+withu-audit = { path = "../withu-audit" }
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+

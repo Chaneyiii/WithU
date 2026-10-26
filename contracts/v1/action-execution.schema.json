@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/action-execution",
+  "title": "typed action execution",
+  "type": "object",
+  "required": ["schema_version", "action_id", "task_id", "step_id", "operation", "targets", "connector_id", "capability", "parameters", "parameter_rules", "parameter_digest", "data_scope", "impact", "safe_for_auto", "action_version", "policy_version", "authorization_version", "expires_at", "idempotency_key", "cancel_token"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "action_id": { "type": "string" },
+    "task_id": { "type": "string" },
+    "step_id": { "type": "string" },
+    "operation": { "type": "string" },
+    "targets": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["object_type", "object_id", "version"],
+        "properties": {
+          "object_type": { "type": "string" },
+          "object_id": { "type": "string" },
+          "version": { "type": "integer", "minimum": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "connector_id": { "type": "string" },
+    "capability": { "type": "string" },
+    "parameters": { "type": "object", "additionalProperties": true },
+    "parameter_rules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["kind", "required", "max_string_length", "min_integer", "max_integer", "allowed_strings"],
+        "properties": {
+          "kind": { "enum": ["text", "integer", "boolean"] },
+          "required": { "type": "boolean" },
+          "max_string_length": { "type": ["integer", "null"], "minimum": 1 },
+          "min_integer": { "type": ["integer", "null"] },
+          "max_integer": { "type": ["integer", "null"] },
+          "allowed_strings": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "parameter_digest": { "type": "string" },
+    "data_scope": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "impact": { "enum": ["read_only", "write", "delete", "external_side_effect", "high_impact"] },
+    "safe_for_auto": { "type": "boolean" },
+    "action_version": { "type": "integer", "minimum": 1 },
+    "policy_version": { "type": "integer", "minimum": 1 },
+    "authorization_version": { "type": "integer", "minimum": 1 },
+    "expires_at": { "type": "integer", "minimum": 1 },
+    "idempotency_key": { "type": "string" },
+    "cancel_token": { "type": "string" }
+  },
+  "additionalProperties": false
+}

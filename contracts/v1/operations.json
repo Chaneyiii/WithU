@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "transport": "owner-exclusive versioned JSON-lines stdio RPC; no network listener",
+  "requests": {
+    "server.status": {
+      "response": "server.schema.json"
+    },
+    "server.shutdown": {
+      "request": "shutdown.schema.json",
+      "response": "shutdown.schema.json",
+      "idempotency": "request_id scoped to client_session_id"
+    },
+    "task.create": {
+      "request": "task.schema.json",
+      "response": "task.schema.json"
+    },
+    "task.cancel": {
+      "task_id": "string",
+      "expected_version": "positive integer",
+      "cancel_token": "string",
+      "response": "task.schema.json"
+    },
+    "approval.decide": {
+      "request": "approval.schema.json",
+      "response": "approval.schema.json"
+    },
+    "action.preview": {
+      "request": "action-proposal.schema.json",
+      "response": "action-preview-response.schema.json",
+      "scope": "owner session; comfort:local demo-item; submitted Comfort user-message evidence",
+      "effects": "preview only; server-generated action/approval/expiry/idempotency/cancel bindings"
+    },
+    "action.decide": {
+      "request": "typed-approval-decision.schema.json",
+      "response": "approval-card.schema.json",
+      "wrapper": "approval",
+      "authorization": "explicit allow_once or deny for exactly one server-owned action"
+    },
+    "action.execute": {
+      "request": "action-execute-request.schema.json",
+      "response": "action-receipt.schema.json",
+      "wrapper": "receipt",
+      "effects": "fake/local adapter followed by owner SQLite local annotation CAS only; no external effect"
+    },
+    "action.cancel": {
+      "request": "action-cancel-request.schema.json",
+      "response": "cancelled boolean and action_id",
+      "scope": "exact owner session, action and server-issued cancel token"
+    },
+    "annotation.get": {
+      "request": "annotation-get.schema.json",
+      "response": "local-annotation.schema.json or null",
+      "wrapper": "annotation"
+    },
+    "annotation.list": {
+      "request": "annotation-list.schema.json",
+      "response": "items array of local-annotation.schema.json",
+      "scope": "comfort:local only"
+    },
+    "memory.delete": {
+      "request": "memory-delete.schema.json",
+      "response": "tombstone.schema.json",
+      "effects": "atomic cascade tombstones for the target and dependent nodes"
+    },
+    "memory.list": {
+      "request": "memory-list.schema.json",
+      "response": "memory-management-response",
+      "retrieval": "list or exact local matching; semantic returns unavailable until MemoryIndex is connected"
+    },
+    "memory.context": {
+      "request": "memory-list.schema.json",
+      "response": "memory-management-response",
+      "scope": "bounded, scope-isolated exact context projection"
+    },
+    "memory.correct": {
+      "request": "memory-correct.schema.json",
+      "response": "memory-management-response",
+      "cas": "expected_object_version and expected_state_version are both required"
+    },
+    "config.update": {
+      "expected_config_version": "positive integer",
+      "request": "config.schema.json",
+      "response": "config.schema.json"
+    },
+    "conversation.update": {
+      "request": "conversation.schema.json",
+      "response": "conversation.schema.json"
+    },
+    "project.update": {
+      "request": "project.schema.json",
+      "response": "project.schema.json"
+    },
+    "speech.start": {
+      "request": "speech-start.schema.json",
+      "response": "speech-session.schema.json",
+      "scope": "trusted main frame, explicit isolated fake mode; real provider unconfigured"
+    },
+    "speech.command": {
+      "request": "speech-command.schema.json",
+      "response": "speech-session.schema.json",
+      "scope": "session/conversation/renderer/turn/generation/config snapshot; no task/memory authority"
+    },
+    "speech.detach": {
+      "request": {
+        "renderer_id": "main-assigned string"
+      },
+      "scope": "renderer/window cleanup; does not terminate server"
+    }
+  },
+  "error": "error.schema.json",
+  "event": "event.schema.json",
+  "envelopes": {
+    "request": "request.schema.json",
+    "response": "response.schema.json",
+    "error": "error-response.schema.json",
+    "event": "event-envelope.schema.json"
+  },
+  "speech_events": "speech-update.schema.json"
+}

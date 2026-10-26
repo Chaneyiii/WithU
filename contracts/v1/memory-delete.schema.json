@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/memory-delete",
+  "title": "memory-delete-request",
+  "type": "object",
+  "required": ["schema_version", "scope", "target_type", "target_id", "expected_object_version", "expected_state_version", "sync_protection_token"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "scope": {"type": "string", "minLength": 1, "maxLength": 128},
+    "target_type": {"enum": ["memory", "evidence", "derivative"]},
+    "target_id": {"type": "string", "minLength": 1, "maxLength": 512},
+    "expected_object_version": {"type": "integer", "minimum": 1},
+    "expected_state_version": {"type": "integer", "minimum": 0},
+    "sync_protection_token": {"type": "string", "minLength": 1, "maxLength": 256}
+  },
+  "additionalProperties": false
+}

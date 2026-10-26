@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/life-organized-content",
+  "title": "D5 traceable organized content",
+  "type": "object",
+  "required": ["schema_version", "result_id", "scope", "group_by", "groups"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "result_id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "group_by": { "type": "string", "minLength": 1 },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["category", "item_ids", "summary", "summary_basis"],
+        "properties": {
+          "category": { "type": "string" },
+          "item_ids": { "type": "array", "items": { "type": "string" } },
+          "summary": { "type": "string" },
+          "summary_basis": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

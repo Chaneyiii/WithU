@@ -1,0 +1,3 @@
+.emotional-ball .ball-render { position:relative; isolation:isolate; width:180%; height:180%; left:-40%; top:-40%; pointer-events:none; }
+.ball-render canvas { position:absolute; inset:0; display:block; width:100%; height:100%; pointer-events:none; }
+.ball-render .orb-face { z-index:1; }

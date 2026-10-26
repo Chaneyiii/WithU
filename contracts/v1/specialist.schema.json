@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/specialist",
+  "title": "specialist",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "specialist_id",
+    "role",
+    "tool_allowlist",
+    "context_ref",
+    "depends_on",
+    "status",
+    "retry_count",
+    "config_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "specialist_id": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "tool_allowlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "context_ref": {
+      "type": "string"
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "running",
+        "completed",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "retry_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

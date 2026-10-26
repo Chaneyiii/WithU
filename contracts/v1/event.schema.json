@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/event",
+  "title": "event",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "event_id",
+    "event",
+    "occurred_at",
+    "object_id",
+    "object_version",
+    "sequence",
+    "config_version",
+    "payload_ref"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "event": {
+      "enum": [
+        "approval.decided",
+        "approval.requested",
+        "assistant-message.deleted",
+        "config.committed",
+        "config.tested",
+        "conversation.deleted",
+        "conversation.title.updated",
+        "conversation.updated",
+        "draft.updated",
+        "goals.deleted",
+        "goals.updated",
+        "ideas.deleted",
+        "ideas.updated",
+        "identity.updated",
+        "library.deleted",
+        "library.updated",
+        "memory.candidate.created",
+        "memory.corrected",
+        "memory.deleted",
+        "memory.saved",
+        "message.deleted",
+        "message.submitted",
+        "probe.cancelled",
+        "probe.completed",
+        "probe.failed",
+        "probe.partial",
+        "probe.running",
+        "project.deleted",
+        "project.updated",
+        "realtime.updated",
+        "reply.action.expired",
+        "reply.updated",
+        "server.ready",
+        "server.shutdown.complete",
+        "server.shutdown.requested",
+        "server.status.changed",
+        "speech.audio.cleaned",
+        "speech.barge_in",
+        "speech.final",
+        "speech.partial",
+        "speech.playback.cancelled",
+        "speech.session.updated",
+        "speech.state.changed",
+        "speech.synthesis.cancelled",
+        "speech.vad.started",
+        "speech.vad.stopped",
+        "task.cancel_requested",
+        "task.cancelled",
+        "task.completed",
+        "task.created",
+        "task.failed",
+        "task.paused",
+        "task.planned",
+        "task.running",
+        "team.cancelled",
+        "view.updated",
+        "voice.updated"
+      ]
+    },
+    "occurred_at": {
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "object_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "payload_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

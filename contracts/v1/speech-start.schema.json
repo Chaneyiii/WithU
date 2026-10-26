@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/speech-start",
+  "title": "speech-start",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "conversation_id",
+    "renderer_id",
+    "backend_id",
+    "config_version",
+    "scenario"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "renderer_id": {
+      "type": "string"
+    },
+    "backend_id": {
+      "enum": [
+        "fake-a",
+        "fake-b"
+      ]
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "scenario": {
+      "enum": [
+        "normal",
+        "revision",
+        "duplicate_final",
+        "no_input",
+        "overlap",
+        "refuse",
+        "quiet",
+        "disconnect",
+        "fail",
+        "delayed",
+        "cleanup_failure",
+        "late"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

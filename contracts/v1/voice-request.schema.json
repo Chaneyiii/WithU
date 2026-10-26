@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VoiceRequest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "conversation_id",
+    "kind",
+    "config_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "kind": {
+      "enum": [
+        "asr",
+        "tts"
+      ]
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "audio_base64": {
+      "type": "string",
+      "maxLength": 426668
+    },
+    "message_id": {
+      "type": "string"
+    },
+    "parent_reply_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "scope": {"$ref":"./voice-scope.schema.json"},
+    "preview": {"type":"boolean"},
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    }
+  },
+  "additionalProperties": false
+}

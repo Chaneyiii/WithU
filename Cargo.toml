@@ -1,0 +1,23 @@
+[workspace]
+members = [
+    "apps/withu-server",
+    "crates/withu-runtime",
+    "crates/withu-memory",
+    "crates/withu-speech",
+    "crates/withu-orchestrator",
+    "crates/withu-approvals",
+    "crates/withu-connectors",
+    "crates/withu-scheduler",
+    "crates/withu-life",
+    "crates/withu-audit",
+    "crates/withu-affect",
+    "crates/withu-proactivity",
+    "crates/withu-ipc",
+    "crates/withu-storage",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.3.1"
+edition = "2021"
+

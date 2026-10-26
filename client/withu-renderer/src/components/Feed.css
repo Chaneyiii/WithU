@@ -1,0 +1,284 @@
+/* Feed page frame matches the Settings/Library pages: the scroll container
+   spans the full stage width so the scrollbar sits at the window edge, while
+   the content column stays 1008px centered like the other pages. */
+.feed-page.feed-page {
+  max-width: none;
+  width: 100%;
+}
+.feed-page .route-header,
+.feed-page .feed-content {
+  max-width: 1008px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 32px;
+  padding-right: 32px;
+  box-sizing: border-box;
+}
+.feed-page .feed-content {
+  padding-top: 8px;
+  padding-bottom: 48px;
+}
+
+/* Calendar card on the left, the merged update/idea stream on the right. */
+.feed-page .feed-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 336px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 1040px) {
+  .feed-page .feed-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── Local calendar card ────────────────────────────────────────────────── */
+.feed-calendar {
+  border: 1px solid var(--fill-divider);
+  border-radius: 18px;
+  background: var(--fill-primary);
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  top: 8px;
+}
+.feed-calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.feed-calendar-head strong { font-size: 14px; font-weight: 600; }
+.feed-calendar-nav { display: flex; gap: 2px; }
+.feed-calendar-nav button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+.feed-calendar-nav button:hover { background: var(--fill-secondary-elevated); color: var(--text-primary); }
+.feed-calendar-week,
+.feed-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+.feed-calendar-week span {
+  text-align: center;
+  font-size: 10px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+.feed-calendar-day {
+  position: relative;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+.feed-calendar-day:hover { background: var(--fill-secondary-elevated); }
+.feed-calendar-day.is-today { box-shadow: inset 0 0 0 1px var(--fill-divider); }
+.feed-calendar-day.is-selected {
+  background: var(--text-primary);
+  color: var(--fill-primary);
+}
+.feed-calendar-day.is-selected .feed-calendar-dot { background: var(--fill-primary); }
+.feed-calendar-dot {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  translate: -50% 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+}
+.feed-calendar-blank { height: 30px; }
+.feed-calendar-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 2px;
+}
+.feed-calendar-panel h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 550;
+  letter-spacing: 0.1px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+.feed-calendar-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.feed-calendar-items li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--fill-divider);
+}
+.feed-calendar-items li:last-child { border-bottom: 0; }
+.feed-calendar-time {
+  flex: none;
+  width: 42px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+}
+.feed-calendar-items div { min-width: 0; }
+.feed-calendar-items strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feed-calendar-items small { display: block; font-size: 11px; line-height: 16px; color: var(--text-secondary); }
+.feed-calendar-empty,
+.feed-calendar .feed-calendar-empty {
+  margin: 2px 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+.feed-calendar-error { margin: 0; font-size: 11px; line-height: 16px; color: #a33a34; }
+.feed-calendar-notice { margin: 0; font-size: 11px; line-height: 16px; color: var(--text-secondary); }
+.feed-calendar-form { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+.feed-calendar-form input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--fill-divider);
+  border-radius: 10px;
+  background: var(--fill-secondary);
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.feed-calendar-form input:focus { outline: 2px solid var(--fill-divider); outline-offset: 1px; }
+.feed-calendar-form-row { display: flex; gap: 8px; align-items: center; }
+.feed-calendar-form-row input { flex: 1; min-width: 0; }
+.feed-calendar-form-row .primary {
+  flex: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.feed-calendar-form-row .primary[disabled] { opacity: 0.45; }
+
+/* ── Update / idea cards ────────────────────────────────────────────────── */
+.feed-page .feed-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.feed-page .feed-card {
+  border: 1px solid var(--fill-divider);
+  border-radius: 16px;
+  background: var(--fill-primary);
+  padding: 16px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.feed-page .feed-card:hover {
+  border-color: color-mix(in srgb, var(--fill-divider) 60%, var(--text-secondary));
+  box-shadow: 0 6px 18px #1111120f;
+}
+.feed-page .feed-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.feed-page .feed-card-title { flex: 1; min-width: 0; }
+.feed-page .feed-card-title h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feed-page .feed-card-title small { font-size: 11px; line-height: 16px; color: var(--text-secondary); }
+.feed-page .feed-card-body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.feed-page .feed-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+.feed-page .feed-card-source,
+.feed-page .feed-card-status {
+  font-size: 11px;
+  line-height: 18px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--fill-secondary-elevated);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.feed-page .feed-card-status.is-failed,
+.feed-page .feed-card-status.is-not_supported { color: #a33a34; }
+.feed-page .feed-card-link {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+.feed-page .feed-card-link:hover { color: var(--text-primary); background: var(--fill-secondary-elevated); }
+.feed-page .feed-card-idea .feed-card-body { text-align: left; }
+
+/* An idea body is the whole row click-to-edit, so the button reset has to keep
+   the body typography inherited from .feed-card-body. */
+.feed-page .feed-entry-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+.feed-page .feed-entry-open:focus-visible { outline: 2px solid var(--text-tertiary); outline-offset: 4px; border-radius: 6px; }
+
+.feed-page .feed-item-icon,
+.feed-page .feed-empty-icon { display: flex; align-items: center; justify-content: center; background: var(--fill-secondary-elevated); color: var(--text-secondary); border-radius: 10px; flex-shrink: 0; }
+.feed-page .feed-item-icon { width: 32px; height: 32px; }
+.feed-page .feed-empty-state { display: flex; flex-direction: column; align-items: center; padding: 40px 16px; text-align: center; border: 1px dashed var(--fill-divider); border-radius: 16px; }
+.feed-page .feed-empty-icon { width: 44px; height: 44px; margin-bottom: 12px; border-radius: 14px; }
+.feed-page .feed-empty-state h3 { margin: 0; font-size: 14px; font-weight: 500; }
+.feed-page .feed-empty-state p { margin: 6px 0 0; font-size: 12px; line-height: 18px; color: var(--text-secondary); }

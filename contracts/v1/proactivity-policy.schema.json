@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/proactivity-policy",
+  "title": "authorized local proactivity policy",
+  "type": "object",
+  "required": ["schema_version", "version", "enabled", "scope", "timezone", "utc_offset_minutes", "quiet_hours", "paused", "rate_limit", "rate_window_seconds"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "version": { "type": "integer", "minimum": 1 },
+    "enabled": { "type": "boolean" },
+    "scope": { "type": "string", "minLength": 1 },
+    "timezone": { "type": "string", "minLength": 1, "description": "IANA timezone label; evaluation uses utc_offset_minutes supplied by the trusted owner." },
+    "utc_offset_minutes": { "type": "integer", "minimum": -840, "maximum": 840 },
+    "quiet_hours": {
+      "type": ["object", "null"],
+      "required": ["start_minute", "end_minute"],
+      "properties": {
+        "start_minute": { "type": "integer", "minimum": 0, "maximum": 1439 },
+        "end_minute": { "type": "integer", "minimum": 0, "maximum": 1439 }
+      },
+      "additionalProperties": false
+    },
+    "paused": { "type": "boolean" },
+    "rate_limit": { "type": "integer", "minimum": 1 },
+    "rate_window_seconds": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

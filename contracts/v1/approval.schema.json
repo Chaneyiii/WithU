@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/approval",
+  "title": "approval",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "approval_id",
+    "task_id",
+    "step_id",
+    "mode",
+    "decision",
+    "scope",
+    "policy_version",
+    "authorization_version",
+    "high_impact",
+    "expires_at",
+    "decided_at",
+    "explicit_user_allow"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "approval_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "step_id": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "manual",
+        "auto"
+      ],
+      "default": "manual"
+    },
+    "decision": {
+      "enum": [
+        "pending",
+        "allow",
+        "deny",
+        "expired"
+      ]
+    },
+    "scope": {
+      "$ref": "./action.schema.json"
+    },
+    "policy_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "authorization_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "high_impact": {
+      "type": "boolean"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "decided_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "explicit_user_allow": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

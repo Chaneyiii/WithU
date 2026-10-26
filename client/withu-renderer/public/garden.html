@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<title>WithU 起始页</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  :root{
+    --paper:#f6f7f9;
+    --ink:#3a3d44;
+    --note:#8b8f97;
+    --note-strong:#585c64;
+    --hover:rgba(0,0,0,.05);
+  }
+  /* 只有这块画布跟着明暗走：浅色是纸，深色是夜里的院子。 */
+  :root[data-theme="dark"]{
+    --paper:#171617;
+    --ink:#e6e2d8;
+    --note:#7d7970;
+    --note-strong:#a9a49a;
+    --hover:rgba(255,255,255,.08);
+  }
+  body{
+    margin:0;overflow:hidden;background:var(--paper);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;cursor:default;
+  }
+  /* 纸面留白，不加颗粒：和抽屉顶部那条空白要接得上 */
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .foot{
+    position:fixed;left:0;right:0;bottom:9%;display:flex;flex-direction:column;
+    align-items:center;gap:9px;pointer-events:none;text-align:center;
+  }
+  .foot p{margin:0;font-size:12.5px;line-height:1;color:var(--note);letter-spacing:.01em}
+  .clear{
+    pointer-events:auto;font:inherit;font-size:12px;line-height:1;color:var(--note-strong);
+    padding:6px 10px;border:0;border-radius:8px;background:transparent;cursor:pointer;
+    transition:background .15s ease,color .15s ease;
+  }
+  .clear:hover{background:var(--hover);color:var(--ink)}
+  .clear:active{transform:translateY(1px)}
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div class="foot">
+  <p>搜点什么，或者就在这儿种花</p>
+  <button class="clear" id="clear" type="button">清空花园</button>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  // 明暗由外层传进来（?theme=dark），没有就跟着系统走。
+  const asked = new URLSearchParams(location.search).get('theme');
+  const isDark = asked ? asked === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+  let INK = isDark ? '#e6e2d8' : '#3a3d44';
+  // 外层切换明暗时直接调这个，不重新载入页面，种下的花也不会没。
+  window.__withuTheme = (t) => {
+    const dark = t === 'dark';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    INK = dark ? '#e6e2d8' : '#3a3d44';
+  };
+  // 点阵间距：固定的小格子，房子只在中间占一小块，留白才是主角。
+  let STEP = 7;
+  let DOT = 2.5;
+  let dpr = 1, W = 0, H = 0;
+
+  // 房子：19×16 的格子里，每一格不画方块，而是并进同一行的横线里 ——
+  // 连续的一串连成一条，断开的地方留空，于是屋顶、屋身、窗户都是横向排线堆出来的。
+  const PIX = [
+    '.........#.........',
+    '........###........',
+    '.......#####.......',
+    '......#######......',
+    '.....#########.....',
+    '....###########....',
+    '...#############...',
+    '..###############..',
+    '.#################.',
+    '###################',
+    '.#################.',
+    '.#################.',
+    '.#################.',
+    '.#################.',
+    '.#################.',
+    '.#################.',
+  ];
+  const WINDOW = new Set(['9,10', '9,11', '8,12', '9,12', '10,12', '9,13', '9,14']);
+  const FENCE = ['#.#.#', '#####', '#.#.#', '#.#.#'];
+
+  function dot(x, y, size = DOT, color = INK, alpha = 1) {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.fillRect(x - size / 2, y - size / 2, size, size);
+    ctx.globalAlpha = 1;
+  }
+
+  // 一条横线，端头是圆的，看起来像笔画的收尾。
+  function bar(x0, x1, y, h, alpha, color = INK) {
+    if (x1 <= x0) return;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    const r = h / 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x0, y - r, x1 - x0, h, r);
+    else ctx.rect(x0, y - r, x1 - x0, h);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // 把一张 '#' 位图按行合并成横线；skip 里的格子留空（用来挖窗）。
+  function drawRows(map, ox, oy, step, h, alphaAt, skip) {
+    map.forEach((row, r) => {
+      let start = -1;
+      for (let c = 0; c <= row.length; c++) {
+        const on = c < row.length && row[c] === '#' && !(skip && skip.has(c + ',' + r));
+        if (on && start < 0) start = c;
+        if (!on && start >= 0) {
+          bar(ox + (start - .5) * step, ox + (c - .5) * step, oy + r * step, h, alphaAt(r));
+          start = -1;
+        }
+      }
+    });
+  }
+
+  function drawHouse(cx, cy, t) {
+    const step = STEP;
+    const barH = step * 0.3;
+    const cols = PIX[0].length;
+    const w = cols * step;
+    const h = PIX.length * step;
+    const ox = cx - w / 2 + step / 2;
+    const oy = cy - h / 2 + step / 2;
+
+    // 地平线：一条很淡的横线，房子才不像浮在空中
+    bar(ox - 2 * step, ox + (cols + 1) * step, oy + 17 * step, step * 0.12, .13);
+
+    // 屋顶 + 屋身：屋顶淡一点点，两块体量分得开
+    drawRows(PIX, ox, oy, step, barH, (r) => (r < 9 ? .9 : 1), WINDOW);
+
+    // 烟囱：两个格子宽的身子 + 一格宽的帽子。身子从帽子一路落到屋面那一行
+    // （在这个位置屋面正好走到第五行），最下面那条横线就压在房顶上。
+    // 和屋面重合的那一小截不再画第二遍——两层 .9 的墨叠起来会黑成一块，
+    // 只画屋面横线没盖住的部分，接头处才不会有个深色补丁。
+    const chX0 = ox + 12.5 * step;
+    const chX1 = ox + 14.5 * step;
+    const chCol = 13;
+    const roofSpan = (r) => {
+      const row = PIX[r];
+      if (!row || row[chCol] !== '#') return null;
+      let a = chCol;
+      let b = chCol;
+      while (a > 0 && row[a - 1] === '#') a -= 1;
+      while (b < row.length - 1 && row[b + 1] === '#') b += 1;
+      return [ox + (a - .5) * step, ox + (b + .5) * step];
+    };
+    [-2, -1, 0, 1, 2, 3, 4, 5].forEach((r) => {
+      const span = roofSpan(r);
+      let x0 = chX0;
+      let x1 = chX1;
+      if (span) {
+        const [a, b] = span;
+        if (a <= x0 && x1 <= b) return;
+        if (a <= x0) x0 = Math.min(b, chX1);
+        else if (b >= x1) x1 = Math.max(a, chX0);
+      }
+      bar(x0, x1, oy + r * step, barH, .9);
+    });
+    bar(chX0 - step, chX1 + step, oy - 3 * step, barH, .9);
+
+    // 两侧栅栏
+    drawRows(FENCE, ox - 6.5 * step, oy + 12 * step, step, step * 0.2, () => .66);
+    drawRows(FENCE, ox + w + step * 0.5, oy + 12 * step, step, step * 0.2, () => .66);
+
+    // 烟囱冒的烟：三小段横线从帽子顶上循环往上飘
+    for (let i = 0; i < 3; i++) {
+      const p = ((t / 2800) + i / 3) % 1;
+      const x = ox + 13.5 * step + Math.sin(p * 4 + i) * 2;
+      const y = oy - 4 * step - p * step * 4.4;
+      bar(x - step * 0.34, x + step * 0.34, y, step * 0.22, .42 * (1 - p));
+    }
+  }
+
+  // ---- 花 -----------------------------------------------------------------
+  // 点一下鼠标，就在指针那里长一朵。每朵由茎、两片叶、一圈花瓣组成。
+  const flowers = [];
+  const MAX_FLOWERS = 70;
+
+  function plant(x, y) {
+    if (flowers.length >= MAX_FLOWERS) flowers.shift();
+    flowers.push({ x, y, born: performance.now(), seed: Math.random() });
+  }
+
+  function drawFlower(f, now) {
+    const age = (now - f.born) / 620;
+    const grow = age >= 1 ? 1 : 1 - Math.pow(1 - age, 3);
+    if (grow <= 0) return;
+    const k = STEP / 7;           // 花的大小跟着点阵间距一起放大
+    const sway = Math.sin((now / 1000) + f.seed * 6.28) * 1.1 * k * grow;
+    const stemH = (11 + f.seed * 6) * k * grow;
+    const bx = f.x + sway;
+    const by = f.y;
+
+    // 茎
+    const nodes = Math.max(1, Math.round(stemH / (4 * k)));
+    for (let i = 0; i <= nodes; i++) {
+      dot(bx, by - (i / nodes) * stemH, 1.7 * k, INK, .5);
+    }
+    // 叶
+    if (grow > .45) {
+      const ly = by - stemH * .45;
+      dot(bx - 3.2 * k, ly, 1.7 * k, INK, .42);
+      dot(bx + 3.2 * k, ly - 2.4 * k, 1.7 * k, INK, .42);
+    }
+    // 花瓣
+    const petals = 5 + Math.round(f.seed * 2);
+    const rHead = (4 + f.seed * 1.8) * k * grow;
+    for (let i = 0; i < petals; i++) {
+      const a = (i / petals) * Math.PI * 2 + f.seed * 3;
+      dot(bx + Math.cos(a) * rHead, by - stemH + Math.sin(a) * rHead, 1.9 * k, INK, .78);
+    }
+    dot(bx, by - stemH, 1.4 * k, INK, .3);
+  }
+
+  // ---- 主循环 -------------------------------------------------------------
+  function resize() {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function frame(now) {
+    ctx.clearRect(0, 0, W, H);
+    drawHouse(W / 2, H * 0.42, now);
+    for (const f of flowers) drawFlower(f, now);
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', resize);
+  // 只有点下去才种花，光标划过不算，否则页面很快就乱了。
+  canvas.addEventListener('pointerdown', (e) => {
+    plant(e.clientX, Math.min(H - 30, e.clientY));
+  });
+  document.getElementById('clear').addEventListener('click', () => { flowers.length = 0; });
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

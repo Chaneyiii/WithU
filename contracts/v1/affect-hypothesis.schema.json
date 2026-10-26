@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/affect-hypothesis",
+  "title": "affect-hypothesis",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "hypothesis_id",
+    "valence",
+    "arousal",
+    "affect_candidates",
+    "support_need_candidates",
+    "confidence",
+    "answer_confidence",
+    "abstention",
+    "conflict",
+    "sarcasm_or_ambiguity",
+    "calibrated",
+    "evidence_refs",
+    "model_version",
+    "source",
+    "calibration_version",
+    "degraded",
+    "degradation_reason",
+    "user_correction",
+    "language",
+    "input_modality"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "hypothesis_id": {
+      "type": "string"
+    },
+    "valence": {
+      "type": "integer",
+      "minimum": -2,
+      "maximum": 2
+    },
+    "arousal": {
+      "type": "integer",
+      "minimum": -2,
+      "maximum": 2
+    },
+    "affect_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "score"],
+        "properties": {
+          "label": {
+            "enum": ["sadness", "anxiety", "anger", "shame", "loneliness", "joy", "tired", "mixed", "unclear"]
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "support_need_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["need", "score"],
+        "properties": {
+          "need": {
+            "enum": ["listening", "emotional_confirmation", "companionship", "shared_quiet", "distraction", "advice", "transaction_help", "pause_interaction"]
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "answer_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "abstention": {
+      "type": "boolean"
+    },
+    "conflict": {
+      "type": "boolean"
+    },
+    "sarcasm_or_ambiguity": {
+      "type": "boolean"
+    },
+    "calibrated": {
+      "type": "boolean"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "local_laya",
+        "configured_llm",
+        "configured_llm_fallback",
+        "rules_fallback"
+      ]
+    },
+    "calibration_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "degradation_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user_correction": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": ["turn_id", "corrected_emotion", "corrected_need", "boundary", "recorded_at"],
+      "properties": {
+        "turn_id": {"type": "string"},
+        "corrected_emotion": {
+          "type": ["string", "null"],
+          "enum": ["sadness", "anxiety", "anger", "shame", "loneliness", "joy", "tired", "mixed", "unclear", null]
+        },
+        "corrected_need": {
+          "type": ["string", "null"],
+          "enum": ["listening", "emotional_confirmation", "companionship", "shared_quiet", "distraction", "advice", "transaction_help", "pause_interaction", null]
+        },
+        "boundary": {"type": ["string", "null"]},
+        "recorded_at": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "language": {
+      "type": "string"
+    },
+    "input_modality": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

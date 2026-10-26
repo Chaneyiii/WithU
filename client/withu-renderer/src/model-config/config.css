@@ -1,0 +1,66 @@
+.model-configuration{width:100%;min-width:0;padding-bottom:32px;color:var(--text-primary)}
+/* One settings-page scroller. Keep wheel/touch/keyboard access, no visible bar. */
+.settings-content.settings-connectors{scrollbar-width:none;scrollbar-gutter:auto}
+.settings-content.settings-connectors::-webkit-scrollbar{display:none;width:0;height:0}
+.model-configuration h3,.model-configuration h4,.model-configuration p{margin:0}
+.model-configuration p,.model-configuration small{color:var(--text-secondary);line-height:1.6;font-size:12px}
+.model-intro,.model-section>header,.model-service-title,.model-provider,.model-footer{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.model-intro h3{font-size:19px}.model-intro p{margin-top:6px}
+.model-preview-notice{padding:14px 16px;margin:20px 0 12px;border:1px solid var(--fill-divider);border-radius:12px;background:var(--fill-secondary)}
+.model-preview-notice strong{font-size:13px}.model-preview-notice p{margin-top:5px}
+.model-story{display:flex;align-items:center;gap:20px;margin-bottom:22px}.model-story .model-field{min-width:200px}
+.model-section{background:var(--fill-secondary-elevated);border:1px solid var(--fill-divider);border-radius:16px;padding:6px;margin:12px 0;overflow:hidden}
+.model-section>header{padding:20px 22px;border-bottom:1px solid var(--fill-divider)}
+.model-section h3{font-size:15px}.model-section>header p{margin-top:5px}
+.model-configuration button,.model-configuration a{font:inherit;font-size:12px;cursor:pointer;color:var(--text-primary);background:var(--fill-secondary);border:1px solid var(--fill-divider);border-radius:8px;padding:8px 12px;text-decoration:none}
+.model-configuration button:hover:not(:disabled){background:var(--fill-tertiary)}
+.model-configuration button:disabled{cursor:not-allowed;opacity:.45}.model-configuration .model-primary{background:var(--text-primary);color:var(--fill-primary)}
+.model-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}.model-provider .model-actions{margin:0}
+.model-configuration :is(input,select,textarea){width:100%;box-sizing:border-box;font:inherit;font-size:13px;color:var(--text-primary);background:var(--fill-primary);border:1px solid var(--fill-divider);border-radius:8px;padding:10px 12px;min-height:38px}
+.model-configuration :is(input,select,textarea):disabled{opacity:.55}.model-configuration textarea{min-height:76px;resize:vertical}
+.model-configuration :is(input,select,textarea,button,a,summary):focus-visible{outline:2px solid var(--text-primary-link);outline-offset:2px}
+.model-field{display:flex;flex-direction:column;gap:7px;font-size:12px;margin:14px 0}.model-field>span,.model-field>label{color:var(--text-secondary)}
+.model-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.model-empty{padding:24px 22px;font-size:13px}.model-empty p{margin-top:6px}
+.model-provider{padding:16px 22px;border-bottom:1px solid var(--fill-divider)}.model-provider strong{font-size:13px}.model-provider small{display:block;margin-top:5px}
+.model-editor{padding:20px 22px;background:var(--fill-secondary)}.model-editor h4{font-size:14px}
+.model-configuration details{margin-top:16px;font-size:12px}.model-configuration summary{cursor:pointer;color:var(--text-secondary)}
+.model-service{padding:20px 22px;border-bottom:1px solid var(--fill-divider)}.model-service:last-child{border-bottom:0}.model-service-title strong{font-size:14px}
+.model-facts{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--text-secondary);margin:4px 0 12px}
+.model-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;background:var(--fill-secondary);color:var(--text-secondary);font-size:11px;white-space:nowrap}
+.model-badge.status-ready,.model-badge.status-supported,.model-badge.status-connected,.model-badge.status-enabled{color:var(--text-success)}
+.model-badge.status-auth_failed,.model-badge.status-unsupported,.model-badge.status-unavailable,.model-badge.status-device_error,.model-badge.status-failed{color:var(--text-warning)}
+.model-configuration .model-error{color:var(--text-warning);margin-top:12px}.model-configuration .model-help{margin-bottom:10px}
+.model-section>.model-field{margin:18px 22px}
+.model-footer{align-items:flex-start;margin-top:20px}.model-result{padding:12px;border-radius:8px;border:1px solid var(--fill-divider);margin-top:16px!important}
+@media(max-width:760px){.model-fields{grid-template-columns:1fr;gap:0}.model-intro,.model-section>header,.model-provider,.model-footer,.model-story{align-items:flex-start;flex-direction:column}.model-facts{flex-direction:column}}
+
+.model-configuration h3,.model-configuration h4{color:var(--text-primary)}
+.model-popup p{font-size:12px;line-height:1.5;color:var(--text-secondary);margin:8px 0}
+
+
+/* All model-setting dropdowns use the same trigger and floating menu. */
+.model-configuration .model-select-trigger{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:40px;padding:10px 16px 10px 12px;background:var(--fill-primary);font-size:13px;text-align:left;box-sizing:border-box}
+.model-select-trigger>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.model-select-trigger>svg{flex:none;color:var(--text-secondary);transition:transform .15s}
+.model-select-trigger[aria-expanded="true"]>svg{transform:rotate(180deg)}
+.model-configuration .model-select-trigger[aria-expanded="true"]{border-color:var(--text-secondary)}
+.model-select-menu{position:fixed;z-index:10000;box-sizing:border-box;overflow:auto;padding:6px;border:1px solid var(--fill-divider);border-radius:12px;background:var(--fill-primary);color:var(--text-primary);box-shadow:0 8px 28px #0000001c,0 2px 6px #0000000a;font-size:13px;line-height:1.5}
+.model-select-option{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:38px;box-sizing:border-box;padding:8px 10px;border-radius:7px;cursor:pointer}
+.model-select-option>span{min-width:0;overflow-wrap:anywhere}.model-select-option>svg{flex:none}
+.model-select-option.is-active,.model-select-option[aria-selected="true"]{background:var(--fill-secondary)}
+.model-select-option[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+[data-theme="dark"] .model-select-menu{box-shadow:0 8px 28px #00000055,0 2px 6px #00000033}
+.model-select-menu{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text-secondary) 22%,transparent) transparent}
+.model-select-menu::-webkit-scrollbar{width:6px}.model-select-menu::-webkit-scrollbar-track{background:transparent}.model-select-menu::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-secondary) 22%,transparent);border-radius:6px}.model-select-menu::-webkit-scrollbar-button{display:none}
+
+.model-option-label,.provider-name{display:flex;align-items:center;gap:10px;min-width:0}
+.provider-logo{width:20px;height:20px;object-fit:contain;flex:none}
+.model-secret{position:relative}.model-configuration .model-secret input{padding-right:46px}
+.model-configuration .model-secret-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;padding:6px;border:0;background:transparent;color:var(--text-secondary);display:grid;place-items:center}
+[data-theme="dark"] .provider-logo{background:#f1f1f1;border-radius:4px;padding:2px;box-sizing:border-box}
+
+.model-settings-card{margin-bottom:12px}.model-settings-card .settings-row{width:100%;text-align:left;gap:14px}.model-card-button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:none;border:0;text-align:left;flex:1}.model-card-button small{color:var(--text-secondary)}.app-version{display:block;margin-top:4px;font-size:11px;color:var(--text-secondary)}
+.modal .model-intro,.modal .model-footer{display:none}.modal .model-fields{grid-template-columns:1fr}.modal .model-section{width:100%;margin:16px 0}.modal .model-preview-notice{margin-top:0}
+
+.modal:has(.model-configuration){width:min(720px,calc(100vw - 48px))}.modal .model-section>header{display:none}.modal .model-preview-notice{display:none}.modal .model-configuration>.model-help{font-size:12px}.modal .model-section{margin-top:0}.modal-content{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text-secondary) 22%,transparent) transparent}

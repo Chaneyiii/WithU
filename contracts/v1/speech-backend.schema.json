@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/speech-backend",
+  "title": "speech-backend",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "backend_id",
+    "kind",
+    "mode",
+    "provider_ref",
+    "model_ref",
+    "credential_ref",
+    "selection_policy",
+    "voice_capabilities",
+    "enabled",
+    "health"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "backend_id": {
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "asr",
+        "tts"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "local_model",
+        "cloud_api"
+      ]
+    },
+    "provider_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "model_ref": {
+      "type": "string"
+    },
+    "credential_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "selection_policy": {
+      "enum": [
+        "cloud_first",
+        "explicit_local",
+        "user_default"
+      ]
+    },
+    "voice_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "health": {
+      "enum": [
+        "ready",
+        "not_configured",
+        "not_installed",
+        "auth_error",
+        "unsupported",
+        "unavailable"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

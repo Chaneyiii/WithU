@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/scheduled-task",
+  "title": "scheduled-task",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "authorization_evidence_ref",
+    "scheduled_at",
+    "timezone",
+    "notification_conditions",
+    "status",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "authorization_evidence_ref": {
+      "type": "string"
+    },
+    "scheduled_at": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "notification_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "enum": [
+        "active",
+        "paused",
+        "deleted"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

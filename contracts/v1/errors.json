@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "error_categories": {
+    "validation": "input or schema violation",
+    "authorization": "approval or scope does not permit the action",
+    "conflict": "version or deletion tombstone conflict",
+    "provider": "configured provider unavailable or rejected the request",
+    "lifecycle": "server is draining or resources cannot be released",
+    "cancelled": "operation was cancelled before completion",
+    "internal": "unexpected server failure"
+  }
+}
+

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "realtime-start",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "conversation_id",
+    "renderer_id",
+    "config_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "renderer_id": {
+      "type": "string"
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "mode": {
+      "enum": [
+        "call",
+        "live",
+        "read"
+      ]
+    },
+    "message_id": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "$id": "withu://contracts/v1/realtime-start",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "read"
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "message_id"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "message_id"
+        ]
+      }
+    }
+  ]
+}

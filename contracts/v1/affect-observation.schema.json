@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/affect-observation",
+  "title": "affect-observation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "turn_id",
+    "modality",
+    "observed_signal",
+    "source_ref",
+    "captured_at",
+    "retention"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "turn_id": {
+      "type": "string"
+    },
+    "modality": {
+      "enum": [
+        "text",
+        "prosody",
+        "interaction"
+      ]
+    },
+    "observed_signal": {
+      "type": "string"
+    },
+    "source_ref": {
+      "type": "string"
+    },
+    "captured_at": {
+      "type": "string"
+    },
+    "retention": {
+      "enum": [
+        "session_only",
+        "user_authorized"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

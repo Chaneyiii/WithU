@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/assistant-message",
+  "title": "AssistantMessage",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "conversation_id",
+    "role",
+    "text",
+    "file_refs",
+    "submitted_at",
+    "version",
+    "operation_id",
+    "config_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string"
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "role": {
+      "const": "assistant"
+    },
+    "text": {
+      "type": "string"
+    },
+    "file_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "submitted_at": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "operation_id": {
+      "type": "string"
+    },
+    "duration_ms": {"type":"integer","minimum":0},
+    "first_token_ms": {"type":["integer","null"],"minimum":0},
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Interactive reply blocks (reply-block schema) attached to this message; each entry is validated against reply-block at write time.",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": false
+}

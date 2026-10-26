@@ -1,0 +1,10 @@
+[package]
+name = "withu-approvals"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+withu-runtime = { path = "../withu-runtime" }
+withu-connectors = { path = "../withu-connectors" }
+serde = { version = "1", features = ["derive"] }
+

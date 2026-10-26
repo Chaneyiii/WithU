@@ -1,0 +1,20 @@
+{
+  "name": "@withu/mcp-app-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "test:browser": "node test-browser.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "2.0.0",
+    "@modelcontextprotocol/core": "2.0.0",
+    "@modelcontextprotocol/ext-apps": "2.0.3",
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  },
+  "version": "0.3.1-go.4"
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/memory-correct",
+  "title": "memory-correct-request",
+  "type": "object",
+  "required": ["schema_version", "scope", "record", "expected_object_version", "expected_state_version"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "scope": {"type": "string", "minLength": 1, "maxLength": 128},
+    "record": {"$ref": "./memory.schema.json"},
+    "expected_object_version": {"type": "integer", "minimum": 1},
+    "expected_state_version": {"type": "integer", "minimum": 0}
+  },
+  "additionalProperties": false
+}

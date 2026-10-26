@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/error-response",
+  "title": "error-response",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "request_id",
+    "client_session_id",
+    "sequence",
+    "error"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "client_session_id": {
+      "type": "string"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "error": {
+      "$ref": "./error.schema.json"
+    }
+  },
+  "additionalProperties": false
+}

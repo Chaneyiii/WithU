@@ -1,0 +1,775 @@
+/* Schedule page — 1:1 rebuild of the reference calendar: a neutral paper
+   stage, a white checklist rail (rounded-square checkboxes with a dark
+   fill + white check when done, struck-through titles), and one white board
+   with a hairline time grid and roomy gray event cards (emoji icon + title
+   + time). Row details open as a small dropdown, never a modal. */
+.schedule-page {
+  --sched-hour: 128px;
+  --sched-card: #ffffff;
+  --sched-ink: #1a1a1c;
+  --sched-muted: #74767a;
+  --sched-faint: #a5a7ab;
+  --sched-line: #ececee;
+  --sched-soft: #f5f5f6;
+  --sched-hover: #f7f7f8;
+  --sched-page: var(--withu-stage);
+  --sched-event: #f1f1f3;
+  --sched-event-hover: #e9e9eb;
+  --sched-item-ink: #4f5154;
+  --sched-check-border: #c6c8cc;
+  --sched-check-on: #191917;
+  --sched-reminder: #ff9a45;
+  --sched-calendar: #6f9df5;
+  --sched-now: #ff5a3c;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 46px 22px 18px;
+  background: var(--sched-page);
+  color: var(--sched-ink);
+  overflow: hidden;
+}
+[data-theme="dark"] .schedule-page {
+  --sched-card: #232324;
+  --sched-ink: #f2f1ed;
+  --sched-muted: #9b9a9e;
+  --sched-faint: #767579;
+  --sched-line: #343436;
+  --sched-soft: #2b2b2d;
+  --sched-hover: #2f2f31;
+  --sched-page: var(--withu-stage);
+  --sched-event: #2f2f31;
+  --sched-event-hover: #38383a;
+  --sched-item-ink: #dcdde0;
+  --sched-check-border: #5a5852;
+  --sched-check-on: #f2f1ed;
+  background: var(--sched-page);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.sched-header {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 2px;
+}
+.sched-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.sched-title h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+.sched-month {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--sched-muted);
+  font-variant-numeric: tabular-nums;
+}
+.sched-month i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
+}
+.sched-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sched-actions button { font-size: 12px; }
+.sched-today,
+.sched-stepper {
+  height: 32px;
+  border: 1px solid var(--sched-line);
+  border-radius: 9px;
+  background: var(--sched-card);
+  color: var(--sched-ink);
+  box-shadow: 0 1px 2px #1b1a1808;
+}
+.sched-today { padding: 0 14px; font-weight: 550; }
+.sched-today:hover { background: var(--sched-hover); }
+.sched-stepper { display: flex; overflow: hidden; }
+.sched-stepper button {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  color: var(--sched-muted);
+}
+.sched-stepper button + button { border-left: 1px solid var(--sched-line); }
+.sched-stepper button:hover { background: var(--sched-hover); color: var(--sched-ink); }
+/* 案例右上是黑色圆形加号按钮：只放图标，title 提示「新建日程」。 */
+.sched-new {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #1b1a18;
+  color: #fff;
+  box-shadow: 0 2px 6px #1b1a1826;
+}
+.sched-new:hover { background: #33322e; }
+.sched-new .icon { color: #fff; }
+
+.sched-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 12px;
+}
+
+/* ── Left: checklist rail + calendar filters ────────────────────────────── */
+.sched-side {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sched-day-card {
+  border: 1px solid var(--sched-line);
+  border-radius: 18px;
+  background: var(--sched-card);
+  box-shadow: 0 1px 2px #1b1a1808, 0 10px 30px #1b1a1805;
+}
+.sched-day-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sched-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 16px 10px;
+}
+.sched-day-head div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sched-day-head small { font-size: 11px; line-height: 15px; color: var(--sched-muted); }
+.sched-day-head strong { font-size: 24px; line-height: 30px; font-weight: 700; letter-spacing: -0.3px; }
+.sched-day-head button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--sched-muted);
+}
+.sched-day-head button:hover { background: var(--sched-soft); color: var(--sched-ink); }
+
+.sched-side-tabs {
+  display: flex;
+  gap: 18px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--sched-line);
+}
+.sched-side-tabs button {
+  position: relative;
+  padding: 4px 0 8px;
+  color: var(--sched-muted);
+  font-size: 12.5px;
+  font-weight: 550;
+}
+.sched-side-tabs button[aria-selected="true"] { color: var(--sched-ink); font-weight: 650; }
+.sched-side-tabs button[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--sched-ink);
+}
+
+.sched-side-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 6px 8px;
+}
+.sched-side-group + .sched-side-group { margin-top: 4px; }
+.sched-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0 10px;
+  color: var(--sched-ink);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.sched-group-head button {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--sched-muted);
+}
+.sched-group-head button:hover { background: var(--sched-soft); color: var(--sched-ink); }
+.sched-group-head .sched-group-toggle {
+  width: auto;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: -6px;
+  padding: 0 5px;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+.sched-group-toggle .icon { color: var(--sched-faint); }
+.sched-side-row {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  text-align: left;
+}
+/* 悬停露出的置顶 / 删除，交互对齐会话列表：pin 排到最前，垃圾桶删除。 */
+.sched-side-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+.sched-side-row:hover .sched-side-actions,
+.sched-side-row:focus-within .sched-side-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.sched-side-action {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sched-muted);
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.sched-side-action:hover { background: var(--sched-hover); color: var(--sched-ink); }
+.sched-side-action.is-pinned { color: var(--sched-ink); }
+.sched-side-delete:hover { color: #d64545; }
+.sched-side-row:hover .sched-side-copy { padding-right: 52px; }
+.sched-side-row:hover { background: var(--sched-soft); }
+/* Reference checkbox (measured from calendar-detail.png): 18px rounded
+   square, corner radius ≈ 30% of the side (soft, near-squircle corners),
+   1.5px medium-gray border, white
+   fill; done = near-black fill with a small white check and struck title. */
+.sched-check {
+  position: relative;
+  flex: none;
+  width: 15px;
+  height: 15px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1.2px solid var(--sched-check-border);
+  border-radius: 999px;
+  background: var(--sched-card);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease, transform 0.1s ease;
+}
+/* 18px is a faithful target, but keep a comfortable hit area. */
+.sched-check::before {
+  content: "";
+  position: absolute;
+  inset: -6px -4px;
+  border-radius: 999px;
+}
+.sched-check:hover { border-color: var(--sched-check-on); }
+.sched-check:focus-visible {
+  outline: 2px solid var(--sched-check-on);
+  outline-offset: 2px;
+}
+.sched-check:active { transform: scale(0.88); }
+.sched-check:disabled { cursor: default; opacity: 0.6; }
+.sched-check.is-done {
+  background: var(--sched-check-on);
+  border-color: var(--sched-check-on);
+  animation: sched-check-pop 0.18s ease-out;
+}
+@keyframes sched-check-pop {
+  from { transform: scale(0.55); }
+  60% { transform: scale(1.08); }
+  to { transform: scale(1); }
+}
+.sched-side-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  text-align: left;
+}
+.sched-side-copy strong {
+  min-width: 0;
+  font-size: 13.5px;
+  line-height: 18px;
+  font-weight: 450;
+  color: var(--sched-item-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sched-side-copy.is-done strong {
+  color: var(--sched-muted);
+}
+.sched-side-empty {
+  margin: 2px 10px 8px;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--sched-faint);
+}
+/* 我的日历：并进 Today 面板的最后一个分组（案例里组与组连在一张卡里）。 */
+.sched-calendars { flex: none; padding: 4px 6px 8px; }
+.sched-calendars .sched-group-head { color: var(--sched-muted); font-weight: 550; }
+.sched-group-title { font-size: 12px; line-height: 16px; font-weight: 550; }
+.sched-calendar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sched-calendar-row:hover { background: var(--sched-soft); }
+.sched-swatch {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 2.5px;
+  background: var(--sched-reminder);
+}
+.sched-swatch.event { background: var(--sched-calendar); }
+.sched-calendar-row span:nth-child(2) { flex: 1; min-width: 0; }
+.sched-calendar-row input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #1b1b19;
+}
+
+/* ── Right: week board ──────────────────────────────────────────────────── */
+.sched-board {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--sched-line);
+  border-radius: 18px;
+  background: var(--sched-card);
+  box-shadow: 0 1px 2px #1b1a1808, 0 14px 40px #1b1a1807;
+  overflow: hidden;
+}
+.sched-head-clip {
+  flex: none;
+  overflow: hidden;
+}
+.sched-board-head {
+  flex: none;
+  height: 60px;
+  display: grid;
+  grid-template-columns: 54px repeat(var(--day-count, 7), 150px);
+  align-items: stretch;
+  border-bottom: 1px solid var(--sched-line);
+}
+.sched-timezone {
+  align-self: center;
+  justify-self: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--sched-soft);
+  color: var(--sched-muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.sched-daybtn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border-left: 1px solid var(--sched-line);
+}
+.sched-daybtn:hover { background: var(--sched-hover); }
+.sched-daybtn.is-selected { background: var(--sched-soft); }
+.sched-daynum {
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--sched-ink);
+  font-variant-numeric: tabular-nums;
+}
+.sched-dayname {
+  font-size: 10px;
+  line-height: 13px;
+  color: var(--sched-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.sched-daybtn.is-today .sched-daynum { font-weight: 700; }
+.sched-daybtn.is-today::after {
+  content: "";
+  position: absolute;
+  left: 24%;
+  right: 24%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--sched-ink);
+}
+.sched-allday {
+  flex: none;
+  height: 30px;
+  display: grid;
+  grid-template-columns: 54px repeat(var(--day-count, 7), 150px);
+  border-bottom: 1px solid var(--sched-line);
+}
+.sched-allday-label {
+  align-self: center;
+  justify-self: center;
+  font-size: 10px;
+  color: var(--sched-muted);
+}
+.sched-allday-cell { border-left: 1px solid var(--sched-line); }
+.sched-scroll { flex: 1; min-height: 0; overflow: auto; }
+.sched-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 54px repeat(var(--day-count, 7), 150px);
+}
+.sched-gutter { position: relative; }
+.sched-gutter span {
+  position: absolute;
+  right: 9px;
+  transform: translateY(-50%);
+  font-size: 10px;
+  line-height: 13px;
+  color: var(--sched-faint);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.sched-gutter span:first-child { transform: none; }
+.sched-cols {
+  position: relative;
+  /* 跨过 gutter 后的全部日期轨道：否则盒子只有一列宽（150px），
+     网格线背景只画在第一列，其余日期看不到横线。 */
+  grid-column: 2 / -1;
+  display: grid;
+  grid-template-columns: repeat(var(--day-count, 7), 150px);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(var(--sched-hour) - 1px),
+    var(--sched-line) calc(var(--sched-hour) - 1px) var(--sched-hour)
+  );
+}
+.sched-col {
+  position: relative;
+  border-left: 1px solid var(--sched-line);
+  min-width: 0;
+  cursor: default;
+}
+.sched-col:hover { background: color-mix(in srgb, var(--sched-hover) 70%, transparent); }
+.sched-now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  height: 1.5px;
+  background: var(--sched-now);
+  pointer-events: none;
+}
+.sched-now i {
+  position: absolute;
+  left: -3px;
+  top: -3.5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sched-now);
+  box-shadow: 0 0 0 2px var(--sched-card);
+}
+
+/* Event card — reference style: light gray rounded card, emoji icon on top,
+   title, then the time range. No avatar/CTA (not in local data). */
+.sched-event {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--sched-event);
+  color: var(--sched-ink);
+  text-align: left;
+  overflow: hidden;
+  transition: background 0.14s ease, transform 0.14s ease;
+}
+.sched-event:hover { background: var(--sched-event-hover); transform: translateY(-1px); }
+.sched-event-emoji {
+  flex: none;
+  font-size: 15px;
+  line-height: 18px;
+}
+.sched-event strong {
+  flex: none;
+  max-width: 100%;
+  font-size: 12.5px;
+  line-height: 16px;
+  font-weight: 600;
+  /* 高度由 layOutDay 按内容撑够，标题不截断、不出省略号。 */
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.sched-event small {
+  flex: none;
+  font-size: 10px;
+  line-height: 13px;
+  color: var(--sched-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.sched-event.is-paused { opacity: 0.55; }
+/* 矮卡：只压标题行数，emoji 和时间照常显示（案例的 Lunch Break 就是这么排的）。 */
+.sched-event.is-compact { gap: 1px; padding: 7px 10px; }
+.sched-event.is-compact strong { -webkit-line-clamp: 1; }
+.sched-error,
+.sched-notice {
+  position: absolute;
+  left: 62px;
+  bottom: 8px;
+  z-index: 4;
+  margin: 0;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sched-card) 92%, transparent);
+  box-shadow: 0 2px 10px #1b1a1812;
+  font-size: 10.5px;
+  color: var(--sched-muted);
+}
+.sched-error { color: #a33a34; }
+
+/* ── Compose dialog + row detail dropdown ───────────────────────────────── */
+.sched-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #1b1a1836;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: sched-fade 0.16s ease-out;
+}
+@keyframes sched-fade { from { opacity: 0; } to { opacity: 1; } }
+.sched-dialog {
+  width: min(392px, 100%);
+  padding: 20px;
+  border: 1px solid var(--sched-line);
+  border-radius: 20px;
+  background: var(--sched-card);
+  color: var(--sched-ink);
+  box-shadow: 0 24px 70px #1b1a181f;
+}
+.sched-dialog { display: flex; flex-direction: column; gap: 14px; }
+.sched-dialog header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sched-dialog header div { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sched-dialog header small { font-size: 10.5px; color: var(--sched-muted); }
+.sched-dialog header strong { font-size: 17px; line-height: 22px; font-weight: 650; }
+.sched-dialog header button {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--sched-muted);
+}
+.sched-dialog header button:hover { background: var(--sched-soft); color: var(--sched-ink); }
+.sched-field { display: flex; flex-direction: column; gap: 6px; }
+.sched-field span { font-size: 11px; color: var(--sched-muted); font-weight: 550; }
+/* 时间一行：日期选择 + 时间选择并排 */
+.sched-when-row { display: flex; align-items: center; gap: 8px; }
+.sched-field input {
+  width: 100%;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--sched-line);
+  border-radius: 10px;
+  background: var(--sched-soft);
+  color: var(--sched-ink);
+  font: inherit;
+  font-size: 12.5px;
+}
+.sched-field input:focus { outline: 2px solid color-mix(in srgb, var(--sched-ink) 20%, transparent); outline-offset: 1px; }
+.sched-dialog-note { margin: -2px 0 0; font-size: 10.5px; line-height: 16px; color: var(--sched-faint); }
+.sched-dialog-error { margin: 0; font-size: 11px; line-height: 16px; color: #a33a34; }
+.sched-dialog footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+.sched-ghost,
+.sched-save {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 550;
+}
+.sched-ghost { border: 1px solid var(--sched-line); color: var(--sched-muted); }
+.sched-ghost:hover { background: var(--sched-soft); color: var(--sched-ink); }
+.sched-save { background: #1b1a18; color: #fff; }
+.sched-save:hover { background: #33322e; }
+.sched-save:disabled { opacity: 0.45; cursor: default; }
+[data-theme="dark"] .sched-save { background: #f2f1ed; color: #1b1a18; }
+[data-theme="dark"] .sched-new { background: #f2f1ed; color: #1b1a18; }
+[data-theme="dark"] .sched-new .icon { color: #1b1a18; }
+[data-theme="dark"] .sched-new:hover { background: #dcdad3; }
+[data-theme="dark"] .sched-check { color: var(--sched-card); }
+[data-theme="dark"] .sched-check.is-done { background: #f2f1ed; border-color: #f2f1ed; color: #232325; }
+
+/* Row detail dropdown — anchored next to the clicked row, flips to stay in
+   the viewport; no backdrop, closes on outside click / Esc / scroll. */
+.sched-row-menu {
+  position: fixed;
+  z-index: 140;
+  width: 264px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--sched-line);
+  border-radius: 14px;
+  background: var(--sched-card);
+  color: var(--sched-ink);
+  box-shadow: 0 18px 50px #1b1a1826, 0 2px 8px #1b1a1814;
+  animation: sched-menu-in 0.15s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.sched-row-menu:focus { outline: none; }
+@keyframes sched-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+.sched-row-menu header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sched-row-menu header .sched-swatch { width: 9px; height: 9px; border-radius: 3px; }
+.sched-row-menu header small { font-size: 10.5px; font-weight: 550; color: var(--sched-muted); }
+.sched-row-menu header em {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--sched-soft);
+  color: var(--sched-muted);
+  font-style: normal;
+  font-size: 10px;
+}
+.sched-row-menu-emoji { margin-top: 7px; font-size: 24px; line-height: 30px; }
+.sched-row-menu-title { font-size: 15px; line-height: 20px; font-weight: 650; letter-spacing: -0.1px; }
+.sched-row-menu-time {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  line-height: 16px;
+  color: var(--sched-muted);
+  font-variant-numeric: tabular-nums;
+}
+.sched-row-menu-actions {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--sched-line);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sched-row-menu-action {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  margin: 0 -2px;
+  border-radius: 7px;
+  color: var(--sched-ink);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+}
+.sched-row-menu-action:hover { background: var(--sched-soft); }
+.sched-row-menu-action:disabled { opacity: 0.5; cursor: default; }
+.sched-row-menu-action .icon { color: var(--sched-muted); }
+.sched-check-inline {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--sched-check-border);
+  border-radius: 3.5px;
+  background: var(--sched-card);
+  color: #fff;
+}
+.sched-check-inline.is-done {
+  background: var(--sched-check-on);
+  border-color: var(--sched-check-on);
+}
+
+@media (max-width: 1180px) {
+  .sched-layout { grid-template-columns: 272px minmax(0, 1fr); }
+  .schedule-page { padding-left: 18px; padding-right: 18px; }
+}
+@media (max-width: 980px) {
+  .sched-layout { grid-template-columns: minmax(0, 1fr); }
+  .sched-side { display: none; }
+}
+@media (max-height: 760px) {
+  .schedule-page { padding-top: 42px; gap: 12px; }
+  .sched-title h1 { font-size: 24px; line-height: 28px; }
+  .sched-day-head { padding-top: 13px; }
+}

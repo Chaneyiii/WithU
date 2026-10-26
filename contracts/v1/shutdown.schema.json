@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/shutdown",
+  "title": "shutdown",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "request_id",
+    "client_session_id",
+    "server_id",
+    "requested_at",
+    "phase",
+    "accepting_tasks",
+    "recoverable_state_persisted",
+    "resources_released",
+    "completed_at",
+    "exit_reason"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "client_session_id": {
+      "type": "string"
+    },
+    "server_id": {
+      "type": "string"
+    },
+    "requested_at": {
+      "type": "string"
+    },
+    "phase": {
+      "enum": [
+        "requested",
+        "draining",
+        "releasing",
+        "complete",
+        "failed"
+      ]
+    },
+    "accepting_tasks": {
+      "type": "boolean"
+    },
+    "recoverable_state_persisted": {
+      "type": "boolean"
+    },
+    "resources_released": {
+      "type": "boolean"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "exit_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

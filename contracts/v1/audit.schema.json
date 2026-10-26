@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/audit",
+  "title": "audit",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "operation",
+    "object_id",
+    "occurred_at",
+    "actor",
+    "result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "operation": {
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string"
+    },
+    "actor": {
+      "type": "string"
+    },
+    "result": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

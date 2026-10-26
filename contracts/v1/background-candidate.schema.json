@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/background-candidate",
+  "title": "background-candidate",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "target_id",
+    "read_object_version",
+    "read_state_version",
+    "evidence_versions",
+    "sync_protection_token",
+    "candidate_ref"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "read_object_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "read_state_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "evidence_versions": {
+      "type": "object"
+    },
+    "sync_protection_token": {
+      "type": "string"
+    },
+    "candidate_ref": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

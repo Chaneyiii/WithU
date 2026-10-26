@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/relationship-state",
+  "title": "relationship-state",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "topic",
+    "emotion",
+    "intent",
+    "user_stated",
+    "boundary",
+    "observed_at",
+    "source_turn_id",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "emotion": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "sadness",
+        "anxiety",
+        "anger",
+        "shame",
+        "loneliness",
+        "joy",
+        "tired",
+        "mixed",
+        "unclear",
+        null
+      ]
+    },
+    "intent": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user_stated": {
+      "type": "boolean"
+    },
+    "boundary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observed_at": {
+      "type": "string"
+    },
+    "source_turn_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

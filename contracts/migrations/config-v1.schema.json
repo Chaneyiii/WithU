@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/migrations/config-v1",
+  "title": "config",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "config_version",
+    "providers",
+    "credential_refs",
+    "defaults",
+    "model_overrides",
+    "speech_preferences"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "provider",
+        "type": "object",
+        "required": [
+          "schema_version",
+          "provider_id",
+          "endpoint",
+          "protocol",
+          "capabilities",
+          "credential_ref"
+        ],
+        "properties": {
+          "schema_version": {
+            "const": 1
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "openai-compatible",
+              "compatible",
+              "openai",
+              "anthropic",
+              "xai",
+              "openai-responses",
+              "azure",
+              "bedrock"
+            ]
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "llm",
+                "asr",
+                "tts"
+              ]
+            }
+          },
+          "credential_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "display_name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "credential_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "required": [
+        "llm",
+        "asr",
+        "tts"
+      ],
+      "properties": {
+        "llm": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "model_overrides": {
+      "type": "object",
+      "properties": {
+        "llm": {
+          "type": "object",
+          "properties": {
+            "provider_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "model_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reasoning_effort": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 24
+            }
+          },
+          "required": [
+            "provider_ref",
+            "model_ref"
+          ],
+          "additionalProperties": false
+        },
+        "asr": {
+          "type": "object",
+          "properties": {
+            "provider_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "model_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "provider_ref",
+            "model_ref"
+          ],
+          "additionalProperties": false
+        },
+        "tts": {
+          "type": "object",
+          "properties": {
+            "provider_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "model_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "provider_ref",
+            "model_ref"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "speech_preferences": {
+      "type": "object",
+      "properties": {
+        "asr": {
+          "type": "object",
+          "properties": {
+            "local_model_ref": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 256
+            },
+            "backend_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "tts": {
+          "type": "object",
+          "properties": {
+            "local_model_ref": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 256
+            },
+            "backend_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "voice_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

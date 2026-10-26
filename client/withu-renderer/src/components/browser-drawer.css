@@ -1,0 +1,406 @@
+/* ==========================================================================
+   主舞台底部的浏览器抽屉
+   收起时只有一根细指示条浮在消息列表底部；点开时这根条自己升上去，
+   长成一条浏览器工具栏（关闭 / 后退前进刷新 / 地址栏 / 全屏），抽屉在它下面滑出来。
+   全程只有一个元素在动，不会出现上面一根条、下面又一颗岛。
+   ========================================================================== */
+
+.browser-drawer {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  --pill-rest: var(--composer-rest, 112px);   /* 收起时指示条离舞台底部的高度：由输入框实测写入 */
+  --glass-h: 40px;      /* 展开后每个按钮的高度 */
+  --chrome-h: 68px;     /* 抽屉顶部留给工具栏的高度，网页从这里往下开始 */
+}
+
+/* ---- 抽屉本体 ----------------------------------------------------------- */
+.browser-sheet {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 90%;
+  border-radius: 22px 22px 0 0;
+  background: #f6f7f9;
+  transform: translateY(102%);
+  transition:
+    transform 0.6s cubic-bezier(0.22, 0.68, 0, 1),
+    border-radius 0.3s ease;
+  will-change: transform;
+}
+.browser-drawer.is-open .browser-sheet {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+/* 全屏：铺满整个主舞台 */
+.browser-drawer.is-full .browser-sheet {
+  aspect-ratio: auto;
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+}
+
+/* ---- 一颗胶囊的两种形态 -------------------------------------------------- */
+/* 轨道和抽屉长得一模一样，指示条只要盯着轨道的上沿放，就不用 JS 算高度了。 */
+.browser-pill-track {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 90%;
+  pointer-events: none;
+}
+.browser-drawer.is-full .browser-pill-track {
+  aspect-ratio: auto;
+  height: 100%;
+  max-height: none;
+}
+
+/* 收起时只是一根指示条；展开时长成工具栏。全程同一个元素。 */
+/* 收起态与消息框中心对齐（Composer 实测写入 --composer-center-x）；
+   展开态工具栏仍居舞台中线。 */
+.browser-drawer:not(.is-open) .browser-pill {
+  left: var(--composer-center-x, 50%);
+}
+.browser-pill {
+  position: absolute;
+  left: 50%;
+  bottom: var(--pill-rest);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 56px;
+  height: 5px;
+  transform: translate(-50%, 0);
+  pointer-events: none;
+  transition:
+    width 0.5s cubic-bezier(0.22, 0.68, 0, 1),
+    height 0.5s cubic-bezier(0.22, 0.68, 0, 1),
+    bottom 0.62s cubic-bezier(0.22, 0.68, 0, 1);
+}
+.browser-drawer:not(.is-open) .browser-pill:hover { width: 68px; height: 6px; }
+.browser-drawer.is-open .browser-pill {
+  width: min(424px, 62vw);
+  height: var(--glass-h);
+  /* 轨道高就是抽屉高：底边往上抬到「轨道高 − 51px」，
+     工具栏顶边正好落在抽屉上沿往下 11px 的位置。 */
+  bottom: calc(100% - 51px);
+}
+/* 一开始输入、或者已经离开起始页：整条工具栏撑满抽屉宽度 */
+.browser-drawer.is-open.is-wide .browser-pill { width: 100%; }
+
+/* ---- 液态玻璃 ----------------------------------------------------------- */
+/* 浅色：几乎只剩一层高光和模糊，冷白偏蓝，能透出底下的内容；深色另外再调。 */
+.pill-x,
+.pill-full,
+.pill-nav,
+.pill-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--glass-h);
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(244, 248, 255, 0.14) 48%, rgba(240, 246, 255, 0.26) 100%),
+    rgba(240, 245, 255, 0.12);
+  color: #2b3038;
+  -webkit-backdrop-filter: blur(32px) saturate(2.3) brightness(1.04);
+  backdrop-filter: blur(32px) saturate(2.3) brightness(1.04);
+  box-shadow:
+    0 10px 26px rgba(28, 38, 60, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.34);
+}
+
+/* 标签态：与搜索框同一颗玻璃胶囊、同样铺满整宽，内容像浏览器标签页（圆点 + 页面标题，居中） */
+.pill-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  height: var(--glass-h);
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(244, 248, 255, 0.14) 48%, rgba(240, 246, 255, 0.26) 100%),
+    rgba(240, 245, 255, 0.12);
+  color: #2b3038;
+  -webkit-backdrop-filter: blur(32px) saturate(2.3) brightness(1.04);
+  backdrop-filter: blur(32px) saturate(2.3) brightness(1.04);
+  box-shadow:
+    0 10px 26px rgba(28, 38, 60, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.34);
+  cursor: text;
+  opacity: 0;
+  overflow: hidden;
+  transition: opacity 0.3s ease 0.14s;
+}
+.browser-drawer.is-open .pill-tab { opacity: 1; pointer-events: auto; }
+.pill-tab-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8f9bb3;
+  flex: none;
+}
+.pill-tab-label {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 收起态：整根指示条就是触发器，不放字也不放图标 */
+.pill-trigger {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(30, 27, 21, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(24, 20, 12, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    opacity 0.16s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.18s ease,
+    transform 0.24s ease;
+}
+.pill-trigger > * { opacity: 0; }
+.browser-drawer:not(.is-open) .browser-pill:hover .pill-trigger { background: rgba(30, 27, 21, 0.36); }
+.browser-drawer.is-open .pill-trigger {
+  opacity: 0;
+  transform: scaleY(0.6);
+  pointer-events: none;
+}
+.browser-drawer:not(.is-ready) .browser-pill { opacity: 0; transform: translate(-50%, 14px); }
+/* 还没有指示条的时候，那块看不见的区域也不该能点开抽屉 */
+.browser-drawer:not(.is-ready) .pill-trigger { pointer-events: none; }
+
+/* 关闭：单独一个圆 */
+.pill-x,
+.pill-full {
+  flex: none;
+  justify-content: center;
+  width: var(--glass-h);
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
+  cursor: pointer;
+  transform: scale(0.8);
+  transition:
+    width 0.46s cubic-bezier(0.22, 0.68, 0, 1) 0.06s,
+    opacity 0.28s ease 0.12s,
+    transform 0.46s cubic-bezier(0.22, 0.68, 0, 1) 0.06s,
+    background 0.16s ease;
+}
+.browser-drawer.is-open .pill-x,
+.browser-drawer.is-open .pill-full {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.browser-drawer.is-open .pill-x:hover,
+.browser-drawer.is-open .pill-full:hover { background-color: rgba(255, 255, 255, 0.46); }
+.browser-drawer.is-open .pill-x:active,
+.browser-drawer.is-open .pill-full:active { transform: scale(0.93); }
+.pill-x svg { display: block; width: 18px; height: 18px; flex: none; }
+.pill-full svg { display: block; width: 17px; height: 17px; flex: none; }
+
+/* 后退 / 前进 / 刷新：三个小按钮挤在一个玻璃胶囊里 */
+.pill-nav {
+  flex: none;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.1s;
+}
+.browser-drawer.is-open .pill-nav { opacity: 1; pointer-events: auto; }
+.pill-nav button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.pill-nav button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.42); }
+.pill-nav button:active:not(:disabled) { background: rgba(255, 255, 255, 0.6); }
+.pill-nav button:disabled { opacity: 0.28; cursor: default; }
+.pill-nav svg { display: block; width: 17px; height: 17px; }
+
+/* 地址栏 = 搜索框，宽度是原来的一半左右 */
+.pill-search {
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+  padding: 0 14px;
+  opacity: 0;
+  overflow: hidden;
+  transition: opacity 0.3s ease 0.14s;
+}
+.browser-drawer.is-open .pill-search { opacity: 1; pointer-events: auto; }
+.pill-glass {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: rgba(43, 48, 56, 0.5);
+}
+.pill-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  outline: 0;
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: #2b3038;
+}
+.pill-search input::placeholder { color: rgba(43, 48, 56, 0.4); }
+
+/* ---- 浏览器视口 --------------------------------------------------------- */
+/* 顶部空出工具栏的高度，网页从它下面开始，不会被挡住。 */
+.browser-view {
+  position: absolute;
+  top: var(--chrome-h);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 0;
+  overflow: hidden;
+  background: #f6f7f9;
+}
+.browser-webview {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+iframe.browser-webview { display: block; }
+
+.browser-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 6;
+  display: block;
+  width: 34%;
+  height: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--withu-accent, #ff6a12);
+  animation: drawer-progress 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes drawer-progress {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(320%); }
+}
+
+.browser-failed {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(246, 247, 249, 0.96);
+  color: #77736b;
+  font-size: 13px;
+}
+.browser-failed p { margin: 0; }
+.browser-failed button {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 7px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  background: #fff;
+  color: #1b1a17;
+  cursor: pointer;
+}
+.browser-failed button:hover { background: #f5f3ef; }
+
+/* ---- 深色主题 ----------------------------------------------------------- */
+[data-theme="dark"] .browser-sheet,
+[data-theme="dark"] .browser-view { background: #171617; }
+[data-theme="dark"] .browser-failed { background: rgba(23, 22, 23, 0.96); color: #8b877e; }
+[data-theme="dark"] .browser-failed button { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #ece8df; }
+
+[data-theme="dark"] .pill-x,
+[data-theme="dark"] .pill-full,
+[data-theme="dark"] .pill-nav,
+[data-theme="dark"] .pill-search {
+  border-color: rgba(255, 255, 255, 0.26);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 52%, rgba(255, 255, 255, 0.12) 100%),
+    rgba(24, 24, 26, 0.44);
+  color: #f4f0e8;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.42),
+    0 2px 5px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .pill-trigger {
+  background: rgba(255, 255, 255, 0.26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .browser-drawer:not(.is-open) .browser-pill:hover .pill-trigger { background: rgba(255, 255, 255, 0.42); }
+[data-theme="dark"] .pill-nav button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.16); }
+[data-theme="dark"] .pill-nav button:active:not(:disabled) { background: rgba(255, 255, 255, 0.24); }
+[data-theme="dark"] .browser-drawer.is-open .pill-x:hover,
+[data-theme="dark"] .browser-drawer.is-open .pill-full:hover { background-color: rgba(255, 255, 255, 0.16); }
+[data-theme="dark"] .pill-glass { color: rgba(255, 255, 255, 0.6); }
+[data-theme="dark"] .pill-search input { color: #f2eee6; }
+[data-theme="dark"] .pill-search input::placeholder { color: rgba(255, 255, 255, 0.42); }
+
+@media (prefers-reduced-motion: reduce) {
+  .browser-sheet, .browser-pill, .pill-trigger, .pill-x, .pill-full, .pill-nav, .pill-search { transition-duration: 0.01ms !important; }
+  .browser-progress { animation: none; width: 100%; }
+}
+
+/* 输入区弹出卡片（思考强度、会话统计…）时，指示条整体让位：
+   卡片已经压在它上面，剩下露在边上的那一小截会像渲染错误。 */
+.workspace-stage:has(.composer-region .popover) .browser-drawer:not(.is-open) .browser-pill {opacity: 0;}
+.workspace-stage:has(.composer-region .popover) .browser-drawer:not(.is-open) .pill-trigger {pointer-events: none;}
+
+/* MCP App 模式：抽屉面板里直接渲染 MCP App 会话（与消息内同一个会话组件，
+   审批、意图回传照常可用），铺满面板，收起抽屉即切回网页。 */
+.browser-app-host {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  background: var(--withu-stage);
+}
+.browser-app-host .withu-mcp-host {
+  flex: 1;
+  min-height: 0;
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/relationship-summary",
+  "title": "relationship-summary",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "time_from",
+    "time_to",
+    "source_evidence_ids",
+    "valid_to",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string"
+    },
+    "time_from": {
+      "type": "string"
+    },
+    "time_to": {
+      "type": "string"
+    },
+    "source_evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "valid_to": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

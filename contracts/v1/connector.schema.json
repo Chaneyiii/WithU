@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/connector",
+  "title": "connector",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "connector_id",
+    "capabilities",
+    "permission_state",
+    "credential_ref",
+    "last_checked_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "connector_id": {
+      "type": "string"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "permission_state": {
+      "enum": [
+        "always_allow",
+        "needs_approval",
+        "blocked"
+      ]
+    },
+    "credential_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_checked_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

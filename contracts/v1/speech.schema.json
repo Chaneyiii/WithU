@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/speech",
+  "title": "speech",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "state",
+    "backend_ref",
+    "turn_id",
+    "config_version",
+    "audio_cleanup_complete"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "idle",
+        "listening",
+        "thinking",
+        "speaking",
+        "interrupted",
+        "reconnecting",
+        "degraded",
+        "ended"
+      ]
+    },
+    "backend_ref": {
+      "type": "string"
+    },
+    "turn_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "audio_cleanup_complete": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

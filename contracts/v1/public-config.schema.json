@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/public-config",
+  "title": "PublicProviderConfig",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "config_version",
+    "providers",
+    "defaults",
+    "model_overrides",
+    "speech_preferences"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "provider_id": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "llm",
+                "realtime"
+              ]
+            }
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "service": {
+            "enum": [
+              "llm",
+              "realtime"
+            ]
+          }
+        },
+        "required": [
+          "provider_id",
+          "endpoint",
+          "protocol",
+          "capabilities",
+          "service"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "required": [
+        "llm",
+        "realtime"
+      ],
+      "properties": {
+        "llm": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "realtime": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "model_overrides": {
+      "type": "object",
+      "properties": {
+        "llm": {
+          "type": "object",
+          "properties": {
+            "provider_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "model_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reasoning_effort": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 24
+            }
+          },
+          "required": [
+            "provider_ref",
+            "model_ref"
+          ],
+          "additionalProperties": false
+        },
+        "realtime": {
+          "type": "object",
+          "properties": {
+            "provider_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "model_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "provider_ref",
+            "model_ref"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "speech_preferences": {
+      "type": "object",
+      "properties": {
+        "realtime": {
+          "type": "object",
+          "properties": {
+            "voice_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

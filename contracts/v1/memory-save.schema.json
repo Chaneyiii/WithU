@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/memory-save",
+  "title": "memory-save-request",
+  "type": "object",
+  "required": ["schema_version", "scope", "subject", "content", "kind", "explicit_save_permission", "expected_state_version"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "scope": {"type": "string", "minLength": 1, "maxLength": 128},
+    "subject": {"type": "string", "minLength": 1, "maxLength": 120},
+    "content": {"type": "string", "minLength": 1, "maxLength": 1800},
+    "kind": {"enum": ["stable_fact", "explicit_preference", "explicit_experience"]},
+    "explicit_save_permission": {"const": true},
+    "expected_state_version": {"type": "integer", "minimum": 0}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/life-information-source",
+  "title": "D5 local information source",
+  "type": "object",
+  "required": ["schema_version", "source_id", "scope", "version", "observed_at", "verified", "title", "content"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "source_id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "version": { "type": "integer", "minimum": 1 },
+    "observed_at": { "type": "integer", "minimum": 1 },
+    "verified": { "type": "boolean" },
+    "title": { "type": "string" },
+    "content": { "type": "string" }
+  },
+  "additionalProperties": false
+}

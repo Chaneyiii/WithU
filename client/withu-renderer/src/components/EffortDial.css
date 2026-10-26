@@ -1,0 +1,208 @@
+/* ==========================================================================
+   思考能力滑杆 —— 复刻参考视频里的 effort dial，但把深色卡片换成白色皮肤。
+   参考稿是 640px 宽的深色卡片（轨道 445×44、刻度点 3px、大脑 44px、
+   内边距 24px），这里全部改成相对单位，塞进模型弹层也不会变形。
+   卡片本身就是弹层里唯一的一层壳，外面不再套第二层白框。
+   ========================================================================== */
+
+.effort-dial {
+  --ed-h: 28px;            /* 轨道高度，参考 44 × (288/445) */
+  --ed-brain: 30px;        /* 大脑直径，参考 44 × (288/445) */
+  --ed-ink: var(--text-primary, #111112);
+  --ed-dim: var(--text-secondary, #8a8a8c);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 15px 12px;
+  border: 1px solid var(--fill-divider, #e8e8e6);
+  border-radius: 16px;
+  background: var(--fill-primary, #ffffff);
+  color: var(--ed-ink);
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(30, 25, 16, 0.1), 0 2px 6px rgba(30, 25, 16, 0.05);
+  isolation: isolate;
+}
+
+.effort-dial.is-disabled { opacity: 0.62; pointer-events: none; }
+.ed-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* 模型名放在「思考强度」上面，和滑杆同属一张卡片，不再另起一行列表。 */
+.ed-model {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: -2px;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0.02em;
+  color: var(--ed-dim);
+}
+.ed-model::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ff6a12;
+  box-shadow: 0 0 0 2px #ffeadb;
+}
+
+/* 弹层里有通用的 strong 下内边距和 header 居中规则，这里必须显式压掉，
+   否则「高」会比「思考强度」高半个字。 */
+.effort-dial .ed-head { display: flex; align-items: baseline; gap: 9px; }
+.effort-dial .ed-value {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--ed-ink);
+}
+.ed-label { font-size: 15px; line-height: 20px; font-weight: 400; color: var(--ed-dim); letter-spacing: 0.01em; }
+.ed-help {
+  margin-left: auto;
+  width: 17px; height: 17px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ed-dim) 45%, transparent);
+  color: var(--ed-dim);
+  font-size: 10px;
+  line-height: 1;
+  align-self: center;
+  cursor: help;
+}
+
+.ed-ends { display: flex; justify-content: space-between; padding: 0 2px; color: var(--ed-dim); font-size: 12px; line-height: 16px; }
+
+/* ---- 轨道 -------------------------------------------------------------- */
+.ed-track {
+  position: relative;
+  height: var(--ed-h);
+  border-radius: 999px;
+  background: #f4f3f1;
+  box-shadow: inset 0 0 0 1px #ecebea;
+}
+
+.ed-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--ed-brain) + (100% - var(--ed-brain)) * var(--ed-ratio));
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f7f1ff 0%, #ead9ff 52%, #e2c9ff 78%, #f0d5f6 100%);
+  transition: width 0.24s cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+
+/* ---- 刻度与推荐位 ------------------------------------------------------ */
+.ed-dots {
+  position: absolute;
+  inset: 0 var(--ed-brain) 0 calc(var(--ed-brain) / 2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.ed-dots i { width: 3px; height: 3px; border-radius: 50%; background: #cfcecd; transition: background 0.2s, opacity 0.2s; }
+.ed-dots i.is-lit { background: #b073e8; opacity: 0.8; }
+/* 当前档位的点被脑柄盖住：脑图标的透明边缘会把它从旁边漏出来，直接隐藏。 */
+.ed-dots i.is-hidden { opacity: 0; }
+
+/* 参考里第一个档位旁边有一条固定的推荐竖条，下面的 Recommended 指的就是它 */
+.ed-recommend {
+  position: absolute;
+  left: calc(var(--ed-brain) / 2 + 1px);
+  top: 50%;
+  width: 2px;
+  height: 34%;
+  border-radius: 2px;
+  background: #c9c8c6;
+  transform: translateY(-50%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* ---- 大脑把手 ---------------------------------------------------------- */
+.ed-brain { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 5px rgba(196, 64, 156, 0.32)); transition: filter 0.34s; }
+/* 参考里到达极高/最高档时大脑会从品红转为蓝紫，两套色叠着做交叉淡入。 */
+.ed-layer { transition: opacity 0.34s cubic-bezier(0.32, 0.72, 0.24, 1); }
+.ed-layer-hot { opacity: 0; }
+.effort-dial.is-hot .ed-layer-pink { opacity: 0; }
+.effort-dial.is-hot .ed-layer-hot { opacity: 1; }
+.effort-dial.is-hot .ed-brain { filter: drop-shadow(0 2px 6px rgba(104, 72, 232, 0.42)); }
+
+.ed-thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--ed-brain) / 2 + (100% - var(--ed-brain)) * var(--ed-ratio));
+  width: var(--ed-brain);
+  height: var(--ed-brain);
+  transform: translate(-50%, -50%);
+  transition: left 0.24s cubic-bezier(0.32, 0.72, 0.24, 1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+
+
+/* 原生 input 叠在上面负责拖拽和键盘，视觉全部由上面的图层承担 */
+.ed-range {
+  position: absolute;
+  inset: calc(var(--ed-brain) / -2) 0;
+  width: 100%;
+  height: calc(100% + var(--ed-brain));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  opacity: 0;
+  z-index: 3;
+}
+.ed-range::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 24px; height: 24px; }
+.ed-range::-moz-range-thumb { width: 24px; height: 24px; border: 0; }
+
+.ed-caption {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ed-dim);
+  padding-left: calc(var(--ed-brain) / 2 + 2px);
+}
+
+/* 没有可调档位时仍用同一张卡，只写一行说明，不另起一个界面。 */
+.effort-dial.is-simple { gap: 6px; }
+.ed-simple-note { margin: 0; font-size: 12px; line-height: 18px; color: var(--ed-dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  .effort-dial *, .effort-dial *::after { animation: none !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---- 暗色皮肤 ----------------------------------------------------------- */
+/* 轨道原来是写死的浅灰，深色卡片上会变成一条突兀的白条；
+   暗色下整条滑杆改成半透明白玻璃，填充用低透明度的紫，跟卡片融成一层。 */
+[data-theme="dark"] .effort-dial {
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .ed-track {
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+}
+[data-theme="dark"] .ed-fill {
+  background: linear-gradient(
+    90deg,
+    rgba(150, 112, 255, 0.26) 0%,
+    rgba(170, 126, 255, 0.42) 52%,
+    rgba(192, 134, 255, 0.54) 78%,
+    rgba(214, 124, 240, 0.46) 100%
+  );
+}
+[data-theme="dark"] .ed-dots i { background: rgba(255, 255, 255, 0.24); }
+[data-theme="dark"] .ed-dots i.is-lit { background: #cba6ff; opacity: 0.95; }
+[data-theme="dark"] .ed-recommend { background: rgba(255, 255, 255, 0.32); }
+[data-theme="dark"] .ed-model::before { box-shadow: 0 0 0 2px rgba(255, 106, 18, 0.2); }
+[data-theme="dark"] .ed-brain { filter: drop-shadow(0 2px 6px rgba(214, 92, 190, 0.45)); }

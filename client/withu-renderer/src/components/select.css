@@ -1,0 +1,90 @@
+/* ==========================================================================
+   应用内下拉选择：一条胶囊 + 一张浮层，替掉 Windows 原生 select 菜单。
+   颜色全部走主题变量，浅色是白玻璃、深色是深玻璃，和侧栏/设置卡同一套。
+   ========================================================================== */
+
+.withu-select {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.withu-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 92px;
+  height: 32px;
+  padding: 0 10px 0 12px;
+  justify-content: space-between;
+  border: 1px solid var(--fill-divider);
+  border-radius: 10px;
+  background: var(--fill-primary-elevated);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.withu-select-trigger:hover:not(:disabled) { background: var(--fill-secondary-elevated); }
+.withu-select-trigger .icon { color: var(--text-secondary); transition: transform 0.18s ease; }
+.withu-select.is-open .withu-select-trigger .icon { transform: rotate(180deg); }
+.withu-select-trigger:disabled { opacity: 0.55; cursor: default; }
+
+.withu-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 100%;
+  padding: 5px;
+  border: 1px solid var(--fill-divider);
+  border-radius: 12px;
+  background: var(--fill-primary-elevated);
+  box-shadow: 0 10px 30px rgba(17, 17, 18, 0.14), 0 2px 6px rgba(17, 17, 18, 0.08);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  animation: withu-select-in 0.12s ease-out;
+}
+.withu-select.is-left .withu-select-menu { right: auto; left: 0; }
+
+@keyframes withu-select-in {
+  from { translate: 0 -3px; scale: 0.985; }
+  to { translate: 0 0; scale: 1; }
+}
+
+.withu-select-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.withu-select-menu button:hover { background: var(--fill-secondary-elevated-hover); }
+.withu-select-menu button.active { font-weight: 600; }
+.withu-select-menu button.active .icon { color: #3298ff; }
+
+[data-theme="dark"] .withu-select-trigger { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1); }
+[data-theme="dark"] .withu-select-trigger:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); }
+[data-theme="dark"] .withu-select-menu { background: #26262a; border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55); }
+[data-theme="dark"] .withu-select-menu button:hover { background: rgba(255, 255, 255, 0.08); }
+
+/* 浮层挂在 body 上，坐标由组件量好写进 inline style。
+   设置卡是 overflow:hidden，只有门户版才不会被裁掉。 */
+.withu-select-menu.is-floating {
+  position: fixed;
+  right: auto;
+  z-index: 220;
+}

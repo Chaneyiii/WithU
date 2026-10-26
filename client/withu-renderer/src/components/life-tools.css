@@ -1,0 +1,40 @@
+
+.life-tools{position:relative;z-index:2;width:min(var(--chat-content-width),calc(100% - 32px));margin:64px auto 8px;border:1px solid var(--fill-divider);border-radius:12px;background:var(--fill-primary-elevated);text-align:left}
+.life-tools-toggle{width:100%;min-height:40px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;font-size:13px;font-weight:550}
+.life-tools-toggle:hover{background:var(--fill-secondary-elevated);border-radius:15px}
+.life-tools-toggle span,.life-tools small{color:var(--text-secondary);font-size:12px;font-weight:400}
+.life-tools-content{padding:0 12px 12px;max-height:min(58vh,calc(100vh - 190px));overflow:auto}
+.life-tools-content>p{font-size:12px;line-height:18px;color:var(--text-secondary);margin:0 0 12px}
+.life-tools form{display:grid;gap:10px}
+.life-tools label{display:grid;gap:5px;font-size:12px;color:var(--text-secondary)}
+.life-tools textarea,.life-tools input,.life-tools select{width:100%;padding:8px 10px;border:1px solid var(--fill-divider);border-radius:8px;max-width:100%;background:var(--fill-primary);color:var(--text-primary);font-size:13px}
+.life-tools textarea{min-height:60px;resize:vertical}
+.life-tools form>button,.life-tools-content>button,.life-saved button,.life-tools details button{min-height:32px;padding:6px 12px;border-radius:8px;background:var(--fill-secondary-elevated);font-size:12px}
+.life-tools form>button:first-of-type{background:var(--fill-blue);color:var(--text-on-accent)}
+.life-tools button:hover:not(:disabled){filter:brightness(.96)}
+.life-tools button:disabled{opacity:.45}
+.life-saved{display:grid;gap:8px;margin:14px 0}
+.life-saved article{border-top:1px solid var(--fill-divider);padding-top:10px;display:grid;gap:5px;overflow-wrap:anywhere}
+.life-saved article strong{font-size:13px;font-weight:500}
+.life-saved article p{font-size:12px;line-height:17px;color:var(--text-secondary)}
+.life-saved article small{font-size:11px}
+.life-saved article div{display:flex;gap:6px}
+.life-approval{margin-top:12px;padding-top:12px;border-top:1px solid var(--fill-divider)}
+.life-approval-summary strong{font-size:13px;font-weight:550}
+.life-approval-summary p{margin:4px 0 8px;font-size:12px;color:var(--text-secondary)}
+.life-approval details{margin-top:8px}
+.life-approval summary,.life-tools details summary{cursor:pointer;color:var(--text-secondary);font-size:12px}
+.life-approval pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;line-height:16px;padding:8px;margin:8px 0 0;background:var(--fill-code-block);border-radius:8px}
+.life-tools .intelligent-surface{padding:4px 0;max-width:100%}
+.life-tools .intelligent-surface-header{display:none}
+.life-tools-content>p[role=status]{white-space:pre-wrap;overflow-wrap:anywhere}
+.life-tools-content>details{margin-top:12px;padding-top:10px;border-top:1px solid var(--fill-divider)}
+.life-tools-content>details label{margin-top:8px}
+.life-tools-content>details button{margin:8px 6px 0 0}
+.chat-view:has(.life-tools) .chat-messages{padding-top:0}
+
+@media (max-width:560px){
+  .life-tools{width:calc(100% - 24px);margin-top:58px}
+  .life-tools-toggle span{max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .life-tools-content{max-height:calc(100vh - 170px)}
+}

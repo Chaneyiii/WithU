@@ -1,0 +1,28 @@
+{
+  "auditDate": "2026-10-20",
+  "branch": "main",
+  "head": "8c8fd024f87ffcf6dacffa3360c4b6fdbedd0c41",
+  "baseline": "a092229",
+  "freeze": "621f9822058388bc3dffc8747fedaf2863949cbd",
+  "baselineToFreeze": " 77 files changed, 2145 insertions(+), 241 deletions(-)",
+  "freezeToHeadFiles": [
+    "docs/delivery-manifest-2026-10-18.json",
+    "docs/delivery-sha256-2026-10-18.txt",
+    "docs/demo-handover-report-2026-10-18.md",
+    "docs/demobuddy-file-index-2026-10-18.md",
+    "docs/superpowers/plans/2026-10-18-demo-sequential-closeout.md"
+  ],
+  "exe": {
+    "path": "output/p1/windows/Withu-win32-x64/Withu.exe",
+    "sha256": "cedf5ceb547ade7fddf67318145b378a78faff0cf10471059effa59a54dd3f8b",
+    "bytes": 246316032,
+    "fileVersion": "0.3.1-go.1",
+    "productVersion": "0.3.1-go.1",
+    "numericFileVersion": "0.3.1.1",
+    "numericProductVersion": "0.3.1.1"
+  },
+  "canonicalVerificationLogPresent": false,
+  "currentPackageFiles": [
+    "Withu.exe"
+  ]
+}

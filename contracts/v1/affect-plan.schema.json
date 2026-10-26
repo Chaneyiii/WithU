@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/affect-plan",
+  "title": "affect-plan",
+  "type": "object",
+  "required": ["schema_version", "conversation_id", "turn_id", "stated_need", "boundary"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "conversation_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "turn_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "stated_need": {
+      "type": ["string", "null"],
+      "enum": ["listening", "emotional_confirmation", "companionship", "shared_quiet", "distraction", "advice", "transaction_help", "pause_interaction", null]
+    },
+    "boundary": {"type": ["string", "null"], "maxLength": 500}
+  },
+  "additionalProperties": false
+}

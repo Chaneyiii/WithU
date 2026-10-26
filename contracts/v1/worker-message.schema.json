@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/worker-message",
+  "title": "worker-message",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "sender_id",
+    "recipient_id",
+    "task_version",
+    "authorization_version",
+    "context_ref",
+    "result_candidate_ref"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "sender_id": {
+      "type": "string"
+    },
+    "recipient_id": {
+      "type": "string"
+    },
+    "task_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "authorization_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "context_ref": {
+      "type": "string"
+    },
+    "result_candidate_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

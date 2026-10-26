@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/proactive-feed-item",
+  "title": "eligible proactive feed item",
+  "type": "object",
+  "required": ["schema_version", "candidate_id", "source", "scope", "created_at", "expires_at", "title", "body"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "integer", "minimum": 0 },
+    "expires_at": { "type": "integer", "minimum": 1 },
+    "title": { "type": "string" },
+    "body": { "type": "string" }
+  },
+  "additionalProperties": false
+}

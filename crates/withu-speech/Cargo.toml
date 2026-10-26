@@ -1,0 +1,9 @@
+[package]
+name = "withu-speech"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+withu-runtime = { path = "../withu-runtime" }
+
+serde_json = "1"

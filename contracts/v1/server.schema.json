@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/server",
+  "title": "server",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "server_id",
+    "pid",
+    "bind_address",
+    "port",
+    "started_at",
+    "client_session_id",
+    "lifecycle",
+    "shutdown_requested_at",
+    "shutdown_completed_at",
+    "exit_reason",
+    "transport"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "server_id": {
+      "type": "string"
+    },
+    "pid": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "bind_address": {
+      "type": "null"
+    },
+    "port": {
+      "type": "null"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "client_session_id": {
+      "type": "string"
+    },
+    "lifecycle": {
+      "enum": [
+        "starting",
+        "ready",
+        "draining",
+        "stopped",
+        "failed"
+      ]
+    },
+    "shutdown_requested_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shutdown_completed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "exit_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transport": {
+      "const": "stdio"
+    }
+  },
+  "additionalProperties": false
+}

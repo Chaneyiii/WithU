@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/schedule-policy",
+  "title": "scheduler policy limits",
+  "type": "object",
+  "required": ["schema_version", "max_concurrent", "budget_units", "max_retries", "rate_limit", "rate_window_seconds"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "max_concurrent": { "type": "integer", "minimum": 1 },
+    "budget_units": { "type": "integer", "minimum": 1 },
+    "max_retries": { "type": "integer", "minimum": 0 },
+    "rate_limit": { "type": "integer", "minimum": 1 },
+    "rate_window_seconds": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

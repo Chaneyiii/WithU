@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/surface-state",
+  "title": "Withu intelligent UI surface state",
+  "type": "object",
+  "required": ["schema_version", "surface_id", "block_id", "state", "state_version", "source_status_version", "visibility", "action_ref", "updated_at"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "surface_id": { "type": "string", "minLength": 1 },
+    "block_id": { "type": "string", "minLength": 1 },
+    "state": { "enum": ["loading", "ready", "pending_approval", "applied", "failed", "expired", "closed", "recovering"] },
+    "state_version": { "type": "integer", "minimum": 1 },
+    "source_status_version": { "type": "integer", "minimum": 1 },
+    "visibility": { "enum": ["conversation", "turn", "private_preview"] },
+    "action_ref": {
+      "type": ["object", "null"],
+      "required": ["action_id", "expected_revision", "approval_ref", "idempotency_key", "cancel_token", "expires_at"],
+      "properties": {
+        "action_id": { "type": "string", "minLength": 1 },
+        "expected_revision": { "type": "integer", "minimum": 1 },
+        "approval_ref": { "type": ["string", "null"] },
+        "idempotency_key": { "type": "string", "minLength": 1 },
+        "cancel_token": { "type": "string", "minLength": 1 },
+        "expires_at": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "receipt": { "type": ["object", "null"] },
+    "updated_at": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

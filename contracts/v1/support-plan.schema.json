@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/support-plan",
+  "title": "support-plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "turn_id",
+    "primary_action",
+    "secondary_option",
+    "permission_needed",
+    "language_constraints",
+    "presence_cues",
+    "creates_task",
+    "specialist_dispatched"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "turn_id": {
+      "type": "string"
+    },
+    "primary_action": {
+      "enum": [
+        "reflect_confirm",
+        "listen",
+        "accompany",
+        "shared_quiet",
+        "clarify",
+        "distract",
+        "advice",
+        "transaction",
+        "pause_interaction"
+      ]
+    },
+    "secondary_option": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "reflect_confirm",
+        "listen",
+        "accompany",
+        "shared_quiet",
+        "clarify",
+        "distract",
+        "advice",
+        "transaction",
+        "pause_interaction",
+        null
+      ]
+    },
+    "permission_needed": {
+      "type": "boolean"
+    },
+    "language_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "presence_cues": {
+      "type": "object",
+      "required": ["pace", "pause", "intensity"],
+      "properties": {
+        "pace": {"type": ["string", "null"]},
+        "pause": {"type": ["string", "null"]},
+        "intensity": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "creates_task": {
+      "type": "boolean"
+    },
+    "specialist_dispatched": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

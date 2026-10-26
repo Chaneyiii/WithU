@@ -1,0 +1,256 @@
+.withu-tooltip {
+  position: fixed;
+  z-index: 200;
+  pointer-events: none;
+  width: max-content;
+  max-width: 240px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--fill-blur-thick);
+  backdrop-filter: blur(60px);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 16px;
+  box-shadow:
+    0 4px 12px #1111121f,
+    0 6px 24px #11111214;
+  animation: tooltip-in 0.12s ease-out;
+}
+.withu-tooltip.top {
+  transform: translate(-50%, -100%);
+}
+.withu-tooltip.bottom {
+  transform: translateX(-50%);
+}
+.withu-tooltip.right {
+  transform: translateY(-50%);
+}
+/* 会话信息卡：文件夹图标 + 名字一行，下面接路径、消息数、最近活动。 */
+.withu-tooltip.session-info-tooltip {
+  max-width: 264px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.session-tip-head { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+.session-tip-head .icon { color: var(--text-secondary); flex: none; }
+.session-tip-path,
+.session-tip-meta { color: var(--text-secondary); font-size: 11px; line-height: 15px; word-break: break-all; }
+.session-tip-time { display: flex; align-items: center; gap: 5px; margin-top: 3px; color: var(--text-secondary); font-size: 11px; line-height: 15px; }
+.session-tip-time .icon { flex: none; }
+[data-theme="dark"] .session-tip-path,
+[data-theme="dark"] .session-tip-meta,
+[data-theme="dark"] .session-tip-time,
+[data-theme="dark"] .session-tip-head .icon { color: rgba(255, 255, 255, 0.6); }
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.chat-hover-preview {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  bottom: 8px;
+  height: auto;
+  width: 300px;
+  max-width: calc(100% - 16px);
+  border: 1px solid var(--fill-divider);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 12px #1111121f,
+    0 6px 24px #11111214;
+  background: var(--bg-secondary);
+  z-index: 35;
+}
+.composer textarea:focus-visible {
+  outline: none;
+}
+.speech-unavailable-text-hidden {
+  display: none;
+}
+.speech-unavailable-strip {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 4px 0;
+}
+.speech-unavailable-strip > span {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.speech-unavailable-strip canvas {
+  height: 24px;
+  min-width: 0;
+  flex: 1;
+  color: var(--withu-accent);
+}
+.speech-unavailable-strip small {
+  position: absolute;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.speech-unavailable-interim {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+}
+.identity-special-files {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.identity-file-card {
+  position: relative;
+  border-radius: 22px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  overflow: hidden;
+  text-align: left;
+  color: white;
+}
+.identity-file-card:hover {
+  opacity: 0.9;
+}
+.identity-file-card:active {
+  opacity: 0.8;
+}
+.identity-card-gradient {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+.identity-file-card > div:not(.identity-card-gradient),
+.identity-file-card footer {
+  position: relative;
+  z-index: 1;
+}
+.identity-file-card strong {
+  display: block;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.identity-file-card small {
+  display: block;
+  font:
+    400 10px/12px ui-monospace,
+    monospace;
+  margin-top: 2px;
+  color: #ffffffc2;
+}
+.identity-file-card footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffffc2;
+  font:
+    400 14px/16px ui-monospace,
+    monospace;
+}
+.identity-file-card footer .icon {
+  color: #ffffff8a;
+}
+.identity-file-card footer .icon svg {
+  width: 18px;
+  height: 18px;
+}
+.identity-file-editor {
+  width: 100%;
+  min-height: 320px;
+  font:
+    14px/22px ui-monospace,
+    monospace;
+  white-space: pre-wrap;
+  padding: 12px;
+  border: 1px solid var(--fill-divider);
+  border-radius: 12px;
+}
+.activity-scroll .identity-special-files {
+  margin-bottom: 12px;
+}
+.toast {
+  bottom: 100px;
+  pointer-events: none;
+}
+.modal:has(.shortcut-section) > header h2 {
+  font-size: 18px;
+  line-height: 26px;
+}
+.shortcut-section h3 {
+  font-size: 13px;
+  line-height: 20px;
+}
+.shortcut-section > div {
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 34px;
+}
+.shortcut-section kbd {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 400;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+  background: var(--fill-secondary-elevated);
+  box-shadow: 0 1px 2px #11111214, inset 0 1px 0 #ffffff40;
+}
+@media (prefers-reduced-motion: reduce) {
+  .withu-tooltip {
+    animation: none;
+  }
+  .popover {
+    animation: none;
+  }
+  .withu-session-row,
+  .sidebar-row,
+  .row-delete,
+  .new-chat,
+  .section-toggle,
+  .sidebar-search,
+  .mode-heading > button,
+  .project-row,
+  .topbar-trigger,
+  .topbar-chevrons,
+  button.topbar-tool-pill,
+  .topbar-tool-btn,
+  .chat-heading-actions .icon-button,
+  .sidebar-item,
+  .mode-switcher-menu button,
+  .capsule-footer,
+  .capsule-card-dismiss {
+    transition: none;
+  }
+  .capsule-panel,
+  .mode-switcher-menu {
+    animation: none;
+  }
+  .speech-unavailable-strip canvas {
+    display: none;
+  }
+  .speech-unavailable-strip small {
+    position: static;
+    clip-path: none;
+    width: auto;
+    height: auto;
+  }
+}

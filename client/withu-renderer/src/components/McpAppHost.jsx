@@ -1,0 +1,132 @@
+import {useEffect, useRef, useState} from 'react';
+import {AppBridge} from '@modelcontextprotocol/ext-apps/app-bridge';
+import appResource from 'virtual:withu-mcp-app-resource';
+import {createDemoMcpFixture, makeAppDocument, validateAppSize} from '../../../withu-mcp-app/src/fixture.js';
+import {appIframePolicy, createGuardedAppTransport, invokeD4AppIntent} from '../../../withu-mcp-app/src/host.js';
+import {mediaCoordinator} from '../../../withu-mcp-app/src/media.js';
+import {desktopBridge} from '../desktop-bridge';
+import {t} from '../i18n';
+import './mcp-app-host.css';
+
+// Mount one instance per host view. Unmounting revokes the session immediately.
+// This entry is a bundled local MCP server/App, not an external connector.
+// `variant="inline"` renders the same session as an in-message card inside the
+// Intelligence UI canvas instead of a separate window.
+export default function McpAppHost({onClose, proposalContext, variant = 'standalone'}) {
+  const inline = variant === 'inline';
+  const curtain = variant === 'curtain';
+  const mount = useRef(null);
+  const active = useRef(null);
+  const [status, setStatus] = useState(t('正在连接本地 MCP App…'));
+  const [pending, setPending] = useState(null);
+  const [receipt, setReceipt] = useState(null);
+  const consent = useRef(null);
+  const props = useRef({onClose, proposalContext});
+  props.current = {onClose, proposalContext};
+  useEffect(() => {
+    const sessionId = crypto.randomUUID();
+    active.current = sessionId;
+    let fixture, bridge, frame, timer, unsubscribeMedia, destroyed = false, loaded = false;
+    const live = () => !destroyed && active.current === sessionId;
+    const stop = async () => {
+      if (destroyed) return;
+      destroyed = true;
+      active.current = null;
+      clearTimeout(timer);
+      unsubscribeMedia?.();
+      consent.current?.('deny');
+      consent.current = null;
+      frame?.remove();
+      // Revoke source/session before closing SDK transports so queued traffic
+      // cannot submit a request while the React view is being torn down.
+      await bridge?.close().catch(() => {});
+      await fixture?.close();
+    };
+    void (async () => {
+      try {
+        fixture = await createDemoMcpFixture({resourceHtml: appResource, invokeHostIntent: async intent => {
+          const result = await invokeD4AppIntent(intent, desktopBridge(), {...props.current.proposalContext,
+            isActive:live,
+            requestApproval: preview => {
+              if (!live() || consent.current) throw new Error('Host approval is already pending or expired');
+              setPending(preview);
+              return new Promise(resolve => {consent.current = resolve;});
+            },
+          });
+          if (live()) setReceipt(result.structuredContent);
+          return result;
+        }});
+        if (!live()) { await fixture.close(); return; }
+        if (!fixture.negotiated) throw new Error('MCP Apps capability negotiation failed');
+        const read = await fixture.client.readResource({uri: fixture.resourceUri});
+        const resource = read.contents.find(item => item.uri === fixture.resourceUri && item.mimeType === 'text/html;profile=mcp-app');
+        if (!resource || !live()) throw new Error('MCP App resource unavailable');
+        const nonce = crypto.randomUUID().replaceAll('-', '');
+        const document = makeAppDocument(resource.text, nonce);
+        frame = window.document.createElement('iframe');
+        frame.name = 'withu-mcp-app';
+        frame.setAttribute('aria-label', 'Withu local MCP App');
+        for (const [key, value] of Object.entries(appIframePolicy)) frame.setAttribute(key === 'referrerPolicy' ? 'referrerpolicy' : key, value);
+        frame.addEventListener('load', () => {
+          if (!frame.srcdoc) return;
+          if (loaded) { if (live()) setStatus(t('App 导航已被阻止；重新打开以重连')); void stop(); }
+          loaded = true;
+        });
+        mount.current.append(frame);
+        const source = frame.contentWindow;
+        const transport = createGuardedAppTransport({source, sessionId, activeSession: () => active.current});
+        bridge = new AppBridge(fixture.client, {name: 'Withu Comfort', version: '1.0.0'}, {serverTools: {}}, {strict: true});
+        bridge.oninitialized = () => {
+          if (!live()) return;
+          unsubscribeMedia?.();
+          unsubscribeMedia = mediaCoordinator.subscribe(value => bridge.setHostContext({withuMedia:value}));
+          clearTimeout(timer);
+          setStatus(t('本地 MCP App 已连接 · 操作需在 Withu 审批'));
+        };
+        bridge.onsizechange = size => {
+          if (live() && validateAppSize(size)) frame.style.height = `${size.height}px`;
+        };
+        bridge.onopenlink = async () => ({isError: true});
+        bridge.onrequestteardown = () => { void stop(); props.current.onClose?.(); };
+        await bridge.connect(transport);
+        if (!live()) { await bridge.close(); return; }
+        timer = setTimeout(() => { if (live()) {setStatus(t('MCP App 握手超时；重新打开可重试')); void stop();} }, 10_000);
+        frame.srcdoc = document;
+      } catch (error) {
+        if (live()) setStatus(t('MCP App 不可用') + `: ${error.message}`);
+        await stop();
+      }
+    })();
+    return () => { void stop(); };
+  }, []);
+
+  const decide = decision => {
+    const resolve = consent.current;
+    consent.current = null;
+    setPending(null);
+    resolve?.(decision);
+  };
+
+  return <section className={'withu-mcp-host' + (inline ? ' is-inline' : '') + (curtain ? ' is-curtain' : '')} aria-label="Withu MCP App host">
+    {!curtain && <header>
+      <div>
+        <strong>{inline ? 'MCP App' : 'Withu Local MCP App'}</strong>
+        {inline ? <p className="withu-mcp-inline-status" role="status">{status}</p> : <p>{t('本地标准 MCP App · 未连接第三方账号或服务')}</p>}
+      </div>
+      {onClose && <button type="button" onClick={onClose}>{t('关闭')}</button>}
+    </header>}
+    {!inline && !curtain && <p role="status">{status}</p>}
+    {curtain && <p className="withu-mcp-curtain-status" role="status">{status}</p>}
+    {pending && <section className="withu-mcp-approval" aria-label="Withu host action approval">
+      <strong>确认本次本地操作</strong>
+      <p>{pending.plan?.goal?.description || '将保存一条本地注记'}。影响范围：仅这台设备，不连接第三方服务。</p>
+      <p>保存内容：{String(pending.plan?.actions?.[0]?.parameters?.value?.value ?? pending.plan?.actions?.[0]?.parameters?.value ?? '请展开详情核对内容')}</p>
+      <button type="button" onClick={() => decide('allow_once')}>Allow once · 仅允许这次</button>
+      <button type="button" onClick={() => decide('deny')}>拒绝</button>
+      <details><summary>查看技术详情</summary><pre>{JSON.stringify(pending, null, 2)}</pre></details>
+    </section>}
+    {receipt && <p className="withu-mcp-receipt" role="status">{receipt.status === 'applied' && receipt.effect_committed ? '已完成：本地操作已保存。' : '未完成：没有写入本地内容。'}</p>}
+    <div className="withu-mcp-frame" ref={mount}/>
+    {!inline && !curtain && <footer>{t('操作请求仅进入可信 host 的 typed intent 边界。缺少 D4 RPC 或已提交的用户消息证据时不提交操作。成功仅以 D4 receipt 为准。')}</footer>}
+  </section>;
+}

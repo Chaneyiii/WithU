@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/reply-start",
+  "title": "reply-start",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "conversation_id",
+    "message_id",
+    "config_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "message_id": {
+      "type": "string"
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

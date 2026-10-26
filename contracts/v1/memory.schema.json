@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/memory",
+  "title": "memory",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "kind",
+    "subject",
+    "content",
+    "observed_at",
+    "confidence",
+    "valid_from",
+    "valid_to",
+    "status",
+    "version",
+    "confirmed",
+    "save_permission",
+    "source_evidence"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "stable_fact",
+        "explicit_preference",
+        "explicit_experience"
+      ]
+    },
+    "subject": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "valid_from": {
+      "type": "string"
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "candidate",
+        "active",
+        "superseded",
+        "deleted"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "confirmed": {
+      "type": "boolean"
+    },
+    "save_permission": {
+      "type": "boolean"
+    },
+    "source_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

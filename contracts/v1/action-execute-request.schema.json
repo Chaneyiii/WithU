@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/action-execute-request",
+  "title": "D4 action execution request",
+  "type": "object",
+  "required": ["schema_version", "action_id", "approval_id", "scope"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "action_id": { "type": "string", "minLength": 1 },
+    "approval_id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

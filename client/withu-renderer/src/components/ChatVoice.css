@@ -1,0 +1,139 @@
+.chat-voice-controls{display:inline-flex;align-items:center;gap:4px;min-width:0}.chat-voice-controls small{font-size:11px;color:var(--text-secondary);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asr-editing .message-content{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;}
+.voice-call-anchor{position:relative;flex:none;display:flex;align-items:center}
+.call-duration{position:absolute;top:14px;left:0;width:100%;text-align:center;font-size:17px;font-weight:500;line-height:24px;font-variant-numeric:tabular-nums;color:var(--text-secondary)}
+/* 旧版卡片残留样式已清掉：卡片样式统一在下面的 LiveCallCard 段里定义。 */
+.hangup-call{display:flex;align-items:center;justify-content:center;background:var(--fill-primary);color:#e6495e;width:72px;height:72px;border:0;border-radius:50%;cursor:pointer;box-shadow:0 6px 18px rgba(30,25,16,.14),inset 0 1px 1px rgba(255,255,255,.75);transition:transform .15s,box-shadow .15s}
+.hangup-call:hover{transform:translateY(1px);box-shadow:0 3px 12px rgba(30,25,16,.16),inset 0 1px 1px rgba(255,255,255,.75)}
+.activity-toggle:disabled,.desktop-menu button:disabled{opacity:.35;cursor:not-allowed}
+
+.live-call-record{position:relative;width:41.667%;height:34px;margin:12px auto;text-align:center;color:var(--text-secondary);font-size:12px}
+.live-call-record .message-content{max-width:100%;width:100%;padding:4px 8px;font-size:12px;line-height:26px;text-align:center;overflow:hidden;text-overflow:ellipsis;background:var(--fill-secondary);white-space:nowrap;box-shadow:0 2px 8px #1623390c}
+.chat-view.live-active{position:relative}
+.withu-live-stage{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:stretch;justify-content:center;container-type:size;overflow:hidden;background:var(--bg-primary)}
+.live-glass-pane{position:relative;width:100%;height:100%;border-radius:0}
+.backdrop-glass>.glass>.glass__warp{filter:none!important;backdrop-filter:none!important}
+.live-glass-content{display:flex;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3cqh,28px);color:var(--text-secondary);text-shadow:none}
+.withu-live-stage .panel-ball{flex:none;width:min(48cqw,180px);height:min(48cqw,180px)}
+.withu-live-stage .call-duration{position:static;width:auto;font-size:22px;line-height:30px;color:var(--text-secondary)}
+.withu-live-stage .emotional-ball .ball-touch{cursor:default}
+.backdrop-glass{height:100%}
+.backdrop-glass>.glass{width:100%;height:100%}
+.backdrop-glass>.glass>div{width:100%;height:100%}
+.hangup-glass{position:relative;z-index:1;width:68px;height:68px;flex:none}
+.hangup-glass .glass{box-shadow:0 4px 16px #1623391c,inset 0 1px 1px #ffffffaa!important}
+
+.live-meter{display:flex;align-items:center;justify-content:center;gap:5px;height:18px;width:min(260px,80%);flex:none}
+.live-meter-dot{width:4px;height:4px;flex:none;border-radius:99px;background:#f4ac32;transition:transform 150ms ease-out,opacity 150ms ease-out;transform-origin:center}
+
+.send-glass{position:relative;width:34px;height:34px;flex:none}
+.send-glass .send-button{background:rgba(255,255,255,.08);color:var(--fill-blue)}
+
+/* ---- Live call card (LiveCallCard): 560px design canvas, scaled to panel ----
+   Metrics are measured off the reference frames (card = 202px there), so every
+   value below is the reference value × 2.772 and stays 1:1 at any panel width. */
+.activity-call{position:relative;width:100%;display:flex;flex-direction:column;overflow:hidden}
+/* 缩放画布单独占一层：卡片在上，操作条在下，两者互不重叠。 */
+.call-stage{position:relative;flex:1;min-height:0;overflow:hidden}
+.call-scale{position:absolute;top:0;left:0;width:560px;transform-origin:top left}
+/* 卡片就是活动面板本体：去掉圆角、投影和留白，和面板合成一整块。 */
+.call-case-card{width:560px;height:100%;margin:0;border-radius:0;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+
+.call-case-head{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;width:100%;padding:24px 26px 0 24px}
+.call-case-status{display:inline-flex;align-items:center;gap:12px;min-width:0;font-size:24px;line-height:1.1;font-weight:600;letter-spacing:-.01em;color:var(--text-primary);transition:color .45s}
+.call-case-status.is-speaking{color:#ee6513}
+/* 案例里的状态标记只有两根等高的小竖条，紧贴文字，不是一个均衡器。 */
+.call-status-bars{display:inline-flex;align-items:center;gap:5px;height:20px;color:#e08a45;transition:color .45s,opacity .45s}
+.call-status-bars i{width:5px;height:15px;border-radius:2.5px;background:currentColor;transform-origin:center;transition:height .3s}
+.call-case-status.is-speaking .call-status-bars{color:#ee6513}
+.call-case-status.is-speaking .call-status-bars i{animation:call-bar-bounce 1.1s ease-in-out infinite}
+.call-case-status.is-speaking .call-status-bars i:nth-child(2){animation-delay:.16s}
+.call-case-status.is-speaking .call-status-bars i:nth-child(3){animation-delay:.32s}
+.call-case-status.is-muted .call-status-bars{color:#bdbab1}
+@keyframes call-bar-bounce{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+/* Chat view marker: the small warm sparkle the reference shows next to "Chat". */
+.call-status-spark{width:19px;height:19px;flex:none;background:#ee8b3d;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+
+.call-case-close{position:static;border:0;background:transparent;padding:0;color:#9f9e97;font-size:22px;line-height:1.1;font-weight:500;letter-spacing:-.01em;cursor:pointer;transition:color .15s}
+.call-case-close:hover{color:var(--text-primary)}
+
+.call-case-body{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+/* 球 + 名字沿用活动面板原本的位置和尺寸（88px 球、18/24 字、8px 间距），
+   只是从「面板里的一段」变成盖在通话卡上的一层，所以它们不跟着卡片缩放。 */
+.call-identity{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;padding:52px 16px 0;pointer-events:none}
+.call-identity-name{font-size:18px;line-height:24px;font-weight:600;letter-spacing:0;color:var(--text-primary)}
+.call-case-atmo{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;transition:opacity .7s ease,filter .7s ease}
+.call-case-atmo.is-faint{opacity:.3;filter:saturate(.9)}
+
+.call-case-voice{position:relative;z-index:1;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 0 42px}
+.call-case-chat{position:relative;z-index:1;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;gap:14px;padding:20px 26px 22px;overflow-y:auto;scrollbar-width:none}
+.call-case-chat::before{content:"";margin-top:auto}
+.call-case-chat::-webkit-scrollbar{display:none}
+.call-bubble{max-width:82%;margin:0;padding:15px 21px;border-radius:25px;font-size:22px;line-height:1.45;letter-spacing:-.005em}
+.call-bubble.is-user{align-self:flex-end;background:#1b1a18;color:#fff;border-bottom-right-radius:9px}
+.call-bubble.is-assistant{align-self:flex-start;background:#f0efe9;color:var(--text-primary);border-bottom-left-radius:9px}
+.call-typing{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:20px 22px;border-radius:25px;background:#f0efe9}
+.call-typing i{width:7px;height:7px;border-radius:99px;background:#a9a79e;animation:call-typing-bounce 1.2s ease-in-out infinite}
+.call-typing i:nth-child(2){animation-delay:.15s}
+.call-typing i:nth-child(3){animation-delay:.3s}
+@keyframes call-typing-bounce{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-4px);opacity:1}}
+
+/* Fluid ribbon: geometry lives in LiveWave.jsx (rAF rewrites the path d);
+   CSS owns the silky atmosphere around it. The box keeps the reference band
+   position — roughly 20%..55% of the card, full bleed left and right. */
+/* 丝带固定在设计高度 560 的横带里，放在球和名字下面一档：面板再高，
+   光晕也只围着丝带，不会把整块面板洗成橘色。 */
+.live-wave{position:absolute;left:-14%;right:-14%;top:52%;height:560px;transform:translateY(-50%)}
+.live-wave svg{width:100%;height:100%;display:block;overflow:visible;filter:saturate(calc(1 + var(--live-level,0) * .26))}
+.live-wave::before{content:"";position:absolute;inset:8% 4%;z-index:0;background:
+  radial-gradient(38% 30% at 28% 42%,rgba(255,158,84,.26),transparent 70%),
+  radial-gradient(34% 28% at 64% 54%,rgba(255,205,140,.2),transparent 70%),
+  radial-gradient(28% 24% at 46% 36%,rgba(255,132,60,.14),transparent 70%);
+  filter:blur(20px);opacity:calc(.22 + var(--live-level,0) * .38);animation:live-aura-breathe 11s ease-in-out infinite alternate}
+.live-wave::after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.85) 50%,transparent 62%);filter:blur(18px);mix-blend-mode:soft-light;opacity:.16;animation:live-sheen 14s ease-in-out infinite}
+.live-wave .live-wave-layer{transition:opacity .7s}
+.live-wave .live-wave-layer.back{opacity:.82}
+.live-wave .live-wave-layer.front{opacity:1}
+.live-wave .live-wave-layer.fold{opacity:.58}
+.live-wave svg{animation:live-ribbon-drift 14s ease-in-out infinite alternate}
+.live-wave.is-speaking .live-wave-layer.back{opacity:.52}
+.live-wave.is-speaking .live-wave-layer.front{opacity:1}
+.live-wave.is-speaking .live-wave-layer.fold{opacity:.74}
+.live-wave.is-speaking::before{opacity:calc(.34 + var(--live-level,0) * .4);filter:blur(20px) saturate(1.15) hue-rotate(-5deg)}
+.live-wave.is-speaking::after{opacity:.55;animation-duration:6.5s}
+.live-wave.is-muted .live-wave-layer{opacity:.32}
+.live-wave.is-muted::before{opacity:.08;filter:blur(20px) saturate(.5)}
+.live-wave.is-muted::after{opacity:0}
+.live-wave.is-inactive .live-wave-layer{opacity:.5}
+.live-wave.is-inactive::before{opacity:.12;animation:none}
+.live-wave.is-inactive::after{opacity:0;animation:none}
+.live-wave.is-inactive svg{animation:none}
+@keyframes live-ribbon-drift{from{transform:translate(-1.2%,.6%) scale(1.01)}to{transform:translate(1.2%,-.6%) scale(.99)}}
+@keyframes live-aura-breathe{from{transform:translate(-2%,1%) scale(1.04);opacity:.8}to{transform:translate(2%,-1%) scale(1.12);opacity:1}}
+@keyframes live-sheen{0%{transform:translateX(-38%)}14%{transform:translateX(38%)}100%{transform:translateX(38%)}}
+
+.call-case-transcript{margin:0;padding:0 26px;text-align:left;font-size:23px;line-height:1.5;letter-spacing:-.005em;color:#8d8d86;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.call-transcript-tail{color:#4f4e49}
+.call-transcript-placeholder{opacity:.7}
+
+/* 底部操作条：外观和活动面板顶部的「活动 / 审批 / 即将发生 / 身份」分段框完全一致
+   （同一组尺寸、圆角、底色、白药丸选中态），并按输入框底边对齐。 */
+.call-tabs{flex:none;display:flex;align-items:center;gap:2px;margin:5px 14px var(--call-bottom-gap,6px);padding:3px;border-radius:12px;background:var(--fill-secondary)}
+.call-tab{min-width:0;height:34px;flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:0;border:0;border-radius:9px;background:transparent;color:var(--text-secondary);font-size:11px;line-height:1;cursor:pointer;transition:background .16s,color .16s,box-shadow .16s}
+.call-tab span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.call-tab:hover{color:var(--text-primary)}
+.call-tab[aria-selected="true"],.call-tab[aria-pressed="true"]{background:var(--fill-primary-elevated);color:var(--text-primary);box-shadow:0 2px 6px #11111214}
+.call-tab-hangup{color:#e0562a}
+.call-tab-hangup:hover{color:#c8421a}
+.call-hangup-icon{transform:rotate(135deg)}
+.call-case-chat.is-empty{justify-content:flex-end;padding-bottom:64px}
+.call-case-chat.is-empty::before{display:none}
+.call-case-chat.is-empty{justify-content:flex-end;padding-bottom:64px}
+.call-case-chat.is-empty::before{display:none}
+.call-chat-empty{margin:0;align-self:center;text-align:center;font-size:20px;line-height:1.5;color:#b3b1a8}
+
+@media (prefers-reduced-motion:reduce){
+  .call-status-bars i,.call-typing i{animation:none!important}
+  .live-wave svg,.live-wave::before,.live-wave::after{animation:none!important}
+  .live-wave::after{opacity:0!important}
+}

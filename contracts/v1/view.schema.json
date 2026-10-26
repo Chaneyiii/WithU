@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/view",
+  "title": "view",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "theme",
+    "language",
+    "themeColor",
+    "active",
+    "expanded",
+    "scroll",
+    "overrides",
+    "sceneEdits",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "const": "client"
+    },
+    "theme": {
+      "enum": [
+        "light",
+        "dark",
+        "system"
+      ]
+    },
+    "language": {
+      "type": "string"
+    },
+    "themeColor": {
+      "type": "string"
+    },
+    "active": {
+      "type": "object",
+      "required": [
+        "comfort",
+        "cowork"
+      ],
+      "properties": {
+        "comfort": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cowork": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "expanded": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scroll": {
+      "type": "object",
+      "required": [
+        "comfort",
+        "cowork"
+      ],
+      "properties": {
+        "comfort": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cowork": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "overrides": {
+      "type": "object"
+    },
+    "sceneEdits": {
+      "type": "object"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "asr": {
+          "type": "boolean"
+        },
+        "tts": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "additionalProperties": false
+    },
+    "callHistory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "conversationId",
+          "startedAt",
+          "endedAt",
+          "durationMs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "conversationId": {
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "endedAt": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mode": {
+            "enum": [
+              "call",
+              "live"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "agentName": {
+      "type": "string",
+      "maxLength": 80
+    }
+  },
+  "additionalProperties": false
+}

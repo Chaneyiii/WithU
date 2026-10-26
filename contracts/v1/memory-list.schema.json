@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/memory-list",
+  "title": "memory-list-request",
+  "type": "object",
+  "required": ["schema_version", "scope", "retrieval", "query", "limit", "context_limit"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "scope": {"type": "string", "minLength": 1, "maxLength": 128},
+    "retrieval": {"enum": ["list", "exact", "semantic"]},
+    "query": {"type": ["string", "null"], "maxLength": 512},
+    "limit": {"type": "integer", "minimum": 1, "maximum": 100},
+    "context_limit": {"type": "integer", "minimum": 0, "maximum": 12}
+  },
+  "additionalProperties": false
+}

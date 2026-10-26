@@ -1,0 +1,31 @@
+.proactivity-settings { border: 0; padding: 0; margin: 24px 0; min-width: 0; }
+.proactivity-settings > .settings-card { margin-bottom: 24px; }
+.proactivity-settings .settings-row { gap: 16px; }
+.proactivity-settings input:not([type=checkbox]),
+.proactivity-settings select { min-height: 32px; min-width: 0; padding: 5px 8px; border: 1px solid var(--fill-divider); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); font: inherit; }
+.proactivity-settings :disabled { opacity: .5; cursor: default; }
+.proactivity-settings :is(input, select, button):focus-visible { outline: 2px solid var(--fill-outline); outline-offset: 3px; }
+.proactivity-settings .proactivity-quiet-times { justify-content: flex-end; flex-wrap: wrap; gap: 10px 12px; }
+.proactivity-settings .proactivity-quiet-label { color: var(--text-secondary); font-size: 12px; white-space: nowrap; }
+.proactivity-settings .proactivity-quiet-label + .withu-time { margin-right: 8px; }
+.proactivity-settings .secondary { padding: 6px 10px; border: 1px solid var(--fill-divider); border-radius: 8px; color: var(--text-primary); background: var(--fill-primary); font: inherit; flex-shrink: 0; }
+.proactivity-settings .secondary:hover { background: var(--fill-secondary-elevated-hover); }
+.proactivity-settings .proactivity-preview { padding: 0 12px; }
+
+/* 时区只读展示：不是可选项，做成和下拉同高的浅色胶囊，一眼看得出不能点。 */
+.proactivity-settings .proactivity-clock {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px dashed var(--fill-divider);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .proactivity-settings .settings-row { gap: 10px; flex-wrap: wrap; }
+  .proactivity-settings .settings-row-text { flex-basis: 55%; }
+  .proactivity-settings .proactivity-clock { font-size: 11px; }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/life-message-draft",
+  "title": "D5 local message draft",
+  "type": "object",
+  "required": ["schema_version", "id", "scope", "conversation_id", "text", "file_refs", "status", "version"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "conversation_id": { "type": "string", "minLength": 1 },
+    "text": { "type": "string" },
+    "file_refs": { "type": "array", "items": { "type": "string" } },
+    "status": { "enum": ["active", "discarded"] },
+    "version": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

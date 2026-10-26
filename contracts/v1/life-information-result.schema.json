@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/life-information-result",
+  "title": "D5 bounded information result",
+  "type": "object",
+  "required": ["schema_version", "query", "scope", "source_id", "source_version", "observed_at", "status", "verified", "content"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "query": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "source_id": { "type": "string", "minLength": 1 },
+    "source_version": { "type": "integer", "minimum": 0 },
+    "observed_at": { "type": "integer", "minimum": 1 },
+    "status": { "enum": ["verified", "unavailable"] },
+    "verified": { "type": "boolean" },
+    "content": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

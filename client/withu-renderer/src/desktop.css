@@ -1,0 +1,738 @@
+:root {
+  /* Flat chrome per the hanoa studio case: gray shell, white stage.
+     侧栏/顶部栏压暗一档，跟纯白主舞台拉开层次，通知卡也更醒目。 */
+  --withu-chrome: #ebebec;
+  --withu-chrome-pill: #e0e0e2;
+  --withu-chrome-pill-hover: #e6e6e8;
+  --withu-chrome-pill-pressed: #d6d6d8;
+  --withu-stage: #ffffff;
+  --desktop-muted: #868b8e;
+}
+[data-theme="dark"] {
+  --withu-chrome: #131315;
+  --withu-chrome-pill: #26262b;
+  --withu-chrome-pill-hover: #212126;
+  --withu-chrome-pill-pressed: #2c2c32;
+  --withu-stage: #202022;
+  --desktop-muted: #a5aaae;
+}
+.application {
+  flex-direction: column;
+  background: var(--withu-chrome);
+}
+.desktop-titlebar {
+  height: 54px;
+  min-height:54px;
+  max-height:54px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Logo left edge = 21 + 5 (trigger padding) = 26px, aligning with the
+     sidebar icons (nav-rail 16px + sidebar-item 10px). */
+  padding-left: 23px;
+  color: var(--desktop-muted);
+  position: relative;
+  z-index: 80;
+  -webkit-app-region: drag;
+}
+.desktop-titlebar button,
+.desktop-titlebar nav {
+  -webkit-app-region: no-drag;
+}
+[data-desktop="true"] .desktop-titlebar {
+  padding-right: 8px;
+}
+/* Self-drawn window controls: three glass buttons that belong to the same
+   family as the topbar pills, replacing the OS caption buttons entirely. */
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  margin-right: 10px;
+  -webkit-app-region: no-drag;
+}
+.window-btn {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--desktop-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.window-btn svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+.window-btn:hover {
+  background: var(--withu-chrome-pill-hover);
+  color: var(--text-primary);
+}
+.window-btn:active {
+  background: var(--withu-chrome-pill-pressed);
+}
+.window-btn.is-close:hover {
+  background: #e5484d;
+  color: #fff;
+}
+.window-btn.is-close:active {
+  background: #cf373b;
+  color: #fff;
+}
+/* Brand cluster: product logo + mode name + up/down chevrons switcher. */
+.topbar-brand {
+  position: relative;
+  -webkit-app-region: no-drag;
+}
+.topbar-trigger {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 999px;
+  transition: background-color 0.15s ease;
+}
+.topbar-trigger:hover {
+  background: var(--withu-chrome-pill-hover);
+}
+.topbar-trigger:active {
+  background: var(--withu-chrome-pill-pressed);
+}
+.topbar-logo {
+  border-radius: 8px;
+}
+.topbar-trigger strong {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.topbar-chevrons {
+  color: var(--desktop-muted);
+  transition: rotate 0.18s ease;
+}
+.topbar-chevrons.flip {
+  rotate: 180deg;
+}
+/* Utility pills after the brand, per the case: [sidebar toggle, search]
+   with a wider gap, then [undo | redo] joined by a hairline divider. */
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 14px;
+  -webkit-app-region: no-drag;
+}
+.topbar-tool-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--withu-stage);
+  color: var(--text-primary);
+  box-shadow:
+    0 1px 3px #11111214,
+    0 2px 8px #11111217;
+}
+.topbar-tool-pill-wide {
+  gap: 12px;
+  padding: 0 10px;
+}
+.topbar-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: var(--text-primary);
+  transition: background-color 0.15s ease;
+}
+.topbar-tool-btn:hover {
+  background: var(--withu-chrome-pill-hover);
+}
+.tool-divider {
+  width: 1px;
+  height: 15px;
+  margin: 0 2px;
+  background: var(--fill-divider);
+  flex: 0 0 auto;
+}
+/* Sidebar collapse toggled from the top bar. */
+.desktop-body.nav-hidden .nav-rail {
+  display: none;
+}
+/* Settings / Library pages: horizontal header + tab strip per the case,
+   no internal sidebar. */
+.settings-window.settings-window {
+  display: block;
+  overflow-y: auto;
+}
+.settings-main {
+  display: block;
+  width: 100%;
+  max-width: 1008px;
+  margin: 0 auto;
+  padding: 0 32px 48px;
+}
+/* 顶部标题栏虚化：页面内容滚到左上角标题下面时，先在这条带里被虚化、
+   再向下淡出，不和标题文字叠在一起。面包屑和浏览器抽屉（都是 z-40）
+   画在这层之上，标题本身和抽屉工具栏不受虚化影响。 */
+.workspace-stage::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 30;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--withu-stage) 62%, transparent),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  mask-image: linear-gradient(to bottom, #000 40%, transparent);
+}
+/* 活动面板打开时（对话页右侧那栏），虚化带只留在消息栏上方，
+   宽度收窄到面板左边界为止，面板里的球和关闭按钮不被虚化。 */
+.application.has-activity .workspace-stage::before {
+  right: clamp(280px, 32vw, 360px);
+}
+/* Stage breadcrumb per the case image: the current location path pinned to
+   the stage's top-left corner; parent crumbs muted, current one dark. */
+.stage-breadcrumb {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--desktop-muted);
+  pointer-events: none;
+}
+.stage-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stage-crumb.current {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+/* 对话页的面包屑是当前会话名：双击改名，所以这里要把 pointer-events 打开
+   （面包屑整体是不吃事件的，否则 hover / 双击都落不到文字上）。 */
+.stage-breadcrumb .stage-session { pointer-events: auto; }
+.stage-session-name {
+  max-width: 46vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 1px 5px;
+  margin-left: -5px;
+  border-radius: 6px;
+  cursor: text;
+}
+.stage-session-name:hover { background: var(--fill-secondary-elevated); }
+.stage-session-name:focus-visible { outline: 2px solid var(--fill-outline); outline-offset: 2px; }
+.stage-session-input {
+  min-width: 140px;
+  max-width: 46vw;
+  padding: 1px 6px;
+  border: 1px solid var(--fill-divider);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 600;
+}
+.stage-session-input:focus { outline: none; border-color: var(--fill-outline); }
+.stage-crumb-sep {
+  margin-right: 8px;
+}
+.settings-page-header {
+  height: auto;
+  padding: 52px 0 4px;
+}
+.settings-page-header h1,
+.library-page-header h1 {
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+.page-eyebrow {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--desktop-muted);
+}
+.page-tabs {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  border-bottom: 1px solid var(--fill-divider);
+  margin: 8px 0 28px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.page-tabs::-webkit-scrollbar {
+  display: none;
+}
+.page-tab {
+  flex: 0 0 auto;
+  padding: 10px 2px 12px;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+.page-tab:hover {
+  color: var(--text-primary);
+}
+.page-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--text-primary);
+  font-weight: 600;
+}
+.library-view.library-view {
+  display: block;
+  overflow-y: auto;
+}
+.library-page-header {
+  height: auto;
+  padding: 66px 0 4px;
+}
+.library-header-search {
+  width: 240px;
+  min-height: 36px;
+  border: 1px solid var(--fill-divider);
+  border-radius: 10px;
+  background: var(--withu-stage);
+}
+.library-content .page-tabs {
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.library-content .route-header {
+  max-width: 1000px;
+}
+/* Bottom cluster: notification unit with the settings entry right below it
+   (case image: the two are near neighbours, no big gap). */
+.nav-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nav-notifications {
+  padding-top: 4px;
+}
+.sidebar-bottom {
+  margin-top: 0;
+}
+/* Segmented mode menu per the switcher video case; opens BELOW the trigger
+   (the case opens above) with the caret pointing back at the trigger. */
+.mode-switcher-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--withu-chrome-pill);
+  box-shadow:
+    0 6px 20px #11111226,
+    0 2px 6px #11111214;
+  animation: mode-menu-in 0.18s ease-out;
+  transform-origin: top left;
+}
+.mode-switcher-menu::before {
+  content: "";
+  position: absolute;
+  top: -4.5px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+  background: inherit;
+}
+.mode-switcher-menu button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.mode-switcher-menu button:hover {
+  color: var(--text-primary);
+}
+.mode-switcher-menu button.active {
+  background: var(--withu-stage);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px #1111121f;
+}
+@keyframes mode-menu-in {
+  from {
+    opacity: 0;
+    translate: 0 -3px;
+    scale: 0.97;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+.desktop-drag-space {
+  flex: 1;
+  height: 100%;
+  min-width: 24px;
+}
+.desktop-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.workspace-stage {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  background: var(--withu-stage);
+  border-radius: 16px 0 0 0;
+  container-type:size;
+}
+.main-workspace {
+  min-width: 0;
+}
+.application.has-live .chat-messages{padding-left:24px;padding-right:24px}
+.application.has-live .composer{flex-wrap:wrap}
+.application.has-live .composer-controls{max-width:100%}
+.composer textarea {
+  min-height: 30px;
+  height: 30px;
+  overflow-y: hidden;
+}
+/* Sidebar per the case: General function entries + Projects rows. Width is
+   tuned so the rail's right edge aligns with the "/" in the top bar. */
+.nav-rail {
+  width: 238px;
+  min-width:238px;
+  max-width:238px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  padding: 12px 16px 16px;
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+/* Roomier rail per the case compare sheet: larger glyphs, taller rows and a
+   group heading with real presence (the case's "General" is a quiet but
+   unmistakable 12.5px medium label). */
+.sidebar-heading {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--desktop-muted);
+  padding: 0 12px 9px;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 50px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+.sidebar-item .icon {
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+.sidebar-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-item:hover {
+  background: var(--withu-chrome-pill-hover);
+}
+.sidebar-item:active {
+  background: var(--withu-chrome-pill-pressed);
+}
+.sidebar-item.active {
+  background: var(--withu-chrome-pill);
+}
+/* Case: the active entry pairs the solid glyph with a bold label. */
+.sidebar-item.active span {
+  font-weight: 600;
+}
+.recents-item span {
+  font-weight: 400;
+}
+/* Recents rows: the title stays the click target while pin / delete slide in
+   on hover (a pinned row keeps its pin visible at rest). */
+.sidebar-recent {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 40px;
+  padding-right: 5px;
+  border-radius: 12px;
+  transition: background-color 0.15s ease;
+}
+.sidebar-recent:hover {
+  background: var(--withu-chrome-pill-hover);
+}
+.sidebar-recent.active {
+  background: var(--withu-chrome-pill);
+}
+.sidebar-recent-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14.5px;
+  line-height: 20px;
+  color: var(--text-primary);
+  text-align: left;
+}
+.sidebar-recent-main span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-recent.active .sidebar-recent-main span {
+  font-weight: 600;
+}
+.sidebar-recent-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    width 0.14s ease,
+    opacity 0.12s ease;
+}
+.sidebar-recent:hover .sidebar-recent-actions {
+  width: 49px;
+  opacity: 1;
+}
+.sidebar-recent.pinned:not(:hover) .sidebar-recent-actions {
+  width: 25px;
+  opacity: 1;
+}
+.sidebar-recent.pinned:not(:hover) .recent-action + .recent-action {
+  width: 0;
+  opacity: 0;
+}
+.recent-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  color: var(--desktop-muted);
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+.recent-action:hover {
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  color: var(--text-primary);
+}
+.sidebar-recent.pinned .recent-action:first-child {
+  color: var(--text-primary);
+}
+.sidebar-empty {
+  padding: 6px 10px 2px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--desktop-muted);
+}
+.settings-window {
+  height: 100%;
+  background: var(--bg-primary);
+}
+.settings-sidebar {
+  width: 240px;
+  background: var(--fill-blur-thick);
+  padding: 0 12px 16px;
+}
+.settings-drag-space {
+  height: auto;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  font-size: 17px;
+  font-weight: 600;
+}
+.settings-tab {
+  min-height: 36px;
+  border-radius: 10px;
+}
+.settings-tab .icon {
+  width: 16px !important;
+  height: 16px !important;
+}
+.settings-header,
+.settings-content {
+  width: 100%;
+  max-width: 944px;
+  margin: 0 auto;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+.settings-header {
+  height: 104px;
+}
+.settings-header h2 {
+  font-size: 28px;
+  line-height: 34px;
+}
+.settings-content {
+  padding-bottom: 48px;
+}
+.settings-card {
+  background: transparent;
+  border: 1px solid var(--fill-divider);
+  padding: 6px;
+  border-radius: 16px;
+}
+.settings-content > .settings-card {
+  margin-bottom: 32px;
+}
+.settings-row {
+  min-height: 50px;
+}
+.settings-tabs {
+  gap: 4px;
+}
+.settings-popover {
+  left: 60px;
+  bottom: 48px;
+  z-index: 70;
+}
+.chat-drawer {
+  position: relative;
+  left: auto;
+  top: auto;
+  bottom: auto;
+  width: 260px;
+  max-height: none;
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  border-right: 1px solid var(--fill-divider);
+  border-radius: 0;
+  box-shadow: none;
+  z-index: auto;
+  background: var(--bg-primary);
+  padding: 16px 12px;
+}
+.edit-inspector {
+  top: 56px;
+}
+@media (max-width: 1000px) {
+  .settings-sidebar {
+    width: 200px;
+  }
+  .settings-header,
+  .settings-content {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .settings-header {
+    height: 80px;
+  }
+  .nav-rail {
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
+  }
+}
+@media (max-width: 760px) {
+  .chat-drawer {
+    width: 220px;
+  }
+  .settings-sidebar {
+    width: 164px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .settings-tab {
+    padding-left: 8px;
+    gap: 8px;
+  }
+  .settings-header,
+  .settings-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .settings-header h2 {
+    font-size: 24px;
+  }
+  .nav-rail {
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}

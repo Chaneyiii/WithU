@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/error",
+  "title": "error",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "category",
+    "code",
+    "operation_id",
+    "retryable",
+    "detail_code"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "category": {
+      "enum": [
+        "validation",
+        "authorization",
+        "conflict",
+        "provider",
+        "lifecycle",
+        "cancelled",
+        "internal"
+      ]
+    },
+    "code": {
+      "type": "string"
+    },
+    "operation_id": {
+      "type": "string"
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "detail_code": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

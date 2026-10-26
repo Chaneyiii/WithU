@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/life-calendar-event",
+  "title": "D5 local calendar event",
+  "type": "object",
+  "required": ["schema_version", "id", "scope", "title", "starts_at", "ends_at", "timezone", "notes", "status", "version"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "starts_at": { "type": "integer", "minimum": 1 },
+    "ends_at": { "type": "integer", "minimum": 1 },
+    "timezone": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" },
+    "status": { "const": "active" },
+    "version": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

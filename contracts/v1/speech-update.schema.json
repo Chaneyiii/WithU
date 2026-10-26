@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/speech-update",
+  "title": "speech-update",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session",
+    "kind",
+    "utterance_id",
+    "revision",
+    "text",
+    "source",
+    "frame_sequence",
+    "sample_rate",
+    "samples",
+    "occurred_at",
+    "reason"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "session": {
+      "$ref": "./speech-session.schema.json"
+    },
+    "kind": {
+      "enum": [
+        "state",
+        "vad_started",
+        "vad_stopped",
+        "partial",
+        "final",
+        "corrected",
+        "provider_complete",
+        "audio",
+        "synthesis_complete",
+        "playback_completed",
+        "cancelled",
+        "cleanup_failed",
+        "response"
+      ]
+    },
+    "utterance_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "enum": [
+        "user_microphone",
+        "user_fixture",
+        "withu_tts",
+        "control"
+      ]
+    },
+    "frame_sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sample_rate": {
+      "const": 16000
+    },
+    "samples": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": -32768,
+        "maximum": 32767
+      },
+      "maxItems": 3200
+    },
+    "occurred_at": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

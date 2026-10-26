@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/config-update",
+  "title": "ConfigUpdate",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "config",
+    "expected_version",
+    "credential_changes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "config": {
+      "$ref": "./public-config.schema.json"
+    },
+    "expected_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "credential_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "provider_id",
+          "action",
+          "value"
+        ],
+        "properties": {
+          "provider_id": {
+            "type": "string"
+          },
+          "action": {
+            "enum": [
+              "replace",
+              "clear"
+            ]
+          },
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {TurnDetector} from '../client/withu-renderer/src/speech/turn-detector.mjs';
+let starts=0,ends=[],previews=0;
+const detector=new TurnDetector(16000,{onStart:()=>starts++,onEnd:f=>ends.push(f),onPartial:()=>previews++});
+const feed=(seconds,value,playing=false)=>{for(let i=0;i<seconds*100;i++)detector.push(new Float32Array(160).fill(value),playing);};
+feed(2,.002);assert.equal(starts,0,'ambient noise does not open a turn');
+feed(1.8,.08);assert.equal(starts,1);assert.ok(previews>0);feed(.8,0);assert.equal(ends.length,1,'silence closes turn automatically');
+assert.ok(ends[0].reduce((n,f)=>n+f.length,0)<160000);
+feed(.1,.08,true);assert.equal(starts,1,'short playback residual does not interrupt');feed(.5,.08,true);assert.equal(starts,2,'sustained near speech interrupts during playback');feed(.8,0);assert.equal(ends.length,2);
+feed(11,.08);assert.ok(ends.length>=3,'long utterances are bounded');
+console.log('PASS turn detection: noise, pre-roll, preview, automatic endpoint, playback interruption, capture limit');

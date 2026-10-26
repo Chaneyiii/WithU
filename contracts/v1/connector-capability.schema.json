@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/connector-capability",
+  "title": "connector capability grant",
+  "type": "object",
+  "required": ["schema_version", "connector_id", "capability", "permission_state", "authorization_version", "revoked"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "connector_id": { "type": "string", "minLength": 1 },
+    "capability": { "type": "string", "minLength": 1 },
+    "permission_state": { "enum": ["always_allow", "needs_approval", "blocked"] },
+    "authorization_version": { "type": "integer", "minimum": 1 },
+    "revoked": { "type": "boolean" },
+    "scopes": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

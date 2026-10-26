@@ -1,0 +1,13 @@
+[package]
+name = "withu-life"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+withu-approvals = { path = "../withu-approvals" }
+withu-connectors = { path = "../withu-connectors" }
+withu-orchestrator = { path = "../withu-orchestrator" }
+withu-runtime = { path = "../withu-runtime" }
+withu-scheduler = { path = "../withu-scheduler" }

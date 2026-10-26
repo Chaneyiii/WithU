@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/recoverable-item",
+  "title": "recoverable-item",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "accepted_goal",
+    "acceptance_evidence_ids",
+    "conditions",
+    "status",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string"
+    },
+    "accepted_goal": {
+      "type": "string"
+    },
+    "acceptance_evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "enum": [
+        "accepted",
+        "paused",
+        "cancelled",
+        "completed"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="8.28645 4.3032 112 112" role="img" aria-labelledby="t d">
+  <title id="t">Withu 圆角双环 App 图标</title>
+  <desc id="d">暖橘与暖金双环互扣，白色圆角底板、透明外角；图案等比例放大 15%。</desc>
+  <defs>
+    <linearGradient id="gA" gradientUnits="userSpaceOnUse" x1="38.47" y1="35.73" x2="68.91" y2="84.43">
+      <stop offset="0" stop-color="#FF9152" />
+      <stop offset="1" stop-color="#E5541B" />
+    </linearGradient>
+    <linearGradient id="gB" gradientUnits="userSpaceOnUse" x1="64.52" y1="43.84" x2="85.12" y2="76.80">
+      <stop offset="0" stop-color="#FFD65C" />
+      <stop offset="1" stop-color="#F0A31A" />
+    </linearGradient>
+    <clipPath id="fixUp">
+      <circle cx="64.5" cy="44.0" r="9" />
+    </clipPath>
+  </defs>
+  <rect x="8.28645" y="4.3032" width="112" height="112" fill="#FFFFFF" rx="24" ry="24" />
+  <g transform="translate(64.28645 60.3032) scale(1.15) translate(-64.28645 -60.3032)"><ellipse cx="74.82" cy="60.32" rx="30.3" ry="19.37" transform="rotate(144.06 74.82 60.32)" fill="none" stroke="url(#gB)" stroke-width="6.75" />
+  <ellipse cx="53.69" cy="60.08" rx="30.05" ry="19.42" transform="rotate(35.27 53.69 60.08)" fill="none" stroke="url(#gA)" stroke-width="6.75" />
+  <g clip-path="url(#fixUp)">
+    <ellipse cx="74.82" cy="60.32" rx="30.3" ry="19.37" transform="rotate(144.06 74.82 60.32)" fill="none" stroke="url(#gB)" stroke-width="6.75" />
+  </g>
+</g></svg>

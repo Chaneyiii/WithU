@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/deletion",
+  "title": "deletion",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "target_type",
+    "target_id",
+    "deleted_version",
+    "created_at",
+    "source",
+    "sync_protection_token"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "target_type": {
+      "type": "string"
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "deleted_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "sync_protection_token": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

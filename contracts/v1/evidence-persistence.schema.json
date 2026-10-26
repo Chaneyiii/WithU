@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/evidence-persistence",
+  "title": "memory-evidence-persistence-record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "scope",
+    "turn_id",
+    "speaker",
+    "captured_at",
+    "text_excerpt",
+    "text_ref",
+    "redaction",
+    "deleted_at",
+    "version"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "turn_id": { "type": "string", "minLength": 1 },
+    "speaker": { "const": "user" },
+    "captured_at": { "type": "string", "minLength": 1 },
+    "text_excerpt": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "text_ref": { "type": "string", "minLength": 1 },
+    "redaction": { "type": "string", "minLength": 1 },
+    "deleted_at": { "type": ["string", "null"] },
+    "version": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/project",
+  "title": "project",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project_id",
+    "name",
+    "folders",
+    "file_refs",
+    "instructions",
+    "task_refs",
+    "conversation_refs",
+    "context_scope_ref",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "folders": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "file_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "task_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conversation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "context_scope_ref": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

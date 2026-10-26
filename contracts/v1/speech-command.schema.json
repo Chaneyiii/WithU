@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/speech-command",
+  "title": "speech-command",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "conversation_id",
+    "renderer_id",
+    "turn_id",
+    "generation",
+    "config_version",
+    "command",
+    "source",
+    "frame_sequence",
+    "captured_at",
+    "samples",
+    "text",
+    "expected_transcript_revision"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "renderer_id": {
+      "type": "string"
+    },
+    "turn_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "command": {
+      "enum": [
+        "status",
+        "resume",
+        "capture_begin",
+        "capture_end",
+        "input",
+        "mute",
+        "unmute",
+        "interrupt",
+        "end",
+        "detach",
+        "correct",
+        "playback_started",
+        "playback_completed",
+        "playback_stopped",
+        "reconnect",
+        "quiet",
+        "refuse",
+        "device_failed"
+      ]
+    },
+    "source": {
+      "enum": [
+        "user_microphone",
+        "user_fixture",
+        "withu_tts",
+        "third_party_media",
+        "control"
+      ]
+    },
+    "frame_sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "captured_at": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "samples": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": -32768,
+        "maximum": 32767
+      },
+      "maxItems": 1600
+    },
+    "text": {
+      "type": "string"
+    },
+    "expected_transcript_revision": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

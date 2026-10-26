@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/action",
+  "title": "action",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "step_id",
+    "action",
+    "target_ids",
+    "parameters_digest",
+    "impact",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "step_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string"
+    },
+    "target_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "parameters_digest": {
+      "type": "string"
+    },
+    "impact": {
+      "enum": [
+        "read_only",
+        "write",
+        "external_side_effect",
+        "high_impact"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,47 @@
+[package]
+name = "withu-server"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+withu-runtime = { path = "../../crates/withu-runtime" }
+withu-ipc = { path = "../../crates/withu-ipc" }
+withu-storage = { path = "../../crates/withu-storage" }
+withu-proactivity = { path = "../../crates/withu-proactivity" }
+withu-memory = { path = "../../crates/withu-memory" }
+withu-life = { path = "../../crates/withu-life" }
+withu-scheduler = { path = "../../crates/withu-scheduler" }
+withu-orchestrator = { path = "../../crates/withu-orchestrator" }
+withu-affect = { path = "../../crates/withu-affect" }
+withu-audit = { path = "../../crates/withu-audit" }
+withu-connectors = { path = "../../crates/withu-connectors" }
+withu-approvals = { path = "../../crates/withu-approvals" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+withu-speech = { path = "../../crates/withu-speech" }
+
+sha2 = "0.10"
+zeroize = "1.8"
+uuid = { version = "1", features = ["v4"] }
+# Local wall-clock -> unix conversion for model-proposed life actions (T09).
+# chrono-tz embeds the IANA database; DST-ambiguous local times are rejected.
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+chrono-tz = "0.10"
+
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "multipart", "rustls-tls"] }
+tokio = { version = "1", features = ["rt", "time", "sync", "macros", "net"] }
+futures-util = "0.3"
+tokio-tungstenite = { version = "0.28", features = ["rustls-tls-native-roots"] }
+rustls = { version = "0.23", default-features = false, features = ["std", "ring"] }
+url = "2"
+httpdate = "1"
+base64 = "0.22"
+aws-config = "1"
+aws-credential-types = "1"
+aws-sdk-bedrock = "1"
+aws-sdk-bedrockruntime = "1"
+aws-types = "1"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security_Credentials"] }

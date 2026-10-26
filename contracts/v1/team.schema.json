@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/team",
+  "title": "team",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "primary_id",
+    "specialists",
+    "dispatch_reason",
+    "concurrency_limit",
+    "cancel_token",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "primary_id": {
+      "type": "string"
+    },
+    "specialists": {
+      "type": "array",
+      "items": {
+        "$ref": "./specialist.schema.json"
+      }
+    },
+    "dispatch_reason": {
+      "type": "string"
+    },
+    "concurrency_limit": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cancel_token": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/tombstone",
+  "title": "memory-tombstone",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "target_type",
+    "target_id",
+    "scope",
+    "deleted_version",
+    "created_at",
+    "source",
+    "sync_protection_token"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "target_type": { "enum": ["evidence", "memory", "derivative"] },
+    "target_id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "deleted_version": { "type": "integer", "minimum": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "sync_protection_token": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

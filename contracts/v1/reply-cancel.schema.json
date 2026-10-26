@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/reply-cancel",
+  "title": "reply-cancel",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "conversation_id",
+    "operation_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "operation_id": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

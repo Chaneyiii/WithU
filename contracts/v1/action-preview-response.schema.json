@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/action-preview-response",
+  "title": "D4 action preview",
+  "type": "object",
+  "required": ["schema_version", "plan", "approval"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "plan": { "$ref": "./plan-preview.schema.json" },
+    "approval": { "$ref": "./approval-card.schema.json" }
+  },
+  "additionalProperties": false
+}

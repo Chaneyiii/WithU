@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"VoiceSessionStart","type":"object","required":["schema_version","conversation_id","renderer_id","config_version"],"properties":{"schema_version":{"const":1},"conversation_id":{"type":"string"},"renderer_id":{"type":"string"},"config_version":{"type":"integer","minimum":1}},"additionalProperties":false}

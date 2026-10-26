@@ -1,0 +1,151 @@
+/* 6px -> 4px. Override historical hidden/system scrollbar rules consistently.
+   scrollbar-width:auto permits Chromium's precise WebKit 4px sizing. */
+:root{--chat-content-width:728px;--withu-danger:#db4246;--withu-scroll-thumb:color-mix(in srgb,var(--text-secondary) 22%,transparent)}
+*{scrollbar-width:auto!important;scrollbar-color:auto!important}
+*::-webkit-scrollbar{display:block!important;width:4px!important;height:4px!important}
+*::-webkit-scrollbar-track{background:transparent!important}
+*::-webkit-scrollbar-thumb{background:var(--withu-scroll-thumb)!important;border:0!important;border-radius:4px!important}
+*::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--text-secondary) 32%,transparent)!important}
+*::-webkit-scrollbar-button{display:none!important;width:0!important;height:0!important}
+*::-webkit-scrollbar-corner{background:transparent!important}
+/* Scroll container spans panel width; retain aligned content via inset padding. */
+.settings-main .settings-content{max-width:none;margin:0;padding-left:20px;padding-right:20px}
+.chat-view .chat-messages{max-width:none;width:100%;margin-left:0;margin-right:0;padding-left:max(24px,calc((100% - var(--chat-content-width))/2));padding-right:max(24px,calc((100% - var(--chat-content-width))/2));margin-top:44px!important;padding-top:92px;mask-image:linear-gradient(to bottom,transparent 0,#000 20px,#000 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 20px,#000 100%)}
+.settings-sidebar{display:flex;flex-direction:column;min-height:0}
+.settings-sidebar .settings-tabs{flex:1;min-height:0;overflow:auto}
+.settings-sidebar>.app-version{flex-shrink:0;margin:24px 8px 0;font-size:11px;font-weight:400;letter-spacing:.1em;color:var(--text-secondary)}
+.provider-dialog-toolbar{display:flex;justify-content:flex-end;margin:0 0 12px}
+.provider-dialog-toolbar button{padding:9px 16px;border-radius:10px;border:1px solid var(--fill-divider)}
+.about-withu{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:28px 12px 24px}
+.about-withu img{object-fit:contain}.about-withu h2{font-size:25px;margin:0 0 10px}.about-withu p{margin:0;color:var(--text-secondary)}
+.about-withu small{margin-top:12px;color:var(--text-tertiary)}
+.modal:has(.about-withu)>footer{border-top:1px solid var(--fill-divider);padding:16px 24px;background:var(--fill-secondary)}
+.composer .icon-button.cancel-recording{color:var(--withu-danger)}
+.composer .icon-button.cancel-recording:hover,.composer .icon-button.cancel-recording:focus-visible,.composer .icon-button.cancel-recording:focus{background:color-mix(in srgb,var(--withu-danger) 10%,transparent);box-shadow:0 2px 10px color-mix(in srgb,var(--withu-danger) 22%,transparent)}
+@media(max-width:900px){}
+
+/* Header is a bounded fixed region, not an overlay on message text. */
+.chat-view .chat-heading{position:absolute;left:0;top:0;right:0;height:44px;padding:0 16px;display:flex;align-items:center;gap:8px;border-bottom:0;background:var(--bg-primary);z-index:35}
+.chat-heading>.icon-button,.chat-heading .call-toggle,.chat-heading .activity-toggle{position:static;width:28px!important;height:28px!important;color:var(--text-secondary);flex-shrink:0}
+.chat-heading>span{letter-spacing:.035em;flex:1;min-width:0}.chat-heading>.icon-button:first-child{color:var(--text-secondary)}
+
+.voice-sr-status{position:absolute!important;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+.read-reply.is-playing{color:var(--text-primary);animation:read-speaking 1s ease-in-out infinite}
+.read-reply.is-loading svg{animation:read-loading 1s linear infinite}
+@keyframes read-speaking{0%,100%{opacity:.55;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
+@keyframes read-loading{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.read-reply.is-playing,.read-reply.is-loading svg{animation:none}}
+.header-tts.is-muted{color:var(--text-tertiary)}
+.header-tts.is-playing{animation:read-speaking 1s ease-in-out infinite}
+.model-settings-group{padding:6px;overflow:hidden;background:transparent;border:1px solid var(--fill-divider);border-radius:16px}
+.model-settings-group>.settings-row{margin:0;border-radius:0}
+.model-settings-group>.settings-row+.settings-row,.model-settings-group>.provider-tile-grid+.settings-row,.model-settings-group>.settings-row+.provider-tile-grid{border-top:1px solid var(--fill-divider)}
+.provider-tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px;padding:12px 16px}
+.provider-tile{width:100%;min-height:64px;border:1px solid var(--fill-divider);border-radius:8px;background:var(--fill-secondary);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;color:var(--text-primary);font-size:10px;cursor:pointer;overflow:hidden}
+.provider-tile img,.provider-tile svg{width:30px;height:30px;object-fit:contain}.provider-tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.add-provider-tile{font-size:22px;color:var(--text-secondary)}.add-provider-tile span{font-size:11px}
+.model-expand-icon{flex:none;width:34px;height:34px;border:0;border-radius:6px;background:transparent;color:var(--text-secondary);font-size:28px;line-height:1;display:grid;place-items:center;cursor:pointer;padding:0;box-sizing:border-box}.model-expand-icon:hover{background:var(--fill-secondary);color:var(--text-primary)}
+.chat-model-picker{width:min(280px,calc(100vw - 32px));max-height:min(520px,calc(100vh - 100px));overflow:visible;padding:6px 12px}
+.chat-model-picker>header{display:flex;align-items:center;justify-content:center;margin-bottom:10px;margin:0}
+.chat-model-picker>header button{width:28px;height:28px;border:0;background:transparent;color:var(--text-secondary);font-size:18px}
+.chat-model-picker select{height:36px;padding:0 9px;border:1px solid var(--fill-divider);border-radius:7px;background:var(--bg-primary);color:var(--text-primary)}
+.chat-model-options{max-height:220px;overflow:auto;margin:10px -4px}
+.chat-model-options button{width:100%;min-height:38px;display:flex;justify-content:space-between;align-items:flex-start;padding:7px 9px;border:0;border-radius:6px;text-align:left;background:transparent;color:var(--text-primary);gap:8px}
+.chat-model-options button:hover,.chat-model-options button.selected{background:var(--fill-secondary)}
+.chat-model-picker .model-refresh{margin:2px 0 8px;padding:7px 10px;border:1px solid var(--fill-divider);border-radius:7px;background:var(--fill-primary);color:var(--text-primary)}
+.model-account-status{display:block;margin:0 22px 12px;color:var(--text-secondary);font-size:12px}
+
+/* Reuse the device-page inset separators and card surface. */
+
+.model-settings-group>.settings-row,.model-settings-group>.provider-tile-grid{position:relative;border-top:0!important;padding:12px}
+.model-settings-group>*+*:before{content:"";position:absolute;left:12px;right:12px;top:0;height:1px;background:var(--fill-divider)}
+
+.model-expand-icon svg{display:block;width:20px;height:20px}
+.chat-heading>.chat-voice-controls{flex:0 0 auto;overflow:visible;display:flex}
+.chat-heading .header-tts,.chat-heading .header-tts.is-playing{color:var(--text-secondary)}
+.model-name-expand{display:flex;margin:0 auto 12px;border:0;background:transparent;color:var(--text-secondary);cursor:pointer;align-items:center;justify-content:center;gap:6px}
+.provider-detail-section{padding:16px 12px;position:relative}.provider-detail-section+.provider-detail-section{border-top:0}
+.provider-detail-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px}
+.provider-detail-heading h3{margin:0}.provider-account-row,.provider-model-row{display:flex;align-items:center;gap:12px;padding:12px 0}
+.provider-account-row>span,.provider-model-row>span{flex:1}.provider-model-row small,.provider-account-row small{display:block;color:var(--text-secondary)}
+.provider-detail-section input[type=search]{width:100%;padding:10px;border:1px solid var(--fill-divider);border-radius:8px;background:var(--fill-secondary)}
+.provider-model-row+.provider-model-row{border-top:1px solid var(--fill-divider)}
+
+.modal .model-section{background:transparent}
+.modal .model-service>.model-fields{gap:0}
+.modal .model-service .model-field{position:relative;margin:0;padding:18px 0}
+.modal .model-service .model-field+.model-field:before,.modal .model-service>.model-fields:before,.modal .model-service>.model-facts:before,.modal .model-service>.model-actions:before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--fill-divider)}
+.modal .model-service>.model-fields,.modal .model-service>.model-facts,.modal .model-service>.model-actions{position:relative}
+.modal .model-service>.model-facts{padding-top:16px}
+.modal .model-service>.model-actions{padding-top:16px;margin-top:0}
+
+.provider-detail-section+.provider-detail-section:before{content:"";position:absolute;left:12px;right:12px;top:0;height:1px;background:var(--fill-divider)}
+.provider-detail-heading>div{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.provider-model-row>span{min-width:0;overflow-wrap:anywhere}
+.chat-model-options small{display:block;color:var(--text-secondary);font-size:11px;margin-top:3px}
+
+.chat-model-picker:not(:has(.chat-model-options))>header{justify-content:center}
+
+.chat-model-picker .effort-reset{right:7px;left:auto;top:7px;padding:3px;width:24px;height:24px}
+.model-parameters{display:flex!important;flex-direction:column;gap:3px;text-align:left;font-size:10px!important;line-height:1.5}
+.provider-model-row>.model-parameters{flex:1.4}
+
+.chat-model-picker>header strong{padding:0;font-size:15px}
+.popover.chat-model-picker .model-name-expand{font-size:12px;font-weight:600;margin:0;gap:4ch;max-width:100%;overflow-wrap:anywhere;width:auto;justify-content:center;display:flex;line-height:15px;padding:0}
+
+.model-parameter-tooltip{width:max-content;max-width:min(480px,calc(100vw - 24px));background:color-mix(in srgb,var(--bg-primary) 75%,transparent);border:1px solid var(--fill-divider);border-radius:16px;padding:10px 14px;white-space:normal;font-size:12px;color:var(--text-secondary);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+.model-parameter-tooltip>div{display:flex;justify-content:space-between;gap:16px;margin:5px 0}
+.model-parameter-tooltip b{font-weight:600;white-space:nowrap}
+.model-parameter-tooltip span{text-align:right;overflow-wrap:anywhere}
+.chat-view>.floating-ball{top:8px;bottom:auto;z-index:35}
+.chat-view>.floating-ball::before{content:"";position:absolute;inset:-20px;border-radius:50%;background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);mask-image:radial-gradient(circle,#000 40%,transparent 72%);pointer-events:none}
+.chat-view>.floating-ball .ball-touch{position:relative}
+
+.model-effort-block{display:flex;flex-direction:column;align-items:center;gap:8px;line-height:16px;padding:0 22px}
+.model-effort-block header{margin:0}
+.model-effort-block .effort-label{display:block;padding:0;font-size:13px;line-height:24px}
+
+/* Sole slider implementation: full capsule, solid progress, inset stops. */
+.chat-model-picker{height:auto;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-start;padding-top:8px}
+.effort-slider{position:relative;height:24px;flex-shrink:0;margin:10px 0 0;border-radius:999px}
+.effort-slider::before{content:'';position:absolute;left:0;right:0;top:1.5px;height:21px;border-radius:999px;background:linear-gradient(to right,#3298ff 0%,#3298ff calc(12px + var(--effort-progress) - var(--effort-offset)),#e7e7e7 calc(12px + var(--effort-progress) - var(--effort-offset)),#e7e7e7 100%);box-shadow:inset 0 0 0 1px #00000006}
+.model-popup .effort-slider input[type=range]{appearance:none;-webkit-appearance:none;display:block;position:relative;z-index:2;width:100%;height:24px;margin:0;padding:0;border:0;background:transparent;cursor:pointer}
+.model-popup .effort-slider input[type=range]::-webkit-slider-runnable-track{height:21px;background:transparent}
+.model-popup .effort-slider input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;margin-top:-1.5px;border:1px solid #00000008;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0002}
+.model-popup .effort-slider input[type=range]::-moz-range-track{height:21px;background:transparent}
+.model-popup .effort-slider input[type=range]::-moz-range-thumb{width:24px;height:24px;border:1px solid #00000008;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0002}
+.effort-slider .effort-ticks{position:absolute;left:12px;right:12px;top:50%;display:flex;justify-content:space-between;transform:translateY(-50%);pointer-events:none;z-index:1}
+.effort-slider .effort-ticks span{width:3px;height:3px;border-radius:50%;background:#b3b3b3}
+.transcript-correction { display:grid; grid-template-columns:1fr auto; gap:8px; }
+.transcript-correction textarea { grid-column:1 / -1; min-height:72px; padding:10px; color:inherit; background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+.transcript-correction small { grid-column:1 / -1; opacity:.65; }
+
+/* Composer: the model chip is icon-only (thinking ability) and the send
+   button is a solid disc so the arrow stays crisp without the glass veil. */
+.composer .model-chip-icon{display:inline-flex;align-items:center;gap:2px;padding:5px 6px;border-radius:10px;color:var(--text-secondary)}
+.composer .model-chip-icon:hover{background:var(--withu-chrome-pill);color:var(--text-primary)}
+.composer .send-glass{width:34px;height:34px;position:relative}
+.composer .send-glass .send-button{width:34px;height:34px;border-radius:999px;background:#e5f3ff;color:#0a66d6;box-shadow:none}
+.composer .send-glass .send-button:hover{background:#d5eaff}
+.composer .send-glass .send-button:disabled{background:#eef1f4;color:#9aa3ad;opacity:1}
+
+/* ── Model popover: 弹层里只有一张「思考强度」卡，不再套第二层白框 ────── */
+.chat-model-picker.model-popup{padding:0;border:0;background:transparent;box-shadow:none;border-radius:0;gap:0;width:300px;min-width:300px}
+.chat-model-picker .effort-dial{width:100%}
+.chat-model-picker .model-error{margin:6px 2px 0}
+
+.model-effort-block{width:100%;box-sizing:border-box;padding:8px 4px 0;gap:6px;align-items:stretch;border-top:1px solid var(--fill-divider)}
+.model-effort-block header{display:flex;align-items:center;gap:6px;width:100%}
+.model-effort-block header .effort-label{flex:1;padding:0;font-size:12px;line-height:18px;color:var(--text-secondary)}
+.model-effort-block header .effort-current{font-size:12px;font-weight:600;line-height:18px}
+.chat-model-picker .effort-reset{position:static;right:auto;left:auto;top:auto;width:22px;height:22px;margin-left:2px;padding:0;display:grid;place-items:center;border-radius:6px;background:transparent;color:var(--text-secondary)}
+.chat-model-picker .effort-reset:hover{background:var(--fill-secondary);color:var(--text-primary)}
+.chat-model-picker .effort-slider{width:100%;margin-top:4px}
+
+/* 关于 WithU：整张卡片等比收小一档，别把整个窗口填满。 */
+.modal:has(.about-withu){width:min(430px,calc(100vw - 48px))}
+.about-withu{gap:10px;padding:22px 8px 18px}
+.about-withu img{width:84px!important;height:84px!important}
+.about-withu h2{font-size:21px;margin:0 0 6px}
+.about-withu p{font-size:14px;line-height:22px}
+.about-withu small{margin-top:8px;font-size:12px}

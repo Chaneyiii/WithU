@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/action-proposal",
+  "title": "D4 local action proposal",
+  "type": "object",
+  "required": ["schema_version", "scope", "goal_description", "user_evidence_ref", "operation", "target_id", "expected_version", "value"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "scope": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "goal_description": { "type": "string", "minLength": 1, "maxLength": 240 },
+    "user_evidence_ref": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "operation": { "const": "local_annotation" },
+    "target_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "expected_version": { "type": "integer", "minimum": 1 },
+    "value": { "type": "string", "maxLength": 120 }
+  },
+  "additionalProperties": false
+}

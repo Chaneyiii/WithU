@@ -1,0 +1,686 @@
+{
+  "source": {
+    "video": "https://cdn.collectui.com/amplify_video/2109709222371868672/vid/avc1/1920x1080/00HHPdmozwqU9WX_-optimized.mp4",
+    "designer": "https://collectui.com/designers/_eugrl",
+    "note": "Beside icon family shown in the user-supplied reference video. Frames extracted at 0.5s steps; boxes are inclusive pixel rectangles in the 1920x1080 frame."
+  },
+  "extracted": "2026-10-21",
+  "masks": {
+    "bell": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        1273,
+        499,
+        1409,
+        656
+      ],
+      "note": "notification bell",
+      "size": [
+        112,
+        128
+      ]
+    },
+    "book": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        210,
+        489,
+        286,
+        554
+      ],
+      "note": "open book",
+      "size": [
+        93,
+        82
+      ]
+    },
+    "briefcase": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        439,
+        129,
+        509,
+        196
+      ],
+      "note": "briefcase",
+      "size": [
+        87,
+        84
+      ]
+    },
+    "calendar": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        343,
+        419,
+        495,
+        571
+      ],
+      "note": "calendar",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "camera": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        1107,
+        268,
+        1265,
+        405
+      ],
+      "note": "camera body incl. lens",
+      "size": [
+        128,
+        112
+      ]
+    },
+    "chart": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        92,
+        374,
+        190,
+        449
+      ],
+      "note": "line chart",
+      "size": [
+        115,
+        92
+      ]
+    },
+    "chat": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        559,
+        274,
+        717,
+        431
+      ],
+      "note": "speech bubble",
+      "size": [
+        128,
+        127
+      ]
+    },
+    "check": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        953,
+        887,
+        1015,
+        949
+      ],
+      "note": "checkmark in circle",
+      "size": [
+        79,
+        79
+      ]
+    },
+    "clock": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        1622,
+        89,
+        1670,
+        137
+      ],
+      "note": "clock",
+      "size": [
+        65,
+        65
+      ]
+    },
+    "cloud": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        515,
+        658,
+        624,
+        743
+      ],
+      "note": "cloud",
+      "size": [
+        126,
+        102
+      ]
+    },
+    "copy": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        163,
+        138,
+        204,
+        181
+      ],
+      "note": "two overlapping documents",
+      "size": [
+        58,
+        60
+      ]
+    },
+    "document": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        719,
+        130,
+        787,
+        198
+      ],
+      "note": "document",
+      "size": [
+        85,
+        85
+      ]
+    },
+    "faceid": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        261,
+        316,
+        301,
+        365
+      ],
+      "note": "face id",
+      "size": [
+        57,
+        66
+      ]
+    },
+    "flag": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        1082,
+        927,
+        1116,
+        966
+      ],
+      "note": "flag",
+      "size": [
+        51,
+        56
+      ]
+    },
+    "folder": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        1723,
+        889,
+        1819,
+        969
+      ],
+      "note": "folder",
+      "size": [
+        113,
+        97
+      ]
+    },
+    "globe": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        1518,
+        128,
+        1606,
+        216
+      ],
+      "note": "globe",
+      "size": [
+        105,
+        105
+      ]
+    },
+    "goals": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        1624,
+        654,
+        1716,
+        722
+      ],
+      "note": "target with arrow",
+      "size": [
+        109,
+        85
+      ]
+    },
+    "hand": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        1521,
+        513,
+        1600,
+        597
+      ],
+      "note": "open hand (stop)",
+      "size": [
+        96,
+        101
+      ]
+    },
+    "headphones": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        281,
+        554,
+        364,
+        638
+      ],
+      "note": "headphones",
+      "size": [
+        100,
+        101
+      ]
+    },
+    "heart": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        515,
+        636,
+        672,
+        781
+      ],
+      "note": "heart",
+      "size": [
+        128,
+        119
+      ]
+    },
+    "ideas": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        800,
+        193,
+        921,
+        357
+      ],
+      "note": "lightbulb",
+      "size": [
+        97,
+        128
+      ]
+    },
+    "image": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        1558,
+        908,
+        1607,
+        957
+      ],
+      "note": "picture",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "inbox": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        901,
+        403,
+        1049,
+        552
+      ],
+      "note": "inbox tray",
+      "size": [
+        127,
+        128
+      ]
+    },
+    "laptop": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        777,
+        230,
+        827,
+        280
+      ],
+      "note": "laptop",
+      "size": [
+        67,
+        67
+      ]
+    },
+    "library": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        356,
+        159,
+        444,
+        247
+      ],
+      "note": "grid of four rounded squares",
+      "size": [
+        105,
+        105
+      ]
+    },
+    "link": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        751,
+        948,
+        791,
+        986
+      ],
+      "note": "chain link",
+      "size": [
+        57,
+        55
+      ]
+    },
+    "lock": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        156,
+        322,
+        196,
+        363
+      ],
+      "note": "padlock",
+      "size": [
+        57,
+        58
+      ]
+    },
+    "mail": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        777,
+        652,
+        944,
+        793
+      ],
+      "note": "envelope",
+      "size": [
+        128,
+        109
+      ]
+    },
+    "mic": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        1433,
+        697,
+        1533,
+        834
+      ],
+      "note": "microphone (head + stand)",
+      "size": [
+        97,
+        128
+      ]
+    },
+    "monitor": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        1451,
+        924,
+        1490,
+        972
+      ],
+      "note": "display screen",
+      "size": [
+        56,
+        65
+      ]
+    },
+    "palette": {
+      "frame": "icons-4.5s.png",
+      "frameTime": "4.5s",
+      "box": [
+        1034,
+        626,
+        1192,
+        774
+      ],
+      "note": "artist palette",
+      "size": [
+        128,
+        120
+      ]
+    },
+    "pencil": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        1237,
+        107,
+        1285,
+        175
+      ],
+      "note": "pencil",
+      "size": [
+        65,
+        85
+      ]
+    },
+    "person": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        1655,
+        872,
+        1720,
+        955
+      ],
+      "note": "person with plus",
+      "size": [
+        82,
+        100
+      ]
+    },
+    "phone": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        105,
+        568,
+        205,
+        638
+      ],
+      "note": "phone handset",
+      "size": [
+        117,
+        87
+      ]
+    },
+    "pin": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        1517,
+        870,
+        1564,
+        935
+      ],
+      "note": "push pin",
+      "size": [
+        64,
+        82
+      ]
+    },
+    "plane": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        483,
+        318,
+        568,
+        411
+      ],
+      "note": "paper plane",
+      "size": [
+        102,
+        110
+      ]
+    },
+    "question": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        1405,
+        399,
+        1452,
+        445
+      ],
+      "note": "question mark in circle",
+      "size": [
+        64,
+        63
+      ]
+    },
+    "search": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        1651,
+        729,
+        1724,
+        791
+      ],
+      "note": "magnifier",
+      "size": [
+        90,
+        79
+      ]
+    },
+    "settings": {
+      "frame": "icons-8s.png",
+      "frameTime": "8s",
+      "box": [
+        438,
+        955,
+        485,
+        1002
+      ],
+      "note": "gear",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "smiley": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        1006,
+        681,
+        1110,
+        785
+      ],
+      "note": "smiley face",
+      "size": [
+        121,
+        121
+      ]
+    },
+    "trash": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        1529,
+        825,
+        1571,
+        874
+      ],
+      "note": "trash can",
+      "size": [
+        59,
+        66
+      ]
+    },
+    "video": {
+      "frame": "icons-9s.png",
+      "frameTime": "9s",
+      "box": [
+        1633,
+        176,
+        1686,
+        217
+      ],
+      "note": "video camera",
+      "size": [
+        70,
+        58
+      ]
+    },
+    "wand": {
+      "frame": "icons-7s.png",
+      "frameTime": "7s",
+      "box": [
+        263,
+        404,
+        352,
+        467
+      ],
+      "note": "sparkle wand",
+      "size": [
+        106,
+        80
+      ]
+    }
+  },
+  "gaps": [
+    "close",
+    "chevron",
+    "down",
+    "more",
+    "plus",
+    "send",
+    "back",
+    "forward",
+    "external",
+    "sidebar",
+    "sort",
+    "folderOpen",
+    "sun",
+    "moon",
+    "speaker",
+    "speakerMuted",
+    "legal",
+    "stop",
+    "podcast",
+    "reply",
+    "share",
+    "archive",
+    "database",
+    "gauge",
+    "reset",
+    "feed",
+    "activity",
+    "menu",
+    "panel"
+  ]
+}

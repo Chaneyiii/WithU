@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/action-cancel-request",
+  "title": "D4 action cancellation request",
+  "type": "object",
+  "required": ["schema_version", "action_id", "cancel_token"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "action_id": { "type": "string", "minLength": 1 },
+    "cancel_token": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

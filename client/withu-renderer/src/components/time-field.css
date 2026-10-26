@@ -1,0 +1,100 @@
+/* ==========================================================================
+   应用内时间选择：一条胶囊显示 HH:MM，点开是「小时 / 分钟」两列。
+   长度、圆角、底色都对齐 .withu-select-trigger，放在同一张设置卡里不打架；
+   浮层同样挂 body 上做 fixed，绕开设置卡 overflow:hidden 的裁切。
+   ========================================================================== */
+
+.withu-time {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.withu-time-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--fill-divider);
+  border-radius: 10px;
+  background: var(--fill-primary-elevated);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.withu-time-trigger:hover:not(:disabled) { background: var(--fill-secondary-elevated); }
+.withu-time-trigger .icon,
+.withu-time-trigger > svg { color: var(--text-secondary); flex: none; }
+.withu-time.is-open .withu-time-trigger { border-color: var(--text-secondary); }
+.withu-time-trigger:disabled { opacity: 0.55; cursor: default; }
+
+/* 冒号用等宽数字，两列数字不会随字体跳动。 */
+.withu-time-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.4px;
+}
+.withu-time-value i { font-style: normal; color: var(--text-secondary); opacity: 0.7; }
+
+.withu-time-menu {
+  position: fixed;
+  z-index: 220;
+  display: flex;
+  gap: 4px;
+  width: 186px;
+  padding: 5px;
+  border: 1px solid var(--fill-divider);
+  border-radius: 12px;
+  background: var(--fill-primary-elevated);
+  box-shadow: 0 10px 30px rgba(17, 17, 18, 0.14), 0 2px 6px rgba(17, 17, 18, 0.08);
+  animation: withu-time-in 0.12s ease-out;
+}
+
+@keyframes withu-time-in {
+  from { translate: 0 -3px; scale: 0.985; }
+  to { translate: 0 0; scale: 1; }
+}
+
+.withu-time-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-height: 204px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* ui-polish.css 有全局的 * { scrollbar-width: auto !important } 和
+     *::-webkit-scrollbar { width: 4px !important }，这里必须用 !important
+     才能压过它——时间下拉里滚动条不该露出来。 */
+  scrollbar-width: none !important;
+}
+.withu-time-col::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+.withu-time-col::-webkit-scrollbar-thumb { display: none !important; }
+
+.withu-time-col button {
+  flex: none;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  cursor: pointer;
+}
+.withu-time-col button:hover { background: var(--fill-secondary-elevated-hover); }
+.withu-time-col button.is-current {
+  background: var(--fill-secondary-elevated-hover);
+  color: #3298ff;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .withu-time-trigger { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1); }
+[data-theme="dark"] .withu-time-trigger:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); }
+[data-theme="dark"] .withu-time-menu { background: #26262a; border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55); }
+[data-theme="dark"] .withu-time-col button:hover,
+[data-theme="dark"] .withu-time-col button.is-current { background: rgba(255, 255, 255, 0.08); }

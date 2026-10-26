@@ -1,0 +1,171 @@
+[
+  {
+    "id": "cc-kimi-0",
+    "name": "Kimi For Coding",
+    "adapter": "anthropic",
+    "endpoint": "https://api.kimi.com/coding/v1",
+    "icon": "kimi"
+  },
+  {
+    "id": "cc-kimi-1",
+    "name": "Kimi For Coding Global",
+    "adapter": "anthropic",
+    "endpoint": "https://api.kimi.ai/coding/v1",
+    "icon": "kimi"
+  },
+  {
+    "id": "cc-huoshan-2",
+    "name": "火山 Agent Plan",
+    "adapter": "openai-compatible",
+    "endpoint": "https://ark.cn-beijing.volces.com/api/plan/v3",
+    "icon": "huoshan"
+  },
+  {
+    "id": "cc-huoshan-3",
+    "name": "火山 Coding Plan",
+    "adapter": "openai-compatible",
+    "endpoint": "https://ark.cn-beijing.volces.com/api/coding/v3",
+    "icon": "huoshan"
+  },
+  {
+    "id": "cc-byteplus-4",
+    "name": "BytePlus",
+    "adapter": "openai-compatible",
+    "endpoint": "https://ark.ap-southeast.bytepluses.com/api/coding/v3",
+    "icon": "byteplus"
+  },
+  {
+    "id": "cc-doubao-5",
+    "name": "火山方舟",
+    "adapter": "openai-compatible",
+    "endpoint": "https://ark.cn-beijing.volces.com/api/v3",
+    "icon": "doubao"
+  },
+  {
+    "id": "cc-zhipu-6",
+    "name": "Zhipu GLM",
+    "adapter": "openai-compatible",
+    "endpoint": "https://open.bigmodel.cn/api/coding/paas/v4",
+    "icon": "zhipu"
+  },
+  {
+    "id": "cc-zhipu-7",
+    "name": "Zhipu GLM en",
+    "adapter": "openai-compatible",
+    "endpoint": "https://api.z.ai/api/coding/paas/v4",
+    "icon": "zhipu"
+  },
+  {
+    "id": "cc-tencent-8",
+    "name": "Tencent Token Plan",
+    "adapter": "openai-compatible",
+    "endpoint": "https://api.lkeap.cloud.tencent.com/plan/v3",
+    "icon": "tencent"
+  },
+  {
+    "id": "cc-tencent-9",
+    "name": "Tencent Token Plan (Intl)",
+    "adapter": "openai-compatible",
+    "endpoint": "https://tokenhub-intl.tencentcloudmaas.com/plan/v3",
+    "icon": "tencent"
+  },
+  {
+    "id": "cc-tencent-10",
+    "name": "Tencent Token Plan Enterprise Pro",
+    "adapter": "openai-compatible",
+    "endpoint": "https://tokenhub.tencentmaas.com/plan/v3",
+    "icon": "tencent"
+  },
+  {
+    "id": "cc-baidu-14",
+    "name": "Baidu Qianfan Token Plan",
+    "adapter": "openai-compatible",
+    "endpoint": "https://qianfan.baidubce.com/v2/tokenplan/personal",
+    "icon": "baidu"
+  },
+  {
+    "id": "cc-qianwenai-15",
+    "name": "千问AI平台 Token Plan",
+    "adapter": "anthropic",
+    "endpoint": "https://token-plan.cn-beijing.maas.aliyuncs.com/apps/anthropic/v1",
+    "icon": "qianwenai"
+  },
+  {
+    "id": "cc-qwencloud-16",
+    "name": "QwenCloud For Coding",
+    "adapter": "anthropic",
+    "endpoint": "https://coding-intl.dashscope.aliyuncs.com/apps/anthropic/v1",
+    "icon": "qwencloud"
+  },
+  {
+    "id": "cc-qwencloud-17",
+    "name": "QwenCloud Token Plan",
+    "adapter": "anthropic",
+    "endpoint": "https://token-plan.ap-southeast-1.maas.aliyuncs.com/apps/anthropic/v1",
+    "icon": "qwencloud"
+  },
+  {
+    "id": "cc-stepfun-18",
+    "name": "StepFun",
+    "adapter": "openai-compatible",
+    "endpoint": "https://api.stepfun.com/step_plan/v1",
+    "icon": "stepfun"
+  },
+  {
+    "id": "cc-stepfun-19",
+    "name": "StepFun en",
+    "adapter": "openai-compatible",
+    "endpoint": "https://api.stepfun.ai/step_plan/v1",
+    "icon": "stepfun"
+  },
+  {
+    "id": "cc-catcoder-20",
+    "name": "KAT-Coder",
+    "adapter": "openai-compatible",
+    "endpoint": "",
+    "icon": "catcoder",
+    "requiresEndpoint": true
+  },
+  {
+    "id": "cc-longcat-21",
+    "name": "Longcat",
+    "adapter": "openai-compatible",
+    "endpoint": "https://api.longcat.chat/openai/v1",
+    "icon": "longcat"
+  },
+  {
+    "id": "cc-bailing-22",
+    "name": "BaiLing",
+    "adapter": "openai-compatible",
+    "endpoint": "https://api.ant-ling.com/v1",
+    "icon": "bailing"
+  },
+  {
+    "id": "cc-xiaomimimo-23",
+    "name": "Xiaomi MiMo",
+    "adapter": "openai-compatible",
+    "endpoint": "https://api.xiaomimimo.com/v1",
+    "icon": "xiaomimimo"
+  },
+  {
+    "id": "cc-xiaomimimo-24",
+    "name": "Xiaomi MiMo Token Plan (China)",
+    "adapter": "openai-compatible",
+    "endpoint": "https://token-plan-cn.xiaomimimo.com/v1",
+    "icon": "xiaomimimo"
+  },
+  {
+    "id": "qianfan-coding",
+    "name": "Baidu Qianfan Coding Plan",
+    "adapter": "anthropic",
+    "endpoint": "https://qianfan.baidubce.com/anthropic/coding/v1",
+    "icon": "baidu"
+  },
+  {
+    "id": "qwen-coding-cn",
+    "name": "千问AI平台 Coding Plan",
+    "adapter": "anthropic",
+    "endpoint": "https://coding.dashscope.aliyuncs.com/apps/anthropic/v1",
+    "icon": "qianwenai"
+  }
+]

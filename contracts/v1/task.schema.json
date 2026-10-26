@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/task",
+  "title": "task",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "goal",
+    "steps",
+    "impact",
+    "status",
+    "policy_version",
+    "authorization_version",
+    "config_version",
+    "created_at",
+    "cancel_token",
+    "completed_effects"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "./action.schema.json"
+      }
+    },
+    "impact": {
+      "enum": [
+        "read_only",
+        "write",
+        "external_side_effect",
+        "high_impact"
+      ]
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "planned",
+        "awaiting_approval",
+        "running",
+        "paused",
+        "cancelling",
+        "cancelled",
+        "completed",
+        "failed"
+      ]
+    },
+    "policy_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "authorization_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "config_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "cancel_token": {
+      "type": "string"
+    },
+    "completed_effects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

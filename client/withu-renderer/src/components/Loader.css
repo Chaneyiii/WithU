@@ -1,0 +1,78 @@
+/* 全局加载动画：转动的「＋」+ 流光文案。 */
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-secondary, #8a8a8c);
+}
+.loader.is-inline { display: inline-flex; gap: 8px; }
+
+.loader-spark {
+  position: relative;
+  flex: none;
+  width: var(--loader-size, 18px);
+  height: var(--loader-size, 18px);
+  /* 一圈 1.4s，用 linear 保持匀速；加减速放在关键帧里做出「停一下再转」的手感。 */
+  animation: loader-spin 1.4s cubic-bezier(0.62, 0.02, 0.36, 1) infinite;
+}
+.loader-spark i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 999px;
+  background: var(--text-primary, #111112);
+}
+/* 竖笔比横笔长、横笔略微偏下偏右——模仿参考里那支手绘的十字。 */
+.loader-spark i:first-child {
+  width: calc(var(--loader-size, 18px) * 0.085);
+  height: 100%;
+  transform: translate(-50%, -50%) rotate(-1.5deg);
+}
+.loader-spark i:last-child {
+  width: 86%;
+  height: calc(var(--loader-size, 18px) * 0.085);
+  transform: translate(-46%, -38%) rotate(2.5deg);
+}
+@keyframes loader-spin {
+  0% { transform: rotate(0deg); }
+  55% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loader-label {
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  background: linear-gradient(
+    100deg,
+    #8f8f91 0%,
+    #8f8f91 34%,
+    #b3b3b5 46%,
+    #dcdcde 50%,
+    #b3b3b5 54%,
+    #8f8f91 66%,
+    #8f8f91 100%
+  );
+  background-size: 200% 100%;
+  background-position: 120% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: loader-sheen 1.9s ease-in-out infinite;
+}
+@keyframes loader-sheen {
+  0% { background-position: 120% 0; }
+  100% { background-position: -20% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-spark { animation-duration: 4s; }
+  .loader-label { animation: none; color: #a9a9ab; -webkit-text-fill-color: currentColor; background: none; }
+}
+
+/* 各处落位：弹层里的模型列表、整页空态都居中排。 */
+.chat-model-loading { padding: 16px 4px; }
+.model-empty.is-loading { display: flex; align-items: center; justify-content: center; min-height: 96px; }
+.source-null-state.is-loading { min-height: 40vh; }

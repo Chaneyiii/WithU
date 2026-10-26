@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/evidence",
+  "title": "evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "turn_id",
+    "speaker",
+    "captured_at",
+    "text_ref",
+    "redaction",
+    "deleted_at",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string"
+    },
+    "turn_id": {
+      "type": "string"
+    },
+    "speaker": {
+      "enum": [
+        "user",
+        "withu"
+      ]
+    },
+    "captured_at": {
+      "type": "string"
+    },
+    "text_ref": {
+      "type": "string"
+    },
+    "redaction": {
+      "type": "string"
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

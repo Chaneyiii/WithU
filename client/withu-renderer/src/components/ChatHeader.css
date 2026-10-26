@@ -1,0 +1,110 @@
+/* Stage top-right controls per the user-supplied case video: floating white
+   circular buttons with a soft shadow; adjacent toggles share one pill
+   capsule (hover lights a single circle inside the pill). */
+.chat-view .chat-heading .chat-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 60%;
+}
+
+/* Stage controls float over the stage, offset from the top/right edges
+   (doubled class beats ui-polish.css which loads last). */
+.chat-view .chat-heading.chat-heading {
+  top: 14px;
+  height: 44px;
+  padding: 0 22px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.chat-view .chat-heading.chat-heading .chat-heading-actions {
+  pointer-events: auto;
+}
+
+/* Standalone floating circles (e.g. new chat) - the reference diameter. */
+.chat-view .chat-heading .chat-heading-actions > .icon-button {
+  position: static !important;
+  flex: 0 0 40px;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 999px;
+  background: var(--withu-stage);
+  color: var(--text-primary);
+  box-shadow:
+    0 2px 8px #1111121f,
+    0 1px 3px #11111214;
+  transition: background-color 0.15s ease;
+}
+
+.chat-view .chat-heading .chat-heading-actions > .icon-button:hover:not(:disabled) {
+  background: var(--withu-chrome-pill-hover);
+}
+
+.chat-view .chat-heading .chat-heading-actions > .icon-button:active:not(:disabled) {
+  background: var(--withu-chrome-pill-pressed);
+}
+
+.chat-view .chat-heading .stage-controls-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--withu-stage);
+  box-shadow:
+    0 2px 8px #1111121f,
+    0 1px 3px #11111214;
+}
+
+.chat-view .chat-heading .stage-controls-pill .icon-button {
+  box-shadow: none;
+  background: transparent;
+  /* Same visible circle diameter as the standalone new-chat button: 32px
+     inner + 4px pill padding = 40px outer, matching the 40px circle. */
+  width: 32px !important;
+  height: 32px !important;
+  flex: 0 0 32px;
+}
+
+.chat-view .chat-heading .stage-controls-pill .pill-divider {
+  width: 1px;
+  height: 15px;
+  margin: 0 3px;
+  background: var(--fill-divider);
+  flex: 0 0 auto;
+}
+
+.chat-view .chat-heading .voice-call-anchor {
+  display: flex;
+  flex: 0 0 auto;
+}
+/* 通话按钮和朗读/活动按钮同一档颜色：它是原生 button，不能只靠 .icon-button 的继承色。 */
+.chat-view .chat-heading .stage-controls-pill .call-toggle {
+  color: var(--text-primary);
+}
+.chat-view .chat-heading .stage-controls-pill .call-toggle .icon {
+  color: inherit;
+}
+
+@media (max-width: 560px) {
+  .chat-view .chat-heading {
+    right: 12px;
+    gap: 8px;
+  }
+
+  .chat-view .chat-heading .chat-heading-actions {
+    gap: 6px;
+    max-width: none;
+  }
+
+  .chat-view .chat-heading .chat-heading-actions .icon-button {
+    flex-basis: 34px;
+    width: 34px !important;
+    height: 34px !important;
+  }
+}

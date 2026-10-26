@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/error-receipt",
+  "title": "action error receipt",
+  "type": "object",
+  "required": ["schema_version", "code", "message", "retryable", "action_id", "committed_targets"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "code": {
+      "enum": ["validation", "authorization", "scope", "version", "expired", "revoked", "duplicate", "cancelled", "connector_failure", "lifecycle"]
+    },
+    "message": { "type": "string", "minLength": 1 },
+    "retryable": { "type": "boolean" },
+    "action_id": { "type": "string", "minLength": 1 },
+    "committed_targets": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

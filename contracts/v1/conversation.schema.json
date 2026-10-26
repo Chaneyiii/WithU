@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/conversation",
+  "title": "conversation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "conversation_id",
+    "mode",
+    "project_id",
+    "title",
+    "last_activity_at",
+    "task_refs",
+    "draft_ref",
+    "version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "comfort",
+        "cowork"
+      ]
+    },
+    "project_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "last_activity_at": {
+      "type": "string"
+    },
+    "task_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "draft_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

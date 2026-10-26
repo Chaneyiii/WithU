@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/message-correct",
+  "type": "object",
+  "required": ["schema_version", "conversation_id", "message_id", "expected_version", "text"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "conversation_id": {"type": "string", "minLength": 1},
+    "message_id": {"type": "string", "minLength": 1},
+    "expected_version": {"type": "integer", "minimum": 1},
+    "text": {"type": "string", "minLength": 1, "maxLength": 16000}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,11 @@
+/target/
+/target-stage*/
+/var/
+/tmp/
+/output/
+**/dist/
+/node_modules/
+**/node_modules/
+*.tmp
+*.log
+*.local

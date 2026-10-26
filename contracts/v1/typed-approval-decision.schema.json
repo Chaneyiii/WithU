@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "withu://contracts/v1/typed-approval-decision",
+  "title": "D4 per-action approval decision",
+  "type": "object",
+  "required": ["schema_version", "action_id", "approval_id", "scope", "decision"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "action_id": { "type": "string", "minLength": 1 },
+    "approval_id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "decision": { "enum": ["allow_once", "deny"] }
+  },
+  "additionalProperties": false
+}
