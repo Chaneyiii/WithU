@@ -96,12 +96,14 @@ try{
  assert.equal(invoked.data.mcp.arguments.text,'记住这条');
  results.push('read-class proposal emits mcp.invoke with its arguments');
 
- await owner.request('withu:mcp:invoke_result',{operation_id:readTurn.run.operation_id,ok:true,text:'annotated:记住这条'});
+ await owner.request('withu:mcp:invoke_result',{operation_id:readTurn.run.operation_id,ok:true,text:'annotated:记住这条',app:{uri:'ui://withu-check/app',html:'<!doctype html><html><head><title>a</title></head><body>app</body></html>'}});
  let msg=null;
  for(let i=0;i<200;i++){const items=(await owner.request('withu:message:list',{conversation_id:'comfort'})).items;msg=items.find(m=>m.id===readTurn.run.operation_id&&m.blocks?.length);if(msg)break;await sleep(20);}
  assert.ok(msg,'the host result is stored on the turn');
  assert.equal(msg.blocks[0].kind,'text');
  assert.equal(msg.blocks[0].payload.text,'annotated:记住这条');
+ assert.equal(msg.blocks[0].payload.app?.uri,'ui://withu-check/app','the App resource rides along with the result block');
+ assert.equal(msg.blocks[0].payload.app?.uri,'ui://withu-check/app','the App resource rides along with the result block');
  results.push('host result becomes a text block on the same message');
 
  const writeTurn=await submit('comfort','写入一下');

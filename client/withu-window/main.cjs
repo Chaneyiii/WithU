@@ -17,7 +17,7 @@ const devData=process.argv.includes('--withu-dev-data');
 if(devData&&!app.isPackaged)app.setPath('userData',process.env.WITHU_DEV_DATA||path.resolve('output/dev-userData'));
 if(speechCheck||(check&&process.env.WITHU_CHECK_CONFIG==='1'))app.commandLine.appendSwitch('use-fake-device-for-media-stream');
 app.setName('Withu');
-const withuVersion='v0.3.1go4';
+const withuVersion='v0.3.1go5';
 if(process.platform==='win32'){
  app.setAppUserModelId('Withu.Desktop.App');
  // Must run after ready: shell.writeShortcutLink silently fails before the app

@@ -430,7 +430,7 @@ impl Server {
         ]
     }
     /// Persist the host's answer on the same message the turn already created.
-    fn finish_mcp_call(&mut self, operation_id: &str, ok: bool, text: &str) {
+    fn finish_mcp_call(&mut self, operation_id: &str, ok: bool, text: &str, app: Option<Value>) {
         let Some((conversation, config_version, _name, _started)) =
             self.mcp_pending.remove(operation_id)
         else {
@@ -441,7 +441,9 @@ impl Server {
         } else {
             format!("调用失败：{text}")
         };
-        let block = json!({"schema_version":1,"block_id":format!("mcp:{operation_id}:result"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":if ok{"text"}else{"error"},"action_ref":null,"payload":if ok{json!({"text":body.clone()})}else{json!({"code":"mcp_call_failed","message":body.clone(),"retryable":true})}});
+        let mut payload = if ok { json!({"text":body.clone()}) } else { json!({"code":"mcp_call_failed","message":body.clone(),"retryable":true}) };
+        if ok { if let Some(app) = app { payload["app"] = app; } }
+        let block = json!({"schema_version":1,"block_id":format!("mcp:{operation_id}:result"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":if ok{"text"}else{"error"},"action_ref":null,"payload":payload});
         let existing = self
             .store
             .get("assistant-message", operation_id)
@@ -456,15 +458,17 @@ impl Server {
             .as_array()
             .map(|b| b.iter().all(|x| validate("reply-block", x)))
             .unwrap_or(true);
-        if !validate("assistant-message", &object) || !valid_blocks {
+        let valid_object = validate("assistant-message", &object);
+        if !valid_object || !valid_blocks {
+            eprintln!("MCP_DBG invalid object={valid_object} blocks={valid_blocks}");
             return;
         }
         let fact = self.fact("mcp.result", operation_id);
-        if self
+        if let Err(error) = self
             .store
             .put("assistant-message", operation_id, version, &object, &fact)
-            .is_err()
         {
+            eprintln!("MCP_DBG put failed version={version} err={:?}", error);
             return;
         }
         self.event("reply.updated", operation_id, 1, None, json!({"reply":{"operation_id":operation_id,"conversation_id":conversation,"config_version":config_version,"state":if ok{"complete"}else{"failed"},"text":body}}));
@@ -1787,7 +1791,16 @@ impl Server {
             return Ok(json!({"items":self.store.audit().map_err(storage_error)?}));
         }
         if c == "withu:mcp:invoke_result" {
-            keys(p, &["operation_id", "ok", "text"])?;
+            // `app` is optional: a tool may answer with a UI resource the host
+            // already read; anything else is refused so the shape stays known.
+            for key in p.as_object().map(|o| o.keys()).into_iter().flatten() {
+                if !["operation_id", "ok", "text", "app"].contains(&key.as_str()) {
+                    return Err(("validation", "mcp_result_shape"));
+                }
+            }
+            if !p.get("operation_id").is_some() || !p.get("ok").is_some() || !p.get("text").is_some() {
+                return Err(("validation", "mcp_result_shape"));
+            }
             let operation_id = text(&p["operation_id"])?.to_owned();
             let ok = p["ok"]
                 .as_bool()
@@ -1796,7 +1809,8 @@ impl Server {
             if body.chars().count() > 8_000 {
                 return Err(("validation", "mcp_result_size"));
             }
-            self.finish_mcp_call(&operation_id, ok, body);
+            let app = p.get("app").filter(|value| value.is_object()).cloned();
+            self.finish_mcp_call(&operation_id, ok, body, app);
             return Ok(json!({"stored": true}));
         }
         if c == "withu:mcp:tools_register" {
