@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "check": "node checks/contracts.mjs",
+  "check:version": "node checks/version-consistency.mjs",
     "check:lifecycle": "node checks/lifecycle.mjs",
     "build": "cargo build --workspace && vite build --config client/withu-renderer/vite.config.mjs",
     "build:contracts": "node --check client/withu-window/index.mjs && node --check client/withu-preload/index.mjs && node --check client/withu-ipc/index.mjs",

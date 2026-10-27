@@ -8,7 +8,7 @@ export default function AboutWithU({onClose}){
    <h2>WithU</h2>
    <p>Powered by WithU</p>
    <p>版本 {WITHU_VERSION}</p>
-   <p>发布于 2026年10月11日</p>
+   <p>发布于 2026年10月27日</p>
    <small>v3 开发预览版 · Alpha Demo</small>
   </div>
  </Modal>;
