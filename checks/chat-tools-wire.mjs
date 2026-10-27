@@ -19,16 +19,23 @@ const toolCall=(name,args)=>[
   `data: ${JSON.stringify({choices:[{delta:{tool_calls:[{index:0,id:'call_'+Math.random().toString(36).slice(2,8),type:'function',function:{name,arguments:''}}]}}]})}\n\n`,
   `data: ${JSON.stringify({choices:[{delta:{tool_calls:[{index:0,function:{arguments:JSON.stringify(args)}}]}}]})}\n\n`,
 ];
+// Due time must stay in the future or the server honestly rejects the proposal
+// (tool_due_in_past). Compute it relative to now instead of pinning a calendar
+// date, which silently expires the whole check after that date passes.
+const dueDay=new Date(Date.now()+24*3600*1000+8*3600*1000);
+const pad=n=>String(n).padStart(2,'0');
+const DUE_LOCAL=`${dueDay.getUTCFullYear()}-${pad(dueDay.getUTCMonth()+1)}-${pad(dueDay.getUTCDate())}T15:00:00`;
+const DUE_TS=Math.floor(Date.UTC(dueDay.getUTCFullYear(),dueDay.getUTCMonth(),dueDay.getUTCDate(),15,0,0)/1000)-8*3600;
 const proposals={
-  'tool-reminder':()=>toolCall('create_local_reminder',{text:'明天下午三点提醒我开会',due_at_local:'2026-10-26T15:00:00',timezone:'Asia/Taipei'}),
+  'tool-reminder':()=>toolCall('create_local_reminder',{text:'明天下午三点提醒我开会',due_at_local:DUE_LOCAL,timezone:'Asia/Taipei'}),
   'tool-draft':()=>toolCall('create_message_draft',{text:'这是一条只会保存在本机的草稿'}),
   'tool-edit-reminder':()=>toolCall('edit_local_reminder',{find_text:'提醒我开会',new_text:'开会（改到线上）'}),
   'tool-edit-missing':()=>toolCall('edit_local_reminder',{find_text:'不存在的条目',new_text:'x'}),
   'tool-retrieve':()=>toolCall('retrieve_local_information',{query:'会议纪要'}),
   'tool-organize':()=>toolCall('organize_local_content',{lines:['周三交周报','周五体检']}),
   'tool-web':()=>toolCall('search_web_information',{query:'本周天气'}),
-  'tool-bad-offset':()=>toolCall('create_local_reminder',{text:'带偏移的时间',due_at_local:'2026-10-26T15:00:00+08:00',timezone:'Asia/Taipei'}),
-  'tool-bad-zone':()=>toolCall('create_local_reminder',{text:'错误时区',due_at_local:'2026-10-26T15:00:00',timezone:'Mars/Olympus'}),
+  'tool-bad-offset':()=>toolCall('create_local_reminder',{text:'带偏移的时间',due_at_local:DUE_LOCAL+'+08:00',timezone:'Asia/Taipei'}),
+  'tool-bad-zone':()=>toolCall('create_local_reminder',{text:'错误时区',due_at_local:DUE_LOCAL,timezone:'Mars/Olympus'}),
   'tool-unknown':()=>toolCall('send_email',{to:'nobody@example.invalid',body:'x'}),
 };
 // Read-only tools trigger one bounded follow-up model turn; the fixture
@@ -116,7 +123,7 @@ try{
  life=(await owner.request('withu:life:list',{schema_version:1,scope:'comfort'}));
  const reminder=life.reminders.find(r=>r.text==='明天下午三点提醒我开会');
  assert.ok(reminder,'applied reminder exists in life store');
- assert.equal(reminder.due_at,1792998000,'2026-10-26 15:00 Asia/Taipei converted to the correct unix instant');
+ assert.equal(reminder.due_at,DUE_TS,'tomorrow 15:00 Asia/Taipei converted to the correct unix instant');
  assert.equal(reminder.timezone,'Asia/Taipei');
  const decidedMsg=await refreshMessage('comfort',proposeRun.operation_id);
  assert.equal(decidedMsg.blocks[0].payload.decision,'allow','persisted block mirrors the allow decision');

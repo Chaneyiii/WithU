@@ -27,6 +27,9 @@ const assistant=async cid=>(await owner.request('withu:message:list',{conversati
 const waitUserMessage=async mid=>{for(let i=0;i<250;i++){const r=await owner.request('withu:message:list',{conversation_id:'comfort'});if(r.items.some(m=>m.id===mid))return;await delay(20);}throw Error('voice user message timeout '+mid);};
 const waitAssistant=async(cid,rid)=>{for(let i=0;i<250;i++){const hit=(await assistant(cid)).find(m=>m.id===rid);if(hit)return hit;await delay(20);}throw Error('assistant timeout '+rid);};
 const results=[];
+// The live-call fixture is created mid-test; keep it reachable so the finally
+// block can close its WebSocket server (an unclosed one keeps Node alive).
+let live=null;
 
 try{
  await owner.start();
@@ -114,7 +117,7 @@ try{
  results.push('interrupted voice turn produces neither a card nor a side effect');
 
  // 6. O1: inside a live call only the utterance that produced an action is kept.
- const live=await realtimeFixture();
+ live=await realtimeFixture();
  await setVoice(live.endpoint,4);
  const liveScope=(await owner.request('withu:realtime:start',{schema_version:1,conversation_id:'comfort',renderer_id:'r-live',mode:'live',config_version:4})).scope;
  await until(()=>live.commands.some(c=>c.type==='session.update'),'live session.update');
@@ -153,7 +156,10 @@ results.push('C5: an active call suppresses candidates with voice_busy before th
  console.error('server stderr:\n'+(owner.stderr||'(none)'));
  throw error;
 }finally{
- await owner.stop?.().catch(()=>{});
+ // ClientServerOwner has start/quit/forceStop (no `stop`); an optional-chain call
+ // here used to leave the server child alive and the process never exited.
+ if(owner&&!owner.exitResult)await owner.forceStop().catch(()=>{});
+ await live?.close().catch(()=>{});
  await cowork.close().catch(()=>{});
  await comfort.close().catch(()=>{});
 }

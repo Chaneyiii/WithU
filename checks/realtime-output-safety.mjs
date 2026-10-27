@@ -42,7 +42,13 @@ for(const volc of [false,true]){
     if(scenario==='asr-final')send({type:'conversation.item.input_audio_transcription.completed',item_id:id,transcript:key},true);
     if(scenario==='escaped-id')send(volc?{type:'response.output_audio.started',response_id:key}:{type:'response.created',response:{id:key}},true);
     await wait(()=>forScope(scope).some(e=>e.type==='failed'));
-    const events=forScope(scope);assert.ok(events.some(e=>e.code==='sensitive_provider_output'),protocol+' '+scenario);
+    const events=forScope(scope);
+    // Flake note (2026-10-28): this assert failed 2 times in ~19 runs before the
+    // line below existed, both times on escaped-final, and never reproduced in
+    // 53 later runs. Print the observed events so the next failure explains
+    // itself instead of needing a separate debug copy.
+    if(!events.some(e=>e.code==='sensitive_provider_output'))console.error('observed events '+protocol+' '+scenario+' live='+live+': '+JSON.stringify(events.map(e=>({type:e.type,code:e.code}))));
+    assert.ok(events.some(e=>e.code==='sensitive_provider_output'),protocol+' '+scenario);
     assert.equal(events.some(e=>['assistant_final','transcript_final'].includes(e.type)),false);
     assert.equal(events.filter(e=>e.type==='assistant_delta').map(e=>e.text).join('').includes(key),false);
     assert.equal(JSON.stringify(events).includes(key),false);
