@@ -7,6 +7,7 @@ if(fakeSpeech&&(!process.env.WITHU_CHECK_DATA||path.resolve(process.env.WITHU_CH
 const {trustedGuiUrl,permitsAudio}=require('./device-policy.cjs');
 const {showProactivityNotification,settleInterruptedNotifications}=require('./proactivity-notifications.cjs');
 const {createProactivityRunner}=require('./proactivity-runner.cjs');
+const {createMcpClient}=require('../withu-mcp-client/index.mjs');
 const {randomUUID}=require('node:crypto');
 let rendererId=randomUUID(),audioArmedUntil=0,audioCaptureAuthorized=false,cleanupWaiter=null,cleanRendererId=null;
 if(check||fakeSpeech)app.setPath('userData',process.env.WITHU_CHECK_DATA||path.resolve('output/p1/electron-userData'));
@@ -28,6 +29,39 @@ const rendererRoot=path.resolve(__dirname,'../withu-renderer/dist'), entry=path.
 const dev=process.env.WITHU_DEV_URL;
 if(dev&&new URL(dev).origin!=='http://127.0.0.1:4173')throw new Error('unapproved development URL');
 const binary=app.isPackaged?path.join(process.resourcesPath,'withu-server.exe'):process.env.WITHU_SERVER_BINARY||path.resolve(__dirname,'../../target/debug/withu-server.exe');
+// MCP host wiring (B1). A configured server is started with the app, its tools
+// are registered with the session, and every `mcp.invoke` is executed here —
+// write-class tools only after the user agrees in a native dialog.
+let mcpClient=null,mcpWrites=new Set();
+async function startMcp(){
+ if(!process.env.WITHU_MCP_COMMAND)return;
+ try{
+  mcpClient=createMcpClient({command:process.env.WITHU_MCP_COMMAND,args:(process.env.WITHU_MCP_ARGS||'').split(/\s+/).filter(Boolean),cwd:process.cwd()});
+  await mcpClient.initialize({name:'withu-host',version:withuVersion});
+  const {tools=[]}=await mcpClient.listTools();
+  const server=process.env.WITHU_MCP_SERVER||'local';
+  const defs=tools.map(tool=>({name:`mcp__${server}__${tool.name}`,description:tool.description||'',input_schema:tool.inputSchema||{type:'object'},write:Boolean(tool.annotations&&tool.annotations.destructiveHint)}));
+  mcpWrites=new Set(defs.filter(entry=>entry.write).map(entry=>entry.name));
+  await owner.request('withu:mcp:tools_register',{tools:defs});
+ }catch(error){console.error('mcp bootstrap failed:',error.message);}
+}
+async function handleMcpEvent(event){
+ const call=event?.record?.event==='mcp.invoke'?event.data?.mcp:null;
+ if(!call||!mcpClient||!owner?.ready)return;
+ const localName=call.name.split('__').slice(2).join('__');
+ try{
+  if(call.write){
+   const {response}=await dialog.showMessageBox(win,{type:'question',buttons:['取消','允许一次'],defaultId:0,cancelId:0,title:'需要你确认',message:`${localName} 会修改本地数据。`,detail:'这是 MCP App 提供的写入工具，只有你允许后才会执行。',noLink:true});
+   if(response!==1){await owner.request('withu:mcp:invoke_result',{operation_id:call.operation_id,ok:false,text:'你取消了这次调用。'});return;}
+  }
+  const result=await mcpClient.callTool(localName,call.arguments||{});
+  const text=(result.content||[]).filter(item=>item.type==='text').map(item=>item.text).join('\n')||'（没有文本结果）';
+  await owner.request('withu:mcp:invoke_result',{operation_id:call.operation_id,ok:true,text});
+ }catch(error){
+  await owner?.request('withu:mcp:invoke_result',{operation_id:call.operation_id,ok:false,text:error.code||error.message}).catch(()=>{});
+ }
+}
+app.on('before-quit',()=>{void mcpClient?.close().catch(()=>{});});
 function trusted(event){if(event.sender!==win?.webContents||event.senderFrame!==win.webContents.mainFrame||!trustedGuiUrl(event.senderFrame?.url,entry,dev))throw Error('authorization: untrusted frame');}
 async function cleanRenderer(reason){
  audioArmedUntil=0;audioCaptureAuthorized=false;
@@ -57,8 +91,9 @@ app.on('second-instance',()=>void createWindow());
 app.whenReady().then(async()=>{
  const {ClientServerOwner}=await import('./index.mjs');const {channels,validatePublicConfig}=await import('../withu-ipc/index.mjs');const {validateExternalUrl}=await import('./external-links.mjs');
  owner=new ClientServerOwner(binary,{dataDir:path.join(app.getPath('userData'),'withu'),test:check,fakeSpeech});
- owner.on('event',e=>{if(owner?.ready&&!exiting&&win&&!win.isDestroyed())win.webContents.send('withu:server:event',e);});owner.on('status',s=>{serverFailure=s;if(owner?.ready&&!exiting&&win&&!win.isDestroyed())win.webContents.send('withu:server:connection',s);});
+ owner.on('event',e=>{void handleMcpEvent(e);if(owner?.ready&&!exiting&&win&&!win.isDestroyed())win.webContents.send('withu:server:event',e);});owner.on('status',s=>{serverFailure=s;if(owner?.ready&&!exiting&&win&&!win.isDestroyed())win.webContents.send('withu:server:connection',s);});
  try{await owner.start();}catch(e){serverFailure={lifecycle:'failed',reason:e.message};}
+  await startMcp().catch(()=>{});
  async function deliverProactivity(candidateId){if(!candidateId||!owner?.ready||exiting)return null;const entries=(await owner.request('withu:proactivity:feed_list')).items;const entry=entries.find(item=>item.candidate_id===candidateId);if(!entry||entry.notification_status!=='pending')return null;return showProactivityNotification({Notification:require('electron').Notification,eligible:true,appRunning:owner?.ready&&app.isReady()&&!exiting,preview:false,onClick:()=>{if(!win||win.isDestroyed())return;if(!win.isVisible())win.show();if(win.isMinimized())win.restore();win.focus();}});}
  if(owner.ready)await settleInterruptedNotifications({owner,appRunning:()=>!exiting}).catch(()=>{});
  if(owner.ready&&!check){proactivityRunner=createProactivityRunner({owner,isRunning:()=>owner.ready&&!exiting,deliver:deliverProactivity});proactivityTimer=setInterval(()=>void proactivityRunner.tick().catch(()=>{}),30000);}

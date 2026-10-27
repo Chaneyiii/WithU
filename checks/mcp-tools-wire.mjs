@@ -107,11 +107,12 @@ try{
  results.push('host result becomes a text block on the same message');
 
  const writeTurn=await submit('comfort','写入一下');
- await sleep(200);
- assert.ok(!owner.wire.some(e=>e.data?.mcp?.operation_id===writeTurn.run.operation_id),'a write-class tool is never auto-invoked');
+ const writeCall=owner.wire.find(e=>e.data?.mcp?.operation_id===writeTurn.run.operation_id);
+ assert.ok(writeCall,'a write-class tool still reaches the host');
+ assert.equal(writeCall.data.mcp.write,true,'the invocation is flagged so the host must ask first');
  const writeMsg=(await owner.request('withu:message:list',{conversation_id:'comfort'})).items.find(m=>m.id===writeTurn.run.operation_id);
- assert.ok(writeMsg.blocks[0].payload.text.includes('写入类'),'the user is told why it did not run');
- results.push('write-class proposal is refused honestly, never executed');
+ assert.ok(writeMsg.blocks[0].payload.text.includes('等你确认'),'the turn says it is waiting for confirmation');
+ results.push('write-class proposal is handed to the host flagged as write, not executed on the model\'s word');
 
  await owner.request('withu:mcp:invoke_result',{operation_id:readTurn.run.operation_id,ok:false,text:'provider exploded'});
  await assert.rejects(()=>owner.request('withu:mcp:invoke_result',{operation_id:'nope',ok:true}),()=>true).catch(()=>{});

@@ -408,13 +408,7 @@ impl Server {
         operation_id: &str,
         config_version: u64,
     ) -> Vec<Value> {
-        if self.mcp_writes.contains(name) {
-            // A write-class tool must never run on the strength of the model's
-            // own proposal. Until MCP approvals exist, refuse honestly.
-            return vec![
-                json!({"schema_version":1,"block_id":format!("mcp:{operation_id}"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":"text","action_ref":null,"payload":{"text":"这个工具声明为写入类，需要你批准后才能执行；MCP 写入审批还没接通，所以本次没有执行。"}}),
-            ];
-        }
+        let write = self.mcp_writes.contains(name);
         self.mcp_pending.insert(
             operation_id.to_owned(),
             (
@@ -424,11 +418,19 @@ impl Server {
                 std::time::Instant::now(),
             ),
         );
-        self.event("mcp.invoke", operation_id, 1, None, json!({"mcp":{"operation_id":operation_id,"conversation_id":conversation,"name":name,"arguments":args}}));
+        // The host executes; a write-class tool must ask the user first, so the
+        // flag travels with the invocation instead of being decided here.
+        self.event("mcp.invoke", operation_id, 1, None, json!({"mcp":{"operation_id":operation_id,"conversation_id":conversation,"name":name,"arguments":args,"write":write}}));
+        let text = if write {
+            format!("{name} 会修改数据，等你确认后才会执行。")
+        } else {
+            format!("正在调用 {name}…")
+        };
         vec![
-            json!({"schema_version":1,"block_id":format!("mcp:{operation_id}"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":"text","action_ref":null,"payload":{"text":format!("正在调用 {name}…")}}),
+            json!({"schema_version":1,"block_id":format!("mcp:{operation_id}"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":"text","action_ref":null,"payload":{"text":text}}),
         ]
     }
+
     /// Persist the host's answer on the same message the turn already created.
     fn finish_mcp_call(&mut self, operation_id: &str, ok: bool, text: &str, app: Option<Value>) {
         let Some((conversation, config_version, _name, _started)) =
