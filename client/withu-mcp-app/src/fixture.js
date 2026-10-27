@@ -37,6 +37,24 @@ export function makeAppDocument(resourceHtml, nonce) {
   return resourceHtml.replaceAll('__WITHU_APP_CSP__', csp).replaceAll('__WITHU_APP_NONCE__', nonce);
 }
 
+/**
+ * Wrap a *third-party* App document. The bundled demo carries its own
+ * placeholders, but a standard MCP App arrives as plain HTML, so the host has
+ * to supply the policy itself: same CSP as the bundled path, plus a nonce on
+ * every inline script (otherwise a `script-src 'nonce-…'` policy blocks them).
+ */
+export function makeRuntimeAppDocument(resourceHtml, nonce) {
+  if (typeof resourceHtml !== 'string' || new TextEncoder().encode(resourceHtml).byteLength > 1_048_576) throw new TypeError('MCP App resource size is invalid');
+  if (typeof nonce !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(nonce)) throw new TypeError('MCP App nonce is invalid');
+  if (resourceHtml.includes('__WITHU_APP_CSP__')) return makeAppDocument(resourceHtml, nonce);
+  const csp = `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; img-src data:; font-src data:; media-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'`;
+  const meta = `<meta http-equiv="Content-Security-Policy" content="${csp}">`;
+  const withNonce = resourceHtml.replace(/<script(?![^>]*\bnonce=)/gi, `<script nonce="${nonce}"`);
+  if (/<head[^>]*>/i.test(withNonce)) return withNonce.replace(/<head([^>]*)>/i, `<head$1>${meta}`);
+  if (/<html[^>]*>/i.test(withNonce)) return withNonce.replace(/<html([^>]*)>/i, `<html$1><head>${meta}</head>`);
+  return `<head>${meta}</head>` + withNonce;
+}
+
 export function isAcceptedAppMessage(event, {source, origin, activeSessionId, sessionId, maxBytes = APP_MESSAGE_LIMIT}) {
   if (!source || event?.source !== source || event?.origin !== origin || origin !== 'null' || !sessionId || activeSessionId !== sessionId) return false;
   try {

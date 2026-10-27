@@ -4,7 +4,7 @@ import {App} from '@modelcontextprotocol/ext-apps';
 import {AppBridge} from '@modelcontextprotocol/ext-apps/app-bridge';
 import {InMemoryTransport} from '@modelcontextprotocol/client';
 import {RESOURCE_MIME_TYPE} from '@modelcontextprotocol/ext-apps/server';
-import {APP_TOOL_NAME, createDemoMcpFixture, makeAppDocument, isAcceptedAppMessage, validateAppNavigation, validateAppSize, validateAppToolIntent} from '../src/fixture.js';
+import {APP_TOOL_NAME, createDemoMcpFixture, makeRuntimeAppDocument, makeAppDocument, isAcceptedAppMessage, validateAppNavigation, validateAppSize, validateAppToolIntent} from '../src/fixture.js';
 
 test('registers, negotiates, and reads the demo MCP App resource through MCP SDK', async () => {
   const fixture = await createDemoMcpFixture();
@@ -111,4 +111,17 @@ test('runs App resource teardown over the standard SDK protocol', async () => {
     await bridge.teardownResource({});
     assert.equal(tornDown, true);
   } finally {await bridge.close(); await app.close(); await fixture.close();}
+});
+
+test('wraps a third-party App document with the same policy and a script nonce', () => {
+  const html = '<!doctype html><html><head><title>t</title></head><body><script>parent.postMessage({}, "*")</script></body></html>';
+  const doc = makeRuntimeAppDocument(html, 'nonce-abc');
+  assert.ok(doc.includes("default-src 'none'"), 'the host supplies the CSP');
+  assert.ok(doc.includes("script-src 'nonce-nonce-abc'"), 'inline scripts are bound to the nonce');
+  assert.ok(/<script nonce="nonce-abc"/.test(doc), 'the inline script carries the nonce');
+  assert.ok(doc.indexOf('Content-Security-Policy') < doc.indexOf('<body>'), 'the policy lands in the head');
+  const noHead = makeRuntimeAppDocument('<div>bare</div>', 'n2');
+  assert.ok(noHead.startsWith('<head>'), 'a fragment still gets a head with the policy');
+  assert.throws(() => makeRuntimeAppDocument('<div/>', 'bad nonce'), /nonce is invalid/);
+  assert.throws(() => makeRuntimeAppDocument('x'.repeat(1_048_577), 'n3'), /size is invalid/);
 });
