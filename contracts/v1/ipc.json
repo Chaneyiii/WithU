@@ -86,6 +86,7 @@
     "withu:message:correct",
     "withu:affect:plan",
     "withu:affect:feedback",
-    "withu:mcp:tools_register"
+    "withu:mcp:tools_register",
+    "withu:mcp:invoke_result"
   ]
 }

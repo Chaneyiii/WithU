@@ -38,7 +38,7 @@
         "ideas.updated",
         "identity.updated",
         "library.deleted",
-        "library.updated",
+        "library.updated", "mcp.invoke",
         "memory.candidate.created",
         "memory.corrected",
         "memory.deleted",

@@ -85,6 +85,10 @@ struct Server {
     /// registered, not trusted: every call still goes through the same
     /// proposal path and the same approval gate as a local tool.
     mcp_tools: Vec<Value>,
+    /// Tools the host declared as write-class. They are never auto-invoked.
+    mcp_writes: HashSet<String>,
+    /// Calls handed to the host and still waiting for `mcp:invoke_result`.
+    mcp_pending: std::collections::BTreeMap<String, (String, u64, String, std::time::Instant)>,
 }
 struct ChatAction {
     operation_id: String,
@@ -392,6 +396,78 @@ impl Server {
                 tools: Vec::new(),
             },
         ))
+    }
+    /// Hand an MCP proposal to the host instead of the local life chain. The
+    /// host executes `tools/call` and answers through `mcp:invoke_result`; until
+    /// then the turn says what it is doing rather than pretending it finished.
+    fn begin_mcp_call(
+        &mut self,
+        name: &str,
+        args: &Value,
+        conversation: &str,
+        operation_id: &str,
+        config_version: u64,
+    ) -> Vec<Value> {
+        if self.mcp_writes.contains(name) {
+            // A write-class tool must never run on the strength of the model's
+            // own proposal. Until MCP approvals exist, refuse honestly.
+            return vec![
+                json!({"schema_version":1,"block_id":format!("mcp:{operation_id}"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":"text","action_ref":null,"payload":{"text":"这个工具声明为写入类，需要你批准后才能执行；MCP 写入审批还没接通，所以本次没有执行。"}}),
+            ];
+        }
+        self.mcp_pending.insert(
+            operation_id.to_owned(),
+            (
+                conversation.to_owned(),
+                config_version,
+                name.to_owned(),
+                std::time::Instant::now(),
+            ),
+        );
+        self.event("mcp.invoke", operation_id, 1, None, json!({"mcp":{"operation_id":operation_id,"conversation_id":conversation,"name":name,"arguments":args}}));
+        vec![
+            json!({"schema_version":1,"block_id":format!("mcp:{operation_id}"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":"text","action_ref":null,"payload":{"text":format!("正在调用 {name}…")}}),
+        ]
+    }
+    /// Persist the host's answer on the same message the turn already created.
+    fn finish_mcp_call(&mut self, operation_id: &str, ok: bool, text: &str) {
+        let Some((conversation, config_version, _name, _started)) =
+            self.mcp_pending.remove(operation_id)
+        else {
+            return;
+        };
+        let body = if ok {
+            text.to_owned()
+        } else {
+            format!("调用失败：{text}")
+        };
+        let block = json!({"schema_version":1,"block_id":format!("mcp:{operation_id}:result"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":if ok{"text"}else{"error"},"action_ref":null,"payload":if ok{json!({"text":body.clone()})}else{json!({"code":"mcp_call_failed","message":body.clone(),"retryable":true})}});
+        let existing = self
+            .store
+            .get("assistant-message", operation_id)
+            .ok()
+            .flatten();
+        let version = existing
+            .as_ref()
+            .and_then(|m| m["version"].as_u64())
+            .unwrap_or(0);
+        let object = json!({"schema_version":1,"id":operation_id,"operation_id":operation_id,"conversation_id":conversation,"config_version":config_version,"role":"assistant","text":body,"file_refs":[],"submitted_at":now(),"duration_ms":0,"blocks":[block],"version":version+1});
+        let valid_blocks = object["blocks"]
+            .as_array()
+            .map(|b| b.iter().all(|x| validate("reply-block", x)))
+            .unwrap_or(true);
+        if !validate("assistant-message", &object) || !valid_blocks {
+            return;
+        }
+        let fact = self.fact("mcp.result", operation_id);
+        if self
+            .store
+            .put("assistant-message", operation_id, version, &object, &fact)
+            .is_err()
+        {
+            return;
+        }
+        self.event("reply.updated", operation_id, 1, None, json!({"reply":{"operation_id":operation_id,"conversation_id":conversation,"config_version":config_version,"state":if ok{"complete"}else{"failed"},"text":body}}));
     }
     /// The tool catalog the model sees: local life tools plus whatever the
     /// host registered from MCP. Kept in one place so the text path and the
@@ -1710,6 +1786,19 @@ impl Server {
             }
             return Ok(json!({"items":self.store.audit().map_err(storage_error)?}));
         }
+        if c == "withu:mcp:invoke_result" {
+            keys(p, &["operation_id", "ok", "text"])?;
+            let operation_id = text(&p["operation_id"])?.to_owned();
+            let ok = p["ok"]
+                .as_bool()
+                .ok_or(("validation", "mcp_result_shape"))?;
+            let body = text(&p["text"])?;
+            if body.chars().count() > 8_000 {
+                return Err(("validation", "mcp_result_size"));
+            }
+            self.finish_mcp_call(&operation_id, ok, body);
+            return Ok(json!({"stored": true}));
+        }
         if c == "withu:mcp:tools_register" {
             keys(p, &["tools"])?;
             let tools = p["tools"]
@@ -1719,6 +1808,7 @@ impl Server {
                 return Err(("validation", "mcp_tools_limit"));
             }
             let mut normalized = Vec::with_capacity(tools.len());
+            let mut writes = HashSet::new();
             for tool in tools {
                 let name = tool["name"]
                     .as_str()
@@ -1737,11 +1827,15 @@ impl Server {
                 if !schema.is_object() {
                     return Err(("validation", "mcp_tool_schema"));
                 }
+                if tool["write"].as_bool().unwrap_or(false) {
+                    writes.insert(name.to_owned());
+                }
                 normalized.push(json!({"type":"function","function":{"name":name,"description":description,"parameters":schema}}));
             }
             // Registration is a snapshot of what the host currently has, not an
             // append: a restarted server must not leave stale tools behind.
             self.mcp_tools = normalized;
+            self.mcp_writes = writes;
             return Ok(json!({"registered": self.mcp_tools.len()}));
         }
         if c == "withu:proactivity:policy_get" {
@@ -3234,6 +3328,17 @@ impl Server {
                     .as_ref()
                     .map(|tool| (tool["name"].as_str().unwrap_or(""), &tool["arguments"]))
                 {
+                    Some((name, arguments)) if name.starts_with("mcp__") => {
+                        let parsed: Value = serde_json::from_str(arguments.as_str().unwrap_or(""))
+                            .unwrap_or(Value::Null);
+                        self.begin_mcp_call(
+                            name,
+                            &parsed,
+                            &update.conversation,
+                            &update.id,
+                            update.config,
+                        )
+                    }
                     Some((name, arguments)) => {
                         let parsed: Value = serde_json::from_str(arguments.as_str().unwrap_or(""))
                             .unwrap_or(Value::Null);
@@ -3528,6 +3633,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         semantic_index: withu_memory::SemanticMemoryIndex::default(),
         memory_offered: HashSet::new(),
         mcp_tools: Vec::new(),
+        mcp_writes: HashSet::new(),
+        mcp_pending: std::collections::BTreeMap::new(),
         fake_speech: std::env::var("WITHU_FAKE_SPEECH_MODE").as_deref() == Ok("1"),
         test: std::env::var("WITHU_TEST_MODE").as_deref() == Ok("1"),
     };

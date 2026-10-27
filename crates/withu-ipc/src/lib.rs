@@ -13,6 +13,7 @@ pub const CHANNELS: &[&str] = &[
     // Main-only: the host registers the MCP tools it discovered so the model
     // can see them; the renderer never calls this.
     "withu:mcp:tools_register",
+    "withu:mcp:invoke_result",
     "withu:reply:start",
     "withu:reply:cancel",
     "withu:server:status",
