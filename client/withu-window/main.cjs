@@ -36,14 +36,19 @@ let mcpClient=null,mcpWrites=new Set();
 async function startMcp(){
  if(!process.env.WITHU_MCP_COMMAND)return;
  try{
-  mcpClient=createMcpClient({command:process.env.WITHU_MCP_COMMAND,args:(process.env.WITHU_MCP_ARGS||'').split(/\s+/).filter(Boolean),cwd:process.cwd()});
+  // `spawn('node')` silently fails inside a packaged app (no node on PATH, and
+  // the failure never surfaces as an error here), so a bare `node` is served by
+  // the Electron binary itself in ELECTRON_RUN_AS_NODE mode.
+  const requested=process.env.WITHU_MCP_COMMAND;
+  const asNode=/^node(js)?$/i.test(requested.trim());
+  mcpClient=createMcpClient({command:asNode?process.execPath:requested,args:(process.env.WITHU_MCP_ARGS||'').split(/\s+/).filter(Boolean),env:asNode?{ELECTRON_RUN_AS_NODE:'1'}:{},cwd:process.cwd()});
   await mcpClient.initialize({name:'withu-host',version:withuVersion});
   const {tools=[]}=await mcpClient.listTools();
   const server=process.env.WITHU_MCP_SERVER||'local';
   const defs=tools.map(tool=>({name:`mcp__${server}__${tool.name}`,description:tool.description||'',input_schema:tool.inputSchema||{type:'object'},write:Boolean(tool.annotations&&tool.annotations.destructiveHint)}));
   mcpWrites=new Set(defs.filter(entry=>entry.write).map(entry=>entry.name));
   await owner.request('withu:mcp:tools_register',{tools:defs});
- }catch(error){console.error('mcp bootstrap failed:',error.message);}
+ }catch(error){console.error('mcp bootstrap failed:',error&&(error.code||error.message));}
 }
 async function handleMcpEvent(event){
  const call=event?.record?.event==='mcp.invoke'?event.data?.mcp:null;
