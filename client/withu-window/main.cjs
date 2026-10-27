@@ -13,6 +13,8 @@ const {createMcpClient}=require('../withu-mcp-client/index.mjs');// A dev run sh
 // silently ends up talking to a fake model.
 async function ensureFixtureModel(){
  const explicit=process.argv.includes('--withu-fixture-model');
+ // Checks start from a deliberately empty profile, so they can switch this off.
+ if(process.env.WITHU_FIXTURE_MODEL==='off')return;
  if(app.isPackaged&&!explicit)return;
  if(!devData&&!explicit)return;
  try{

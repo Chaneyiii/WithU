@@ -64,7 +64,7 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const endpoint=`http://127.0.0.1:${server.address().port}/v1`;
 
 const port=9300+Math.floor(Math.random()*400);
-const env={...process.env,WITHU_DEV_DATA:data};
+const env={...process.env,WITHU_FIXTURE_MODEL:'off',WITHU_DEV_DATA:data};
 delete env.ELECTRON_RUN_AS_NODE;
 const flags=['.','--withu-dev-data',`--remote-debugging-port=${port}`,'--no-sandbox','--disable-gpu-sandbox','--disable-gpu'];
 const app=spawn(path.join(root,'node_modules/electron/dist/electron.exe'),flags,{cwd:root,env,stdio:['ignore','pipe','pipe']});
