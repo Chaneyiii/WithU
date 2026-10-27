@@ -18,25 +18,11 @@ if(devData&&!app.isPackaged)app.setPath('userData',process.env.WITHU_DEV_DATA||p
 if(speechCheck||(check&&process.env.WITHU_CHECK_CONFIG==='1'))app.commandLine.appendSwitch('use-fake-device-for-media-stream');
 app.setName('Withu');
 const withuVersion='v0.3.1go5';
-if(process.platform==='win32'){
- app.setAppUserModelId('Withu.Desktop.App');
- // Must run after ready: shell.writeShortcutLink silently fails before the app
- // is ready, which left Windows without an AUMID shortcut and made the taskbar
- // fall back to the electron.exe icon.
- // Windows draws the taskbar button from the shortcut matching the AUMID,
- // not from an API call: keep a Start Menu shortcut pointing at the icon so
- // CLI-launched dev runs show the Withu mark instead of the electron.exe one.
- app.whenReady().then(()=>{try{
-  const linkPath=path.join(app.getPath('appData'),'Microsoft','Windows','Start Menu','Programs','Withu.lnk');
-  // 打包后 __dirname 在 app.asar 里，Windows 读不了 asar 内的图标文件，
-  // 任务栏会因为这个快捷方式的图标无效而退回到 Electron 标。图标已由打包器
-  // 复制到 resources/ 下，这里指向包外的真实文件。
-  const iconPath=app.isPackaged?path.join(process.resourcesPath,'withu-icon.ico'):path.resolve(__dirname,'withu-icon.ico');
-  // 'replace' = 不存在就建、存在就覆盖；'create' 遇到已有 .lnk 会失败，
-  // 导致图标路径停留在旧版本（指向 app.asar 内那份无效图标）。
-  shell.writeShortcutLink(linkPath,'replace',{target:process.execPath,args:app.isPackaged?'':'.',cwd:process.cwd(),icon:iconPath,iconIndex:0,description:'Withu',appUserModelId:'Withu.Desktop.App'});
- }catch(error){console.error('shortcut icon link failed:',error.message);}});
-}
+// A custom AppUserModelID only helps when a matching Start Menu shortcut exists.
+// shell.writeShortcutLink returns false on hosts that block the IShellLink COM
+// object, so the shortcut never appeared and the taskbar fell back to a generic
+// icon. Without an explicit AUMID Windows uses the executable's own icon, which
+// is what this build ships.
 let owner,win,tray,exiting=false,quitPromise,serverFailure,proactivityRunner,proactivityTimer;
 const rendererRoot=path.resolve(__dirname,'../withu-renderer/dist'), entry=path.join(rendererRoot,'index.html');
 const dev=process.env.WITHU_DEV_URL;
