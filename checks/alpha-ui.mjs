@@ -14,11 +14,11 @@ export async function alphaChecks({owner,wc,completeExit,root,getWindow}){
  const close=async()=>{await js(`document.querySelector('.modal header .icon-button').click()`);await wait('!document.querySelector(".modal")');};
  const clickRead=async()=>{const pos=await js(`(()=>{const r=document.querySelector('.message.assistant .read-reply').getBoundingClientRect();return {x:Math.round(r.x+r.width/2),y:Math.round(r.y+r.height/2)};})()`);getWindow().focus();wc().sendInputEvent({type:'mouseDown',button:'left',clickCount:1,...pos});wc().sendInputEvent({type:'mouseUp',button:'left',clickCount:1,...pos});};
  let requests=0,ttsRequests=0,speechDelay=false;const ttsInputs=[];const server=http.createServer(async(req,res)=>{
-  requests++;if(req.url==='/v1/audio/speech')ttsRequests++;let input='';for await(const c of req)input+=c;
+  const reqPath=req.url.startsWith('http')?new URL(req.url).pathname:req.url;requests++;if(reqPath==='/v1/audio/speech')ttsRequests++;let input='';for await(const c of req)input+=c;
   assert.equal(req.headers.authorization,'Bearer FICTIONAL-ALPHA-ONLY');
-  if(req.url==='/v1/audio/transcriptions'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({text:'Hello. This is a speech recognition test.'}));return;}
-  if(req.url==='/v1/audio/speech'){ttsInputs.push(JSON.parse(input).input);if(speechDelay)await sleep(700);res.setHeader('Content-Type','audio/pcm');res.end(speechDelay?Buffer.alloc(24000*2*2,1):Buffer.from([1,0,2,0]));return;}
-  if(req.url==='/v1/models'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:[{id:'fixture-llm'},{id:'fixture-alternate'}]}));return;}
+  if(reqPath==='/v1/audio/transcriptions'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({text:'Hello. This is a speech recognition test.'}));return;}
+  if(reqPath==='/v1/audio/speech'){ttsInputs.push(JSON.parse(input).input);if(speechDelay)await sleep(700);res.setHeader('Content-Type','audio/pcm');res.end(speechDelay?Buffer.alloc(24000*2*2,1):Buffer.from([1,0,2,0]));return;}
+  if(reqPath==='/v1/models'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:[{id:'fixture-llm'},{id:'fixture-alternate'}]}));return;}
   if(JSON.parse(input).messages?.[0]?.content?.includes('Summarize the conversation')){res.setHeader('Content-Type','text/event-stream');res.end('data: '+JSON.stringify({choices:[{delta:{content:'语音测试对话'},finish_reason:'stop'}]})+'\n\ndata: [DONE]\n\n');return;}
   res.setHeader('Content-Type','text/event-stream');res.end('data: '+JSON.stringify({choices:[{delta:{content:'**Bold reply**\n\n- one\n- two\n\n<script>bad()</script>'},finish_reason:'stop'}]})+'\n\ndata: [DONE]\n\n');
  });await new Promise(r=>server.listen(0,'127.0.0.1',r));

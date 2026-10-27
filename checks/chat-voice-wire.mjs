@@ -11,10 +11,10 @@ const fixture=http.createServer(async(req,res)=>{
  res.on('close',()=>closed++);
  if(mode==='slow'){res.writeHead(200,{'Content-Type':'application/json'});res.write('{');return;}
  if(mode==='auth'){res.writeHead(401);res.end(key);return;}
- if(req.url==='/v1/models'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(mode==='leak'?{data:[{id:key}]}:{data:[{id:'model-a'},{id:'model-b'},{id:'model-a'}],has_more:true}));return;}
- if(req.url==='/v1/audio/transcriptions'){assert.ok(body.includes('RIFF'));assert.ok(body.includes('filename="utterance.wav"'));res.setHeader('Content-Type','application/json');res.end(JSON.stringify({text:mode==='bad'?'wrong output':'Hello. This is a speech recognition test.'}));return;}
- if(req.url==='/v1/audio/speech'){const v=JSON.parse(body);assert.equal(v.model,'tts-user-model');assert.equal(v.voice,'user-voice');assert.ok(!body.includes(key));res.setHeader('Content-Type','audio/pcm');res.end(Buffer.from([1,0,2,0,3,0]));return;}
- if(req.url==='/v1/chat/completions'){res.setHeader('Content-Type','text/event-stream');res.end('data: '+JSON.stringify({choices:[{delta:{content:'Fixture reply'},finish_reason:'stop'}]})+'\n\ndata: [DONE]\n\n');return;}
+ const reqPath=req.url.startsWith('http')?new URL(req.url).pathname:req.url;if(reqPath==='/v1/models'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(mode==='leak'?{data:[{id:key}]}:{data:[{id:'model-a'},{id:'model-b'},{id:'model-a'}],has_more:true}));return;}
+ if(reqPath==='/v1/audio/transcriptions'){assert.ok(body.includes('RIFF'));assert.ok(body.includes('filename="utterance.wav"'));res.setHeader('Content-Type','application/json');res.end(JSON.stringify({text:mode==='bad'?'wrong output':'Hello. This is a speech recognition test.'}));return;}
+ if(reqPath==='/v1/audio/speech'){const v=JSON.parse(body);assert.equal(v.model,'tts-user-model');assert.equal(v.voice,'user-voice');assert.ok(!body.includes(key));res.setHeader('Content-Type','audio/pcm');res.end(Buffer.from([1,0,2,0,3,0]));return;}
+ if(reqPath==='/v1/chat/completions'){res.setHeader('Content-Type','text/event-stream');res.end('data: '+JSON.stringify({choices:[{delta:{content:'Fixture reply'},finish_reason:'stop'}]})+'\n\ndata: [DONE]\n\n');return;}
  throw Error('unexpected route '+req.url);
 });fixture.on('connection',s=>{sockets.add(s);s.on('close',()=>sockets.delete(s));});await new Promise(r=>fixture.listen(0,'127.0.0.1',r));
 const owner=new ClientServerOwner(path.resolve(process.env.WITHU_SERVER_BINARY || 'output/p3/build-target/debug/withu-server.exe'),{dataDir:root,test:true});

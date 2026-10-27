@@ -184,8 +184,13 @@ try{
  throw error;
 }finally{
  socket?.close();
- app.kill();
- await new Promise(r=>setTimeout(r,300));
+ // Kill only the tree this check started; never by image name, which would
+ // also close a window the user is working in.
+ await new Promise(resolve => {
+  const kill = spawn('taskkill', ['/PID', String(app.pid), '/T', '/F'], {windowsHide: true, stdio: 'ignore'});
+  kill.once('exit', resolve);
+  kill.once('error', () => { try { app.kill(); } catch {} resolve(); });
+ });
  server.close();
 }
 console.log('PASS chat gui ('+results.length+'):\n'+results.map(r=>' - '+r).join('\n'));

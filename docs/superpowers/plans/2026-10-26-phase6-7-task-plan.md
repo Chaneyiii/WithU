@@ -841,3 +841,30 @@ feed entries = 1 [{"status":"pending"}]
 
 - 若"全部"= T16-C + T17（不含 B1）：现在只剩 17.2 的七项 + 17.3 的真机确认，**打包可在 1 个工作日内**。
 - 若"全部"= 含 B1：打包要往后推 3–5 天，且 B1 会改 server 的消息/块契约，T17-B 的六场景要重跑。
+
+---
+
+## 18. B1 开工（2026-10-27 17:30，go5 含 B1）
+
+### 18.1 M1 已完成：宿主能说 MCP
+
+提交 `cc9d421`。`client/withu-mcp-client/index.mjs` 手写 stdio JSON-RPC 客户端（不用 SDK 传输层，因为宿主需要自己控制超时/上限/子进程回收），`npm run check:mcp:client` **PASS 10**：
+
+- initialize 协商协议与能力；`tools/list` 返回模型可用的 schema；
+- `resources/list` + `resources/read` 拿到 App 文档；
+- `tools/call` 参数与结果往返；
+- 未知工具、未知资源各自报 `mcp_error`（**不返回空内容糊弄**）；
+- 静默 server 超时（`mcp_timeout`）、缺失二进制（`mcp_server_unavailable`）；
+- `close()` 关子进程并拒绝后续请求。
+
+### 18.2 还差三个里程碑（这才是 3–5 天的主体）
+
+| 里程碑 | 内容 | 关键难点 |
+|---|---|---|
+| **M2 模型侧接线** | 让模型的工具目录包含 MCP 工具；模型提案 → 宿主执行 → 结果回到消息 | 模型在 Rust server，MCP 客户端在 Electron main；需要一条「server 问 main 要工具清单 / main 代执行」的 IPC 契约，且**执行必须过 R07**（App 内动作不能自授权） |
+| **M3 App 资源进消息** | 把 `resources/read` 拿到的文档交给 `McpAppHost`，在消息内渲染 | 现在 `McpAppHost` 只认构建期的 `virtual:withu-mcp-app-resource`；要接受运行时资源 = 一次明确的渲染层改动（你已同意"该有的功能必须有"） |
+| **M4 生命周期收口** | 会话切换/窗口隐藏/退出时释放 App 视图、端口、子进程；媒体协调沿用现有 coordinator | 复用 B4/B5 已验的机制，但要接到动态 App 上 |
+
+### 18.3 打包顺延
+
+既然 go5 含 B1，`VERSION → v0.3.1go5` 与打包要等 M2–M4 完成后再做；否则打完还要重打。当前冻结候选是 `418a3c0`，B1 会把它推后。

@@ -13,12 +13,12 @@ const server=http.createServer(async(req,res)=>{
  let body='';for await(const part of req)body+=part;
  assert.ok(!body.includes(key));
  res.on('close',()=>closed.push(req.url));
- if(req.url==='/v1/chat/completions'){
+ const reqPath=req.url.startsWith('http')?new URL(req.url).pathname:req.url;if(reqPath==='/v1/chat/completions'){
   res.writeHead(200,{'Content-Type':'text/event-stream'});
   res.write('data: '+JSON.stringify({choices:[{delta:{content:'A sentence.'}}]})+'\n\n');
- }else if(req.url==='/v1/audio/speech'){
+ }else if(reqPath==='/v1/audio/speech'){
   res.writeHead(200,{'Content-Type':'audio/pcm'});res.write(Buffer.from([1,0,2,0]));
- }else if(req.url==='/v1/audio/transcriptions'){
+ }else if(reqPath==='/v1/audio/transcriptions'){
   res.setHeader('Content-Type','application/json');res.end(JSON.stringify({text:'Recognized sentence.'}));
  }else throw Error('unexpected route');
 });
