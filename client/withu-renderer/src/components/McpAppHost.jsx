@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {AppBridge} from '@modelcontextprotocol/ext-apps/app-bridge';
 import appResource from 'virtual:withu-mcp-app-resource';
-import {createDemoMcpFixture, makeAppDocument, validateAppSize} from '../../../withu-mcp-app/src/fixture.js';
+import {createDemoMcpFixture, makeAppDocument, makeRuntimeAppDocument, validateAppSize} from '../../../withu-mcp-app/src/fixture.js';
 import {appIframePolicy, createGuardedAppTransport, invokeD4AppIntent} from '../../../withu-mcp-app/src/host.js';
 import {mediaCoordinator} from '../../../withu-mcp-app/src/media.js';
 import {desktopBridge} from '../desktop-bridge';
@@ -12,7 +12,10 @@ import './mcp-app-host.css';
 // This entry is a bundled local MCP server/App, not an external connector.
 // `variant="inline"` renders the same session as an in-message card inside the
 // Intelligence UI canvas instead of a separate window.
-export default function McpAppHost({onClose, proposalContext, variant = 'standalone'}) {
+/** `resourceHtml` lets a host-rendered third-party App reuse this surface. When
+ *  absent the bundled local App is used exactly as before — the two existing
+ *  mounts pass nothing, so their behaviour cannot change. */
+export default function McpAppHost({onClose, proposalContext, variant = 'standalone', resourceHtml}) {
   const inline = variant === 'inline';
   const curtain = variant === 'curtain';
   const mount = useRef(null);
@@ -44,7 +47,8 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
     };
     void (async () => {
       try {
-        fixture = await createDemoMcpFixture({resourceHtml: appResource, invokeHostIntent: async intent => {
+        const runtime = typeof resourceHtml === 'string' && resourceHtml.trim() ? resourceHtml : null;
+        fixture = await createDemoMcpFixture({resourceHtml: runtime || appResource, invokeHostIntent: async intent => {
           const result = await invokeD4AppIntent(intent, desktopBridge(), {...props.current.proposalContext,
             isActive:live,
             requestApproval: preview => {
@@ -62,7 +66,8 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
         const resource = read.contents.find(item => item.uri === fixture.resourceUri && item.mimeType === 'text/html;profile=mcp-app');
         if (!resource || !live()) throw new Error('MCP App resource unavailable');
         const nonce = crypto.randomUUID().replaceAll('-', '');
-        const document = makeAppDocument(resource.text, nonce);
+        // A third-party document has no host placeholders; wrap it instead.
+        const document = runtime ? makeRuntimeAppDocument(resource.text, nonce) : makeAppDocument(resource.text, nonce);
         frame = window.document.createElement('iframe');
         frame.name = 'withu-mcp-app';
         frame.setAttribute('aria-label', 'Withu local MCP App');
