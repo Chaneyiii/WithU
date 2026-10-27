@@ -85,6 +85,7 @@
     "withu:realtime:command",
     "withu:message:correct",
     "withu:affect:plan",
-    "withu:affect:feedback"
+    "withu:affect:feedback",
+    "withu:mcp:tools_register"
   ]
 }

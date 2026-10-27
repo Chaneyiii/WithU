@@ -10,6 +10,9 @@ pub const CHANNELS: &[&str] = &[
     "withu:life:organize",
     // The owner session may use tick; the desktop preload must not expose it.
     "withu:life:tick",
+    // Main-only: the host registers the MCP tools it discovered so the model
+    // can see them; the renderer never calls this.
+    "withu:mcp:tools_register",
     "withu:reply:start",
     "withu:reply:cancel",
     "withu:server:status",

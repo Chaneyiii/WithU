@@ -46,7 +46,8 @@
     "check:chat:gui": "node checks/chat-gui.mjs",
     "check:mcp-app": "npm test --workspace @withu/mcp-app-demo",
     "check:proactivity:notify": "node checks/proactivity-notification.mjs",
-    "check:mcp:client": "node checks/mcp-client.mjs"
+    "check:mcp:client": "node checks/mcp-client.mjs",
+    "check:mcp:tools": "node checks/mcp-tools-wire.mjs"
   },
   "main": "client/withu-window/main.cjs",
   "dependencies": {

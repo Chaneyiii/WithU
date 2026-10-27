@@ -81,6 +81,10 @@ struct Server {
     /// Session-scoped dedupe of already-offered memory candidates (T14);
     /// candidates themselves are never persisted without explicit save.
     memory_offered: HashSet<String>,
+    /// Tool definitions discovered from MCP servers by the host (B1). They are
+    /// registered, not trusted: every call still goes through the same
+    /// proposal path and the same approval gate as a local tool.
+    mcp_tools: Vec<Value>,
 }
 struct ChatAction {
     operation_id: String,
@@ -388,6 +392,14 @@ impl Server {
                 tools: Vec::new(),
             },
         ))
+    }
+    /// The tool catalog the model sees: local life tools plus whatever the
+    /// host registered from MCP. Kept in one place so the text path and the
+    /// voice path can never drift apart.
+    fn tool_definitions(&self) -> Vec<Value> {
+        let mut tools = crate::chat_tools::definitions();
+        tools.extend(self.mcp_tools.iter().cloned());
+        tools
     }
     fn companion_name(&self) -> String {
         self.store
@@ -1698,6 +1710,40 @@ impl Server {
             }
             return Ok(json!({"items":self.store.audit().map_err(storage_error)?}));
         }
+        if c == "withu:mcp:tools_register" {
+            keys(p, &["tools"])?;
+            let tools = p["tools"]
+                .as_array()
+                .ok_or(("validation", "mcp_tools_schema"))?;
+            if tools.len() > 64 {
+                return Err(("validation", "mcp_tools_limit"));
+            }
+            let mut normalized = Vec::with_capacity(tools.len());
+            for tool in tools {
+                let name = tool["name"]
+                    .as_str()
+                    .ok_or(("validation", "mcp_tool_name"))?;
+                if !name.starts_with("mcp__")
+                    || name.len() > 64
+                    || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+                {
+                    return Err(("validation", "mcp_tool_name"));
+                }
+                let description = tool["description"].as_str().unwrap_or("");
+                if description.chars().count() > 500 {
+                    return Err(("validation", "mcp_tool_description"));
+                }
+                let schema = &tool["input_schema"];
+                if !schema.is_object() {
+                    return Err(("validation", "mcp_tool_schema"));
+                }
+                normalized.push(json!({"type":"function","function":{"name":name,"description":description,"parameters":schema}}));
+            }
+            // Registration is a snapshot of what the host currently has, not an
+            // append: a restarted server must not leave stale tools behind.
+            self.mcp_tools = normalized;
+            return Ok(json!({"registered": self.mcp_tools.len()}));
+        }
         if c == "withu:proactivity:policy_get" {
             if !empty(p) {
                 return Err(("validation", "unexpected_payload"));
@@ -2139,7 +2185,7 @@ impl Server {
         let tools = if conversation["mode"] == "comfort"
             && provider["protocol"].as_str().unwrap_or("") != "bedrock"
         {
-            crate::chat_tools::definitions()
+            self.tool_definitions()
         } else {
             vec![]
         };
@@ -3481,6 +3527,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         chat_actions: std::collections::BTreeMap::new(),
         semantic_index: withu_memory::SemanticMemoryIndex::default(),
         memory_offered: HashSet::new(),
+        mcp_tools: Vec::new(),
         fake_speech: std::env::var("WITHU_FAKE_SPEECH_MODE").as_deref() == Ok("1"),
         test: std::env::var("WITHU_TEST_MODE").as_deref() == Ok("1"),
     };
