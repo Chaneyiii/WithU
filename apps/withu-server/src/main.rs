@@ -441,8 +441,16 @@ impl Server {
         } else {
             format!("调用失败：{text}")
         };
-        let mut payload = if ok { json!({"text":body.clone()}) } else { json!({"code":"mcp_call_failed","message":body.clone(),"retryable":true}) };
-        if ok { if let Some(app) = app { payload["app"] = app; } }
+        let mut payload = if ok {
+            json!({"text":body.clone()})
+        } else {
+            json!({"code":"mcp_call_failed","message":body.clone(),"retryable":true})
+        };
+        if ok {
+            if let Some(app) = app {
+                payload["app"] = app;
+            }
+        }
         let block = json!({"schema_version":1,"block_id":format!("mcp:{operation_id}:result"),"conversation_id":conversation,"turn_id":operation_id,"source":"withu","status_version":1,"visibility":"conversation","kind":if ok{"text"}else{"error"},"action_ref":null,"payload":payload});
         let existing = self
             .store
@@ -464,9 +472,9 @@ impl Server {
             return;
         }
         let fact = self.fact("mcp.result", operation_id);
-        if let Err(error) = self
-            .store
-            .put("assistant-message", operation_id, version, &object, &fact)
+        if let Err(error) =
+            self.store
+                .put("assistant-message", operation_id, version, &object, &fact)
         {
             eprintln!("MCP_DBG put failed version={version} err={:?}", error);
             return;
@@ -1798,7 +1806,10 @@ impl Server {
                     return Err(("validation", "mcp_result_shape"));
                 }
             }
-            if !p.get("operation_id").is_some() || !p.get("ok").is_some() || !p.get("text").is_some() {
+            if !p.get("operation_id").is_some()
+                || !p.get("ok").is_some()
+                || !p.get("text").is_some()
+            {
                 return Err(("validation", "mcp_result_shape"));
             }
             let operation_id = text(&p["operation_id"])?.to_owned();
@@ -1919,6 +1930,17 @@ impl Server {
             }
             if candidate.title.chars().count() > 200 || candidate.body.chars().count() > 4_000 {
                 return Err(("validation", "proactivity_candidate_size"));
+            }
+            // C5: never interrupt a live call. The candidate is dropped rather
+            // than queued — a reminder arriving mid-sentence is stale by the
+            // time the call ends, and speaking over the user is worse than late.
+            if self
+                .realtime
+                .sessions
+                .values()
+                .any(|session| session.active)
+            {
+                return Ok(json!({"decision":"suppressed","reason":"voice_busy"}));
             }
             let mut state =
                 proactivity::ProactivityState::load(&self.store).map_err(storage_error)?;

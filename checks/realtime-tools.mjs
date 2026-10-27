@@ -144,6 +144,11 @@ try{
  assert.equal(evidence[0].text,'明天下午三点提醒我开会');
  assert.equal((await owner.request('withu:message:list',{conversation_id:'comfort'})).items.filter(m=>m.role==='user'&&m.id.startsWith('rt-'+liveScope.session_id)).length,1,'exactly one utterance from the call is stored');
  results.push('O1: a live call keeps only the action-evidence sentence, produces the card, stores nothing else');
+ // C5: while a call is live, a candidate is dropped instead of spoken.
+ const busy=await owner.request('withu:proactivity:candidate_offer',{app_running:true,candidate:{schema_version:1,id:'c5-busy',source:'d8_greeting',scope:'comfort',dedupe_key:'c5-busy',title:'Withu',body:'要不要休息一下'}});
+ assert.equal(busy.decision,'suppressed');
+ assert.equal(busy.reason,'voice_busy','got '+JSON.stringify(busy));
+results.push('C5: an active call suppresses candidates with voice_busy before the policy gate');
 }catch(error){
  console.error('server stderr:\n'+(owner.stderr||'(none)'));
  throw error;
