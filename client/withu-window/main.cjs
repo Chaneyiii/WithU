@@ -19,7 +19,11 @@ async function ensureFixtureModel(){
  if(!devData&&!explicit)return;
  try{
   const current=(await owner.request('withu:config:get')).config;
-  if((current.providers||[]).some(provider=>provider.service==='llm'&&provider.endpoint))return;
+  // The flag means "use the fixture", not "use the fixture if nothing is
+  // configured": an existing real provider would otherwise win and the user
+  // gets a 401 they cannot explain.
+  const hasLlm=(current.providers||[]).some(provider=>provider.service==='llm'&&provider.endpoint);
+  if(hasLlm&&!explicit)return;
   const version=Number(current.config_version||0);
   const config={...current,config_version:version+1,
    providers:[...(current.providers||[]),{provider_id:'fixture',service:'llm',endpoint:'http://127.0.0.1:48171/v1',protocol:'openai-compatible',capabilities:[]}],
