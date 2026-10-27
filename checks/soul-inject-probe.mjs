@@ -1,4 +1,5 @@
 // 抓包核验：模型真正收到的 system 提示词里有没有 soul.md 的正文
+import assert from 'node:assert/strict';
 import http from 'node:http';
 import { mkdtemp, mkdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -69,9 +70,16 @@ try {
     console.log('--- system[0] 前 400 字 ---');
     console.log(s.slice(0, 400));
     console.log('--- 关键句检测 ---');
+    // P5.5: a probe that only prints cannot fail. These are the two claims
+    // that actually matter — the persona body is present, and the name is the
+    // one the user set rather than a stray default.
     for (const probe of ['我是 Lumi', '有立场的暖', '以上是你的灵魂文档', '你的名字以本条为准', 'Lumi']) {
       console.log(' ', probe.padEnd(20), s.includes(probe) ? 'FOUND' : 'MISSING');
     }
+    assert.ok(s.includes('以上是你的灵魂文档'), 'text path system prompt carries the soul body');
+    assert.ok(s.includes('Lumi'), 'text path system prompt carries the persona name');
+  } else {
+    assert.fail('no system message reached the provider');
   }
   const user = req0.body.messages.filter(m => m.role === 'user');
   console.log('\nuser 消息:', JSON.stringify(user.map(m => m.content)));

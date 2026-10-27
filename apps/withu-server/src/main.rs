@@ -385,6 +385,7 @@ impl Server {
                 name: self.companion_name(),
                 memory_context: String::new(),
                 support_context: String::new(),
+                tools: Vec::new(),
             },
         ))
     }
@@ -463,6 +464,33 @@ impl Server {
                 continue;
             }
             let live = session.live;
+            if kind == "tool_call" {
+                // Voice proposals share the text path's chain end to end. The
+                // worker emits this only after the turn's transcript is already
+                // in this queue, so the anchor message exists by now.
+                let item = update.data["item_id"].as_str().unwrap_or("").to_owned();
+                let response_id = update.data["response_id"].as_str().unwrap_or("").to_owned();
+                let mid = format!("rt-{}-{}", update.id, item);
+                let rid = format!("rt-{}-{}", update.id, response_id);
+                let name = update.data["name"].as_str().unwrap_or("").to_owned();
+                let arguments = update.data["arguments"].as_str().unwrap_or("").to_owned();
+                // O1 (Q8): a live call keeps transcripts out of storage, but the
+                // one utterance that produced an action is kept as evidence so
+                // the approval card has a message to belong to. Nothing else
+                // from the call is written.
+                if live && self.store.get("message", &mid).ok().flatten().is_none() {
+                    let evidence = update.data["transcript"].as_str().unwrap_or("").trim();
+                    if !evidence.is_empty() {
+                        let object = json!({"schema_version":1,"id":mid,"conversation_id":cid,"role":"user","text":evidence,"file_refs":[],"submitted_at":now(),"version":1});
+                        if validate("message", &object) {
+                            let fact = self.fact("realtime.action_evidence", &mid);
+                            let _ = self.store.put("message", &mid, 0, &object, &fact);
+                        }
+                    }
+                }
+                self.commit_voice_proposal(&mid, &rid, &name, &arguments, &scope);
+                continue;
+            }
             if !live && kind == "transcript_final" {
                 let text = update.data["text"].as_str().unwrap_or("");
                 let item = update.data["item_id"].as_str().unwrap_or("");
@@ -819,6 +847,20 @@ impl Server {
                 return Err(("conflict", "config_version_conflict"));
             }
             let (provider, mut snapshot) = self.realtime_snapshot(&config)?;
+            // Voice offers exactly the tools the text path offers, under the
+            // same gate: comfort conversations only, and only on a protocol
+            // that can carry a function call.
+            let conversation = self
+                .store
+                .get("conversation", cid)
+                .map_err(storage_error)?
+                .ok_or(("conflict", "conversation_missing"))?;
+            snapshot.tools =
+                if conversation["mode"] == "comfort" && snapshot.protocol != "volc-realtime" {
+                    crate::chat_tools::definitions()
+                } else {
+                    Vec::new()
+                };
             snapshot.memory_context = self.memory_prompt(cid)?;
             snapshot.support_context = self.support_prompt(cid);
             if p["mode"] == "read" {
@@ -1775,7 +1817,15 @@ impl Server {
             keys(p, &["candidate_id", "expected_version", "status"])?;
             let id = text(&p["candidate_id"])?;
             let status = text(&p["status"])?;
-            if !["shown_by_os", "failed", "not_supported", "unconfirmed"].contains(&status) {
+            if ![
+                "shown_by_os",
+                "failed",
+                "not_supported",
+                "unconfirmed",
+                "suppressed_permission",
+            ]
+            .contains(&status)
+            {
                 return Err(("validation", "proactivity_notification_status"));
             }
             let expected = version(p)?;
@@ -2096,7 +2146,7 @@ impl Server {
         let tool_guidance = if tools.is_empty() {
             " No tools are available in this conversation.".to_owned()
         } else {
-            " Local life tools (reminders, calendar events, message drafts, local retrieval) are available as proposals only: when the user explicitly asks for one of these actions, call exactly one tool with the agreed parameters; write actions are not executed until the user approves them in the app, so never say a write action is done. If a required parameter (for example an exact time) is missing or ambiguous, do NOT call a tool and do NOT guess: ask one short clarifying question first. Propose at most one tool call per turn. Drafts can be written and edited but never sent. Always answer in the user's language.".to_owned()
+            crate::chat_tools::PROPOSAL_GUIDANCE.to_owned()
         };
         let mut messages =
             vec![json!({"role":"system","content":self.identity_prompt(&tool_guidance)})];
@@ -2147,9 +2197,9 @@ impl Server {
             json!({"operation_id":id,"conversation_id":cid,"config_version":version,"state":"running"}),
         )
     }
-/// Shared assistant identity system prompt; `guidance` carries the
-/// per-turn tool policy sentence.
-fn identity_prompt(&self, guidance: &str) -> String {
+    /// Shared assistant identity system prompt; `guidance` carries the
+    /// per-turn tool policy sentence.
+    fn identity_prompt(&self, guidance: &str) -> String {
         // 灵魂文档即真相源：soul.md（随渲染层一起维护、用户在抽屉里看到的那份）
         // 在编译期嵌入，作为真实模型系统提示词的人格正文——不是装潢。
         // 工具与安全规则（guidance）在文档之后追加并声明优先。
@@ -2242,7 +2292,11 @@ fn identity_prompt(&self, guidance: &str) -> String {
                     .cloned()
                     .unwrap_or_default()
                     .into_iter()
-                    .filter(|event| event["starts_at"].as_u64().is_some_and(|start| start <= horizon))
+                    .filter(|event| {
+                        event["starts_at"]
+                            .as_u64()
+                            .is_some_and(|start| start <= horizon)
+                    })
                     .collect();
                 let mut calendar = calendar;
                 calendar.sort_by_key(|event| event["starts_at"].as_u64().unwrap_or(u64::MAX));
@@ -2364,6 +2418,85 @@ fn identity_prompt(&self, guidance: &str) -> String {
         Ok(())
     }
 
+    /// Attach a voice turn's proposal to the message the user can actually see
+    /// (T16-A). Same tool catalog, same re-validation, same approval block and
+    /// same version CAS as the text path — the only new thing is that the
+    /// anchor is the transcript message the voice turn committed.
+    fn commit_voice_proposal(
+        &mut self,
+        mid: &str,
+        rid: &str,
+        name: &str,
+        arguments: &str,
+        scope: &Value,
+    ) {
+        let Ok(Some(message)) = self.store.get("message", mid) else {
+            return;
+        };
+        if message["role"] != "user" {
+            return;
+        }
+        let conversation = message["conversation_id"].as_str().unwrap_or("").to_owned();
+        let parsed: Value = serde_json::from_str(arguments).unwrap_or(Value::Null);
+        let existing = self.store.get("assistant-message", rid).ok().flatten();
+        let spoken = existing
+            .as_ref()
+            .and_then(|m| m["text"].as_str())
+            .unwrap_or("")
+            .trim()
+            .to_owned();
+        let now = crate::proactivity::unix_now();
+        let blocks = self
+            .propose_life_action(
+                name,
+                &parsed,
+                &conversation,
+                &format!("reply-{mid}"),
+                &spoken,
+                now,
+            )
+            .unwrap_or_default();
+        // Nothing to add and nothing to say: the spoken turn stands on its own.
+        if blocks.is_empty() && !spoken.is_empty() {
+            return;
+        }
+        let body = if !blocks.is_empty() {
+            if spoken.is_empty() {
+                "我准备了一个本地事务，请先确认。".to_owned()
+            } else {
+                spoken
+            }
+        } else {
+            "这条操作我没能确认，没有产生任何改动。".to_owned()
+        };
+        let version = existing
+            .as_ref()
+            .and_then(|m| m["version"].as_u64())
+            .unwrap_or(0);
+        let object = json!({"schema_version":1,"id":rid,"operation_id":rid,"conversation_id":conversation,"config_version":scope["config_version"],"role":"assistant","text":body,"file_refs":[],"submitted_at":now.to_string(),"duration_ms":existing.as_ref().and_then(|m|m["duration_ms"].as_u64()).unwrap_or(0),"blocks":blocks,"version":version+1});
+        let valid_blocks = object["blocks"]
+            .as_array()
+            .map(|blocks| blocks.iter().all(|block| validate("reply-block", block)))
+            .unwrap_or(true);
+        if !validate("assistant-message", &object) || !valid_blocks {
+            return;
+        }
+        let fact = self.fact("realtime.proposal", rid);
+        if self
+            .store
+            .put("assistant-message", rid, version, &object, &fact)
+            .is_err()
+        {
+            return;
+        }
+        self.event(
+            "reply.updated",
+            rid,
+            1,
+            None,
+            json!({"reply":{"operation_id":rid,"conversation_id":conversation,"config_version":scope["config_version"],"state":"complete","text":body}}),
+        );
+    }
     /// Map a model tool-call proposal onto the life prepare chain and build
     /// the approval block for the reply message (T09). Fails closed on any
     /// validation error; superseding cancels the previous pending proposal so
@@ -2406,9 +2539,10 @@ fn identity_prompt(&self, guidance: &str) -> String {
             },
             // Read-only intents are executed by run_read_only_intent before
             // this write path; reaching here with one is a routing error.
-            Intent::Retrieve { .. } | Intent::Organize { .. } | Intent::WebSearch { .. } | Intent::ScheduleList => {
-                return Err(())
-            }
+            Intent::Retrieve { .. }
+            | Intent::Organize { .. }
+            | Intent::WebSearch { .. }
+            | Intent::ScheduleList => return Err(()),
         };
         // The delegation evidence is the committed user message this reply
         // answers ("reply-{mid}"); assistant or foreign messages fail closed.
@@ -2441,9 +2575,21 @@ fn identity_prompt(&self, guidance: &str) -> String {
             .map_err(|_| ())?;
         let approval = &prepared["approval"];
         let action = &approval["action"];
+        // Honesty (Q12=b): a reminder accepted while proactivity is off will
+        // never actually ring. Say so on the card instead of promising silently.
+        let proactivity_on = crate::proactivity::ProactivityState::load(&self.store)
+            .map(|state| state.policy.enabled)
+            .unwrap_or(false);
+        let quiet_notice =
+            if !proactivity_on && operation["kind"].as_str() == Some("reminder_create") {
+                "\n注意：主动提醒当前已关闭，到点不会弹出系统通知。"
+            } else {
+                ""
+            };
         let body = format!(
-            "{}\n批准后仅保存到这台设备。请核对内容，再选择“允许一次”。",
-            preview_lines.join("\n")
+            "{}\n批准后仅保存到这台设备。请核对内容，再选择“允许一次”。{}",
+            preview_lines.join("\n"),
+            quiet_notice
         );
         let block = json!({
             "schema_version":1,
@@ -2973,6 +3119,29 @@ fn identity_prompt(&self, guidance: &str) -> String {
                         &receipt,
                         &self.fact("reply.output_cancel", &update.id),
                     );
+                }
+                // BUG-6: a cancelled run leaves its user message with no answer
+                // at all, so after the reload that caused the cancel the thread
+                // reads as "the model never answered". Say what happened in an
+                // ordinary assistant message instead of inventing a new surface.
+                // Failures keep their existing rule and never persist a message.
+                if update.state == "cancelled"
+                    && self
+                        .store
+                        .get("assistant-message", &update.id)
+                        .ok()
+                        .flatten()
+                        .is_none()
+                {
+                    let body = "回复已取消（可以重新发送）。".to_owned();
+                    let object = json!({"schema_version":1,"id":update.id,"operation_id":update.id,"conversation_id":update.conversation,"config_version":update.config,"role":"assistant","text":body,"file_refs":[],"submitted_at":now(),"duration_ms":update.elapsed_ms,"blocks":[],"version":1});
+                    if validate("assistant-message", &object) {
+                        let fact = self.fact("reply.cancelled_notice", &update.id);
+                        let _ = self
+                            .store
+                            .put("assistant-message", &update.id, 0, &object, &fact);
+                    }
+                    self.event("reply.updated",&update.id,1,None,json!({"reply":{"operation_id":update.id,"conversation_id":update.conversation,"config_version":update.config,"state":"cancelled","text":body,"code":"reply_cancelled"}}));
                 }
             }
             if update.state == "complete" {

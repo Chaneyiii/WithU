@@ -224,6 +224,11 @@ fn specs() -> Vec<ToolSpec> {
     ]
 }
 
+/// The one wording both entry points use. Voice must not paraphrase it: the
+/// text path's rule ("never say a write action is done") is exactly what keeps
+/// a spoken turn from becoming a promise nothing backs.
+pub const PROPOSAL_GUIDANCE: &str = " Local life tools (reminders, calendar events, message drafts, local retrieval) are available as proposals only: when the user explicitly asks for one of these actions, call exactly one tool with the agreed parameters; write actions are not executed until the user approves them in the app, so never say a write action is done. If a required parameter (for example an exact time) is missing or ambiguous, do NOT call a tool and do NOT guess: ask one short clarifying question first. Propose at most one tool call per turn. Drafts can be written and edited but never sent. Always answer in the user's language.";
+
 pub fn recognizes(name: &str) -> bool {
     specs().iter().any(|spec| spec.name == name)
 }

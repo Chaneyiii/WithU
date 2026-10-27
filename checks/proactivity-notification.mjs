@@ -42,4 +42,21 @@ assert.deepEqual(requests[1], { channel: 'withu:proactivity:notification_result'
 assert.equal(FakeNotification.created.length, notificationCount, 'restart must not show catch-up notifications');
 await settleInterruptedNotifications({ owner, appRunning: () => false });
 assert.equal(requests.length, 2, 'exit suppresses startup reconciliation');
-console.log('PASS proactivity notification policy, app-running gate, preview truth, and generic payload');
+// C3: a denied permission must still be ATTEMPTED (Electron on Windows lies
+// about it), and when the OS refuses to show, the status must say so honestly.
+class DeniedNotification extends FakeNotification {
+  show() { queueMicrotask(() => this.emit('failed')); }
+}
+DeniedNotification.permission = 'denied';
+const beforeDenied = FakeNotification.created.length;
+assert.equal(await showProactivityNotification({Notification: DeniedNotification, eligible: true, appRunning: true, item: privateItem}), 'suppressed_permission');
+assert.equal(FakeNotification.created.length, beforeDenied + 1, 'a denied permission is still attempted once, never silently skipped');
+// Clicking the toast must bring the window back (no renderer cooperation needed).
+let focused = 0;
+FakeNotification.created.length = 0;
+const clickRun = showProactivityNotification({ Notification: FakeNotification, eligible: true, appRunning: true, item: privateItem, onClick: () => { focused++; } });
+await Promise.resolve();
+FakeNotification.created.at(-1)?.emit('click');
+assert.equal(focused, 1, 'clicking a proactivity notification focuses the app');
+await clickRun;
+console.log('PASS proactivity notification policy, app-running gate, preview truth, permission-denied fallback, click-to-focus, and generic payload');

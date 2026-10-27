@@ -27,6 +27,10 @@ pub struct Snapshot {
     pub name: String,
     pub memory_context: String,
     pub support_context: String,
+    /// Proposal-only tool catalog (T16). Empty unless the conversation is a
+    /// comfort conversation on a protocol that supports function calling, so
+    /// voice can never reach a write action the text path would not offer.
+    pub tools: Vec<Value>,
 }
 pub struct Session {
     pub scope: Value,
@@ -353,10 +357,24 @@ async fn run(
     // 语音会话也必须带人格正文：文本回复用 soul.md 作系统提示词，语音若只发
     // 一个名字，同一个「我」在两种媒介里就不是同一个人了。
     let instructions=format!("{}\n\n---\n以上是你的灵魂文档。语音会话沿用同一份人格，只是语域可以更活泼、更俏皮。补充运行规则：\n1. 你的名字以本条为准：当前名字是「{}」（Withu 是应用名，不是你的名字），旧消息里的其他名字一律不再使用。\n2. 跟随用户当前的语言和意愿。不下诊断、不假装确定、不强行正能量、不鼓励依赖。用户说停就停。没有接入联网工具，不要声称自己搜索过。{}{}",crate::SOUL_MD,snapshot.name,snapshot.memory_context,snapshot.support_context);
+    // Without this the voice model would answer a request out loud and leave
+    // nothing behind; with it, a request becomes a proposal the user approves.
+    let instructions = if snapshot.tools.is_empty() {
+        instructions
+    } else {
+        format!("{instructions}{}", crate::chat_tools::PROPOSAL_GUIDANCE)
+    };
     let create = if volc {
         json!({"event_id":uuid::Uuid::new_v4().to_string(),"type":"session.create","session":{"id":uuid::Uuid::new_v4().to_string(),"model":snapshot.model,"instructions":instructions,"audio":{"input":{"format":{"type":"pcm","rate":16000}},"output":{"format":{"type":"pcm_s16le","rate":24000},"voice":voice}}},"extension":{"asr":{"extra":{}},"tts":{"extra":{}},"dialog":{"extra":{}}}})
     } else {
-        json!({"event_id":uuid::Uuid::new_v4().to_string(),"type":"session.update","session":{"modalities":["text","audio"],"voice":voice,"instructions":instructions,"input_audio_format":"pcm","output_audio_format":"pcm","turn_detection":{"type":"server_vad","threshold":0.5,"silence_duration_ms":500}}})
+        // Tools travel with the session, exactly like the text path's tool
+        // catalog: same definitions, same "+ proposals only" instruction.
+        let mut session = json!({"modalities":["text","audio"],"voice":voice,"instructions":instructions,"input_audio_format":"pcm","output_audio_format":"pcm","turn_detection":{"type":"server_vad","threshold":0.5,"silence_duration_ms":500}});
+        if !snapshot.tools.is_empty() {
+            session["tools"] = Value::Array(snapshot.tools.clone());
+            session["tool_choice"] = "auto".into();
+        }
+        json!({"event_id":uuid::Uuid::new_v4().to_string(),"type":"session.update","session":session})
     };
     socket
         .send(Message::Text(create.to_string().into()))
@@ -368,6 +386,18 @@ async fn run(
     let mut cancelled = HashSet::new();
     let mut text = SafeText::default();
     let mut transcript_items = HashSet::new();
+    // The proposal path needs the committed user message as evidence, so the
+    // turn's own item id must travel with the tool call; the transcript for
+    // that item may legitimately arrive after response.done.
+    let mut user_item = String::new();
+    let mut user_item_text = String::new();
+    let mut user_item_final = false;
+    let mut tool_name = String::new();
+    let mut tool_args = String::new();
+    // A tool call may resolve before its own transcript is committed. Holding
+    // it here keeps the proposal strictly after the user message it answers,
+    // so main never sees an anchored-at-nothing card.
+    let mut pending_tool: Option<Value> = None;
     let mut muted = false;
     let mut generation = 0u64;
     let mut output_first = None;
@@ -389,7 +419,7 @@ async fn run(
          },
          command=commands.recv()=>{let Some(mut command)=command else{return Ok(())};
           if let Some(control)=command["control"].as_str(){match control{
-           "interrupt"|"mute"=>{if control=="mute"{muted=true;}audio_response.clear();text.clear();if !response.is_empty(){cancelled.insert(response.clone());socket.send(Message::Text(json!({"type":"response.cancel"}).to_string().into())).await.map_err(|_|"stream_disconnected")?;}},
+           "interrupt"|"mute"=>{if control=="mute"{muted=true;}audio_response.clear();text.clear();pending_tool=None;if !response.is_empty(){cancelled.insert(response.clone());socket.send(Message::Text(json!({"type":"response.cancel"}).to_string().into())).await.map_err(|_|"stream_disconnected")?;}},
            "unmute"=>muted=false,
            _=>{}
           }}else{if !ready{continue;}let audio=STANDARD.decode(command["audio"].as_str().ok_or("audio_format_invalid")?).map_err(|_|"audio_format_invalid")?;
@@ -445,26 +475,51 @@ async fn run(
 
            },
            "input_audio_buffer.speech_started"=>{audio_response.clear();text.clear();generation+=1;if item_generations.len()>=256||transcript_items.len()>=256||cancelled.len()>=256{return Err("realtime_session_limit");}
-            if let Some(id)=e["item_id"].as_str(){item_generations.insert(id.to_owned(),generation);}turn_started=Instant::now();if !response.is_empty(){cancelled.insert(response.clone());socket.send(Message::Text(json!({"type":"response.cancel"}).to_string().into())).await.map_err(|_|"stream_disconnected")?;}emit(json!({"type":"speech_started","generation":generation,"item_id":e["item_id"]}))?;},
+            if let Some(id)=e["item_id"].as_str(){item_generations.insert(id.to_owned(),generation);user_item=id.to_owned();}user_item_text.clear();user_item_final=false;pending_tool=None;tool_name.clear();tool_args.clear();turn_started=Instant::now();if !response.is_empty(){cancelled.insert(response.clone());socket.send(Message::Text(json!({"type":"response.cancel"}).to_string().into())).await.map_err(|_|"stream_disconnected")?;}emit(json!({"type":"speech_started","generation":generation,"item_id":e["item_id"]}))?;},
            "input_audio_buffer.speech_stopped"=>{emit(json!({"type":"speech_stopped","generation":generation,"item_id":e["item_id"]}))?;},
            "conversation.item.input_audio_transcription.delta"=>{let preview=format!("{}{}",e["text"].as_str().unwrap_or(""),e["stash"].as_str().unwrap_or(""));checked_text(&preview,key,16000)?;let safe=&preview[..preview.len()-held_prefix(&preview,key)];emit(json!({"type":"transcript_delta","item_id":e["item_id"],"text":safe,"generation":item_generations.get(e["item_id"].as_str().unwrap_or("")).copied().unwrap_or(generation)}))?;},
-           "conversation.item.input_audio_transcription.completed"=>{let item=e["item_id"].as_str().ok_or("provider_protocol_invalid")?;if transcript_items.insert(item.to_owned()){let transcript=checked_text(e["transcript"].as_str().unwrap_or(""),key,16000)?;emit(json!({"type":"transcript_final","item_id":item,"text":transcript,"generation":item_generations.get(item).copied().unwrap_or(generation)}))?;}},
+           "conversation.item.input_audio_transcription.completed"=>{let item=e["item_id"].as_str().ok_or("provider_protocol_invalid")?;if transcript_items.insert(item.to_owned()){let transcript=checked_text(e["transcript"].as_str().unwrap_or(""),key,16000)?;emit(json!({"type":"transcript_final","item_id":item,"text":transcript,"generation":item_generations.get(item).copied().unwrap_or(generation)}))?;if item==user_item{user_item_text=transcript.to_owned();}}if item==user_item{user_item_final=true;if let Some(event)=pending_tool.take(){emit(event)?;}}},
+           "response.output_item.added"=>{
+            if e["item"]["type"]=="function_call"{
+             tool_name=e["item"]["name"].as_str().unwrap_or("").to_owned();
+             tool_args.clear();
+             if let Some(args)=e["item"]["arguments"].as_str(){if !args.is_empty()&&args!="{}"{tool_args.push_str(args);}}
+            }
+           },
+           "response.function_call_arguments.delta"=>{
+            let delta=e["delta"].as_str().unwrap_or("");
+            if tool_args.len()+delta.len()>8000{return Err("context_limit");}
+            tool_args.push_str(delta);
+           },
            "response.created"=>{response=e["response"]["id"].as_str().ok_or("provider_protocol_invalid")?.into();if cancelled.contains(&response){continue;}text.clear();output_first=None;emit(json!({"type":"response_started","response_id":response,"generation":generation}))?;},
            "response.audio.delta"=>{let id=e["response_id"].as_str().unwrap_or("");if id!=response||cancelled.contains(id)||muted{continue;}let audio=e["delta"].as_str().ok_or("provider_protocol_invalid")?;let bytes=STANDARD.decode(audio).map_err(|_|"audio_format_invalid")?;if bytes.is_empty()||bytes.len()%2!=0||bytes.len()>96000{return Err("audio_format_invalid");}let first=*output_first.get_or_insert(turn_started.elapsed().as_millis() as u64);emit(json!({"type":"audio","response_id":id,"audio_base64":audio,"sample_rate":24000,"channels":1,"format":"pcm16le","generation":generation,"first_audio_ms":first}))?;},
            "response.audio_transcript.delta"|"response.text.delta"=>{let id=e["response_id"].as_str().unwrap_or("");if id!=response||cancelled.contains(id){continue;}let safe=text.append(e["delta"].as_str().unwrap_or(""),key)?;if !safe.is_empty(){emit(json!({"type":"assistant_delta","response_id":id,"text":safe,"generation":generation}))?;}},
            "response.audio_transcript.done"=>{if e["response_id"]==response&&!cancelled.contains(&response){if let Some(final_text)=e["transcript"].as_str(){text.replace(final_text,key)?;}}},
            "response.done"=>{
-            let id=e["response"]["id"].as_str().unwrap_or("");
-            if id!=response||cancelled.contains(id){continue;}
+            let id=e["response"]["id"].as_str().unwrap_or("").to_owned();
+            if id!=response||cancelled.contains(&id){continue;}
             if e["response"]["status"]!="completed"{
              text.clear();
              emit(json!({"type":"response_failed","response_id":id,"code":"stream_incomplete","generation":generation}))?;
              continue;
             }
             checked_text(&text.full,key,64000)?;
+            // A function-call turn still closes the spoken turn, so the renderer
+            // keeps its existing end-of-turn contract. The call is a proposal
+            // only: it never turns into text the user would read as done.
+            let call=e["response"]["output"].as_array().and_then(|items|items.iter().find(|item|item["type"]=="function_call").cloned());
             if !text.pending.is_empty(){emit(json!({"type":"assistant_delta","response_id":id,"text":std::mem::take(&mut text.pending),"generation":generation}))?;}
             emit(json!({"type":"assistant_final","response_id":id,"text":text.full,"generation":generation,"duration_ms":turn_started.elapsed().as_millis() as u64,"first_audio_ms":output_first}))?;
             text.clear();response.clear();
+            if let Some(call)=call{
+             let name=call["name"].as_str().filter(|name|!name.is_empty()).map(str::to_owned).unwrap_or_else(||tool_name.clone());
+             let args=call["arguments"].as_str().filter(|args|!args.is_empty()&&*args!="{}").map(str::to_owned).unwrap_or_else(||tool_args.clone());
+             if name.is_empty(){return Err("provider_protocol_invalid");}
+             checked_text(&args,key,8000)?;
+             let event=json!({"type":"tool_call","response_id":id,"item_id":user_item,"transcript":user_item_text,"name":name,"arguments":args,"call_id":call["call_id"].as_str().or(call["id"].as_str()).unwrap_or(""),"generation":generation});
+             if user_item_final{emit(event)?;}else{pending_tool=Some(event);}
+            }
+            tool_name.clear();tool_args.clear();
            },
            "conversation.item.input_audio_transcription.failed"=>{emit(json!({"type":"transcript_failed","code":"asr_rejected","generation":generation}))?;},
            "error"=>{let code=e["error"]["code"].as_str().unwrap_or("");if code=="response_cancel_not_active"{continue;}return Err(error_code(code));},

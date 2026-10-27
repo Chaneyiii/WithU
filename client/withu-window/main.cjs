@@ -20,10 +20,13 @@ app.setName('Withu');
 const withuVersion='v0.3.1go4';
 if(process.platform==='win32'){
  app.setAppUserModelId('Withu.Desktop.App');
+ // Must run after ready: shell.writeShortcutLink silently fails before the app
+ // is ready, which left Windows without an AUMID shortcut and made the taskbar
+ // fall back to the electron.exe icon.
  // Windows draws the taskbar button from the shortcut matching the AUMID,
  // not from an API call: keep a Start Menu shortcut pointing at the icon so
  // CLI-launched dev runs show the Withu mark instead of the electron.exe one.
- try{
+ app.whenReady().then(()=>{try{
   const linkPath=path.join(app.getPath('appData'),'Microsoft','Windows','Start Menu','Programs','Withu.lnk');
   // 打包后 __dirname 在 app.asar 里，Windows 读不了 asar 内的图标文件，
   // 任务栏会因为这个快捷方式的图标无效而退回到 Electron 标。图标已由打包器
@@ -32,7 +35,7 @@ if(process.platform==='win32'){
   // 'replace' = 不存在就建、存在就覆盖；'create' 遇到已有 .lnk 会失败，
   // 导致图标路径停留在旧版本（指向 app.asar 内那份无效图标）。
   shell.writeShortcutLink(linkPath,'replace',{target:process.execPath,args:app.isPackaged?'':'.',cwd:process.cwd(),icon:iconPath,iconIndex:0,description:'Withu',appUserModelId:'Withu.Desktop.App'});
- }catch(error){console.error('shortcut icon link failed:',error.message);}
+ }catch(error){console.error('shortcut icon link failed:',error.message);}});
 }
 let owner,win,tray,exiting=false,quitPromise,serverFailure,proactivityRunner,proactivityTimer;
 const rendererRoot=path.resolve(__dirname,'../withu-renderer/dist'), entry=path.join(rendererRoot,'index.html');
@@ -70,7 +73,7 @@ app.whenReady().then(async()=>{
  owner=new ClientServerOwner(binary,{dataDir:path.join(app.getPath('userData'),'withu'),test:check,fakeSpeech});
  owner.on('event',e=>{if(owner?.ready&&!exiting&&win&&!win.isDestroyed())win.webContents.send('withu:server:event',e);});owner.on('status',s=>{serverFailure=s;if(owner?.ready&&!exiting&&win&&!win.isDestroyed())win.webContents.send('withu:server:connection',s);});
  try{await owner.start();}catch(e){serverFailure={lifecycle:'failed',reason:e.message};}
- async function deliverProactivity(candidateId){if(!candidateId||!owner?.ready||exiting)return null;const entries=(await owner.request('withu:proactivity:feed_list')).items;const entry=entries.find(item=>item.candidate_id===candidateId);if(!entry||entry.notification_status!=='pending')return null;return showProactivityNotification({Notification:require('electron').Notification,eligible:true,appRunning:owner?.ready&&app.isReady()&&!exiting,preview:false});}
+ async function deliverProactivity(candidateId){if(!candidateId||!owner?.ready||exiting)return null;const entries=(await owner.request('withu:proactivity:feed_list')).items;const entry=entries.find(item=>item.candidate_id===candidateId);if(!entry||entry.notification_status!=='pending')return null;return showProactivityNotification({Notification:require('electron').Notification,eligible:true,appRunning:owner?.ready&&app.isReady()&&!exiting,preview:false,onClick:()=>{if(!win||win.isDestroyed())return;if(!win.isVisible())win.show();if(win.isMinimized())win.restore();win.focus();}});}
  if(owner.ready)await settleInterruptedNotifications({owner,appRunning:()=>!exiting}).catch(()=>{});
  if(owner.ready&&!check){proactivityRunner=createProactivityRunner({owner,isRunning:()=>owner.ready&&!exiting,deliver:deliverProactivity});proactivityTimer=setInterval(()=>void proactivityRunner.tick().catch(()=>{}),30000);}
  const blocked=['withu:server:shutdown','withu:speech:event','withu:task:events','withu:library:update','withu:speech:start','withu:speech:command','withu:speech:detach','withu:speech:stop','withu:voice:session:start','withu:voice:session:command','withu:voice:request','withu:realtime:start','withu:realtime:input','withu:realtime:command'];

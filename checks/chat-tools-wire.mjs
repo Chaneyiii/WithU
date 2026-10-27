@@ -38,10 +38,11 @@ const proposals={
 let armedMarker=null;const arm=m=>{mode=m;};
 const server=http.createServer(async(req,res)=>{
   let data='';for await(const c of req)data+=c;
-  const body=JSON.parse(data);wire.push({url:req.url,body});
+  const reqPath=req.url.startsWith('http')?new URL(req.url).pathname:req.url;
+  const body=JSON.parse(data);wire.push({url:reqPath,body});
   assert.ok(!data.includes(key),'key material never travels in request bodies');
   res.writeHead(200,{'Content-Type':'text/event-stream'});
-  if(req.url==='/v1/chat/completions'){
+  if(reqPath==='/v1/chat/completions'){
     const armed=Boolean(armedMarker)&&body.messages.some(m=>m.role==='user'&&m.content===armedMarker);
     if(mode==='text'||!armed){res.write(frame({content:'好的，我在听。'}));res.end(finishFrame('stop')+'data: [DONE]\n\n');return;}
     armedMarker=null;

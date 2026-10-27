@@ -40,7 +40,12 @@
     "check:providers": "node checks/provider-presets.mjs",
     "check:providers:wire": "node checks/provider-discovery.mjs",
     "check:chat:tools": "node checks/chat-tools-wire.mjs",
-    "check:renderer": "node checks/renderer-mapping.mjs"
+    "check:renderer": "node checks/renderer-mapping.mjs",
+    "check:realtime:tools": "node checks/realtime-tools.mjs",
+    "check:soul": "node checks/soul-inject-probe.mjs",
+    "check:chat:gui": "node checks/chat-gui.mjs",
+    "check:mcp-app": "npm test --workspace @withu/mcp-app-demo",
+    "check:proactivity:notify": "node checks/proactivity-notification.mjs"
   },
   "main": "client/withu-window/main.cjs",
   "dependencies": {
