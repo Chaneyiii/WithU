@@ -9,7 +9,10 @@ const packaged=process.argv.includes('--packaged');const exe=packaged?path.resol
 const root=await fs.mkdtemp(path.resolve(p3?'output/p3/desktop-run-':p2?'output/p2/desktop-regression-':'output/p1/desktop-run-'));const results=[];
 for(const scenario of ['normal','restart','malformed','crash','eof','timeout']){
  const data=path.join(root,['normal','restart'].includes(scenario)?'persistent-userData':scenario+'-userData');
- const args=packaged?['--withu-check']:['.','--withu-check'];
+ // This host's Chromium cannot start its GPU process; the switches are inert
+ // on machines where it can, and without them every scenario dies before the app.
+ const gpu=['--no-sandbox','--disable-gpu-sandbox','--disable-gpu'];
+ const args=(packaged?['--withu-check']:['.','--withu-check']).concat(gpu);
  const env={...process.env,...(p2?{WITHU_SERVER_BINARY:path.resolve('target/p2/debug/withu-server.exe')}:{}),WITHU_CHECK_DATA:data,WITHU_CHECK_OUTPUT:path.join(root,scenario),WITHU_CHECK_SCENARIO:scenario,WITHU_CHECK_EXPECT_RESTORE:scenario==='restart'?'1':'0',WITHU_TEST_START:scenario==='malformed'?'malformed':scenario==='timeout'?'hang':''};
  delete env.ELECTRON_RUN_AS_NODE;const began=Date.now();const child=spawn(exe,args,{env,stdio:['ignore','pipe','pipe'],windowsHide:true});let stdout='',stderr='';child.stdout.on('data',b=>stdout+=b);child.stderr.on('data',b=>stderr+=b);
  const code=await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>{child.kill();reject(Error('Desktop check timeout '+scenario));},45000);child.once('error',e=>{clearTimeout(timeout);reject(e);});child.once('exit',c=>{clearTimeout(timeout);resolve(c);});});
