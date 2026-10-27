@@ -23,10 +23,22 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
   const [status, setStatus] = useState(t('正在连接本地 MCP App…'));
   const [pending, setPending] = useState(null);
   const [receipt, setReceipt] = useState(null);
+  // Close-to-tray keeps the renderer alive; a hidden page must not hold the
+  // App iframe, media token or MCP session, so the session is torn down while
+  // hidden and rebuilt when the window comes back.
+  const [pageHidden, setPageHidden] = useState(false);
   const consent = useRef(null);
   const props = useRef({onClose, proposalContext});
   props.current = {onClose, proposalContext};
   useEffect(() => {
+    const onVisibility = () => setPageHidden(document.visibilityState === 'hidden');
+    document.addEventListener('visibilitychange', onVisibility);
+    onVisibility();
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
+  useEffect(() => {
+    if (pageHidden) return undefined;
     const sessionId = crypto.randomUUID();
     active.current = sessionId;
     let fixture, bridge, frame, timer, unsubscribeMedia, destroyed = false, loaded = false;
@@ -103,7 +115,7 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
       }
     })();
     return () => { void stop(); };
-  }, []);
+  }, [pageHidden]);
 
   const decide = decision => {
     const resolve = consent.current;
