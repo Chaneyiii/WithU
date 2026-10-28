@@ -7,6 +7,7 @@
 > - 发行版：[v0.3.1go5](releases/v0.3.1go5.md)（版本三元组、三哈希、已知限制）
 > - 验收步骤：[v0.3.1go5-acceptance.md](releases/v0.3.1go5-acceptance.md)（自动化清单 + 手工步骤）
 > - 真机待办：[manual-verification-2026-10-27.md](manual-verification-2026-10-27.md)
+> - 真机对照表（可勾选）：[manual-acceptance-2026-10-28.md](manual-acceptance-2026-10-28.md)
 > - 交付物状态：[delivery-manifest-2026-10-28.md](delivery-manifest-2026-10-28.md)（并声明 2026-10-18 的 JSON manifest 已过时）
 > - 完成度实测：[../验收前实测报告-2026-10-27.md](../../验收前实测报告-2026-10-27.md)
 > - 参考对照（A6）：[evidence/a6-reference-matrix-2026-10-28.md](evidence/a6-reference-matrix-2026-10-28.md)
