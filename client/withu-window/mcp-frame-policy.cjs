@@ -3,6 +3,6 @@
 function allowMcpFrameNavigation(details) {
   // Frame names are writable by App scripts and cannot be an authority check.
   // Withu's embedded frames are resource views; none may navigate to a URL.
-  return details.isMainFrame || details.url === 'about:srcdoc';
+  return details.isMainFrame || details.url === 'about:srcdoc' || details.url.startsWith('withu-app://');
 }
 module.exports = {allowMcpFrameNavigation};

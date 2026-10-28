@@ -16,7 +16,7 @@ import './mcp-app-host.css';
 /** `resourceHtml` lets a host-rendered third-party App reuse this surface. When
  *  absent the bundled local App is used exactly as before — the two existing
  *  mounts pass nothing, so their behaviour cannot change. */
-export default function McpAppHost({onClose, proposalContext, variant = 'standalone', resourceHtml}) {
+export default function McpAppHost({onClose, proposalContext, variant = 'standalone', resourceHtml, resourceUri}) {
   const inline = variant === 'inline';
   const curtain = variant === 'curtain';
   const mount = useRef(null);
@@ -99,7 +99,7 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
         frame.setAttribute('aria-label', 'Withu local MCP App');
         for (const [key, value] of Object.entries(appIframePolicy)) frame.setAttribute(key === 'referrerPolicy' ? 'referrerpolicy' : key, value);
         frame.addEventListener('load', () => {
-          if (!frame.srcdoc) return;
+          if (!frame.src && !frame.srcdoc) return;
           if (loaded) { if (live()) setStatus(t('App 导航已被阻止；重新打开以重连')); void stop(); }
           loaded = true;
         });
@@ -122,7 +122,11 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
         await bridge.connect(transport);
         if (!live()) { await bridge.close(); return; }
         timer = setTimeout(() => { if (live()) {setStatus(t('MCP App 握手超时；重新打开可重试')); void stop();} }, 10_000);
-        frame.srcdoc = document;
+        // Runtime Apps load from the withu-app: scheme: their own origin, so the
+        // host page CSP (which only whitelists the bundled App) does not inherit
+        // and veto their scripts (see docs/evidence/mcp-app-csp-blocked-2026-10-29.md).
+        if (runtime && resourceUri) frame.src = 'withu-app://doc/' + encodeURIComponent(resourceUri);
+        else frame.srcdoc = document;
       } catch (error) {
         const kind = classifyAppFailure(error);
         if (live()) { setFallback(kind); setStatus(t(appFallbackNotice(kind))); }

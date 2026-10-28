@@ -42,7 +42,7 @@ function MessageBlocks({blocks}){
   const onAction=intent=>handlers.get(intent?.block_id)?.(intent);
   return <div className="chat-message-blocks">
     {pending.length>0&&handlers.size>0&&<IntelligentSurface compact blocks={pending} onAction={onAction}/>}
-    {blocks.filter(block=>block.payload?.app?.html).map(block=><McpAppHost key={block.block_id} variant="inline" resourceHtml={block.payload.app.html}/>)}
+    {blocks.filter(block=>block.payload?.app?.html).map(block=><McpAppHost key={block.block_id} variant="inline" resourceHtml={block.payload.app.html} resourceUri={block.payload.app.uri}/>)}
     {decided.map(block=><div key={block.block_id} className="intelligent-surface intelligent-surface-compact" role="status">
       <div className="intelligent-block">
         <div className="intelligent-block-top"><div><span className="intelligent-source"><span className="intelligent-source-mark" aria-hidden="true">W</span>Withu</span><h2>{localizedTitle(block.payload.title)}</h2></div><span className="intelligent-status" role="status"><span className="intelligent-status-dot" aria-hidden="true"/>{block.payload.decision==='allow'?'已允许':block.payload.decision==='deny'?'已拒绝':'已失效'}</span></div>

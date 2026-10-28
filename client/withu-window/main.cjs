@@ -1,4 +1,4 @@
-const {app,BrowserWindow,ipcMain,Tray,Menu,nativeImage,clipboard,dialog,shell,nativeTheme}=require('electron');
+const {app,BrowserWindow,ipcMain,Tray,Menu,nativeImage,clipboard,dialog,shell,nativeTheme,protocol}=require('electron');
 const path=require('node:path'),fs=require('node:fs/promises');
 const speechCheck=process.argv.includes('--withu-speech-check');
 const check=process.argv.includes('--withu-check')||speechCheck;
@@ -44,6 +44,11 @@ const devData=process.argv.includes('--withu-dev-data');
 if(devData&&!app.isPackaged)app.setPath('userData',process.env.WITHU_DEV_DATA||path.resolve('output/dev-userData'));
 if(speechCheck||(check&&process.env.WITHU_CHECK_CONFIG==='1'))app.commandLine.appendSwitch('use-fake-device-for-media-stream');
 app.setName('Withu');
+// Runtime MCP Apps must not be loaded via srcdoc: a srcdoc frame inherits the host
+// page CSP (only the bundled App's script hash is whitelisted), so third-party App
+// scripts were refused and the bridge timed out (measured 2026-10-29).
+protocol.registerSchemesAsPrivileged([{scheme:'withu-app',privileges:{standard:true,secure:true,supportFetchAPI:false,corsEnabled:false}}]);
+const mcpAppDocs=new Map();
 const withuVersion='v0.3.1go5';
 // A custom AppUserModelID only helps when a matching Start Menu shortcut exists.
 // shell.writeShortcutLink returns false on hosts that block the IShellLink COM
@@ -102,7 +107,7 @@ async function handleMcpEvent(event){
    try{
     const read=await mcpClient.readResource(appUri);
     const doc=(read.contents||[]).find(item=>item.uri===appUri&&/^text\/html/.test(item.mimeType||''));
-    if(doc&&typeof doc.text==='string'&&doc.text.length<=MCP_APP_LIMIT)app={uri:appUri,html:doc.text};
+    if(doc&&typeof doc.text==='string'&&doc.text.length<=MCP_APP_LIMIT){app={uri:appUri,html:doc.text};mcpAppDocs.set(appUri,doc.text);}
     else if(doc)console.error('mcp app resource too large or not html:',doc.mimeType,doc.text&&doc.text.length);
    }catch(error){console.error('mcp app resource failed:',error&&(error.code||error.message));}
   }
@@ -111,6 +116,17 @@ async function handleMcpEvent(event){
   await owner?.request('withu:mcp:invoke_result',{operation_id:call.operation_id,ok:false,text:error.code||error.message}).catch(()=>{});
  }
 }
+app.whenReady().then(()=>{
+ try{
+  protocol.handle('withu-app',request=>{
+   let uri='';
+   try{uri=decodeURIComponent(new URL(request.url).pathname.replace(/^\/+/,''));}catch{}
+   const html=mcpAppDocs.get(uri);
+   if(!html)return new Response('not found: '+uri,{status:404});
+   return new Response(html,{status:200,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}});
+  });
+ }catch(error){console.error('app protocol failed:',error&&error.message);}
+});
 app.on('before-quit',()=>{void mcpClient?.close().catch(()=>{});});
 function trusted(event){if(event.sender!==win?.webContents||event.senderFrame!==win.webContents.mainFrame||!trustedGuiUrl(event.senderFrame?.url,entry,dev))throw Error('authorization: untrusted frame');}
 async function cleanRenderer(reason){
