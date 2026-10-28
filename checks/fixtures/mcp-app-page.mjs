@@ -18,10 +18,13 @@ const APP_SOURCE = `
 import {App, PostMessageTransport} from '@modelcontextprotocol/ext-apps';
 const state = document.getElementById('state');
 const app = new App({name: 'withu-check-app', version: '1.0.0'}, {}, {strict: true});
-state.textContent = 'connecting';
+// A per-load token makes a rebuild visible to a human: hide/show the window and
+// the token must change (new session). Without it the reconnect is too fast to see.
+const token = Math.random().toString(36).slice(2, 6);
+state.textContent = 'connecting ' + token;
 app.connect(new PostMessageTransport(window.parent, window.parent))
-  .then(() => { state.textContent = 'connected'; state.dataset.connected = '1'; })
-  .catch(error => { state.textContent = 'error: ' + (error && error.message ? error.message : error); });
+  .then(() => { state.textContent = 'connected · ' + token; state.dataset.connected = '1'; })
+  .catch(error => { state.textContent = 'error: ' + (error && error.message ? error.message : error) + ' · ' + token; });
 `;
 
 let cached = null;
