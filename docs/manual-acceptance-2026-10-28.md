@@ -68,7 +68,12 @@
 
 ## 5. MCP 端到端：读类 + 写类 + 内联 App
 
-> **2026-10-28 实测未通过**，原因是**启动方式**：从资源管理器双击 `Withu.exe` 启动时没有
+> **2026-10-29 更新：卡在产品缺陷上，不是操作问题。** 宿主页 CSP 只白名单了内置演示 App 的
+> 脚本哈希，而 `srcdoc` iframe 会继承父页 CSP，所以运行时 App 的脚本被拦、握手必然超时。
+> 证据与候选修法见 [evidence/mcp-app-csp-blocked-2026-10-29.md](evidence/mcp-app-csp-blocked-2026-10-29.md)。
+> 这一步**在第 5 项修好之前会一直失败**，不用反复重试。
+
+> **2026-10-28 实测未通过（启动方式）**，原因是**启动方式**：从资源管理器双击 `Withu.exe` 启动时没有
 > `WITHU_MCP_COMMAND` 环境变量，MCP 服务器根本不会启动（A/B 实测：无变量 = 13 个工具、
 > 0 个 MCP；有变量 = 14 个工具、含 `mcp__local__annotate`）。模型手里没有工具，只能闲聊。
 > 证据见 [evidence/mcp-tool-not-offered-2026-10-28.md](evidence/mcp-tool-not-offered-2026-10-28.md)。

@@ -75,6 +75,7 @@ const evaluate=async expression=>{
  return result.result?.value;
 };
 const results=[];
+ let appProbe=null;
 try{
  for(let i=0;i<100;i++){
   try{
@@ -103,6 +104,13 @@ try{
   }
  });
  await cdp('Runtime.enable');
+ // The App lives in a sandboxed iframe (opaque origin): the page cannot read it,
+ // but CDP can evaluate inside its execution context. Needed to tell "app script
+ // never ran" apart from "app ran and failed the handshake".
+ const contexts=[];
+ socket.on('message',raw=>{
+  try{const m=JSON.parse(raw.toString());if(m.method==='Runtime.executionContextCreated')contexts.push(m.params.context);}catch{}
+ });
 
  // 1. The App only shows up if the host read the resource the server declared:
  //    that is the B1 wiring this check also guards.
@@ -139,22 +147,67 @@ try{
  };
  const body=async()=>evaluate('document.body.innerText');
  const frames=async()=>evaluate(`document.querySelectorAll('.withu-mcp-frame iframe').length`);
- const srcdoc=async()=>evaluate(`(document.querySelector('.withu-mcp-frame iframe')||{getAttribute:()=>null}).getAttribute('srcdoc')?.length||0`);
- const until=async(predicate,label,ms=20000)=>{
+ // Runtime Apps are loaded from a blob: URL (srcdoc would inherit the host CSP),
+ // so the document can be in either attribute.
+ const srcdoc=async()=>evaluate(`(()=>{const f=document.querySelector('.withu-mcp-frame iframe');if(!f)return 0;return (f.getAttribute('srcdoc')||'').length||(f.getAttribute('src')||'').length||0;})()`);
+ // Presence of an iframe is not proof of a working App: a static page also mounts
+ // one and then times out at the handshake (seen on a real run 2026-10-28).
+ const statusText=async()=>evaluate(`[...document.querySelectorAll('.withu-mcp-inline-status')].map(n=>n.textContent).join(' | ')`);
+ // Sandboxed srcdoc iframes are out-of-process, so they show up as their own
+ // CDP target instead of an execution context of the page.
+ const appState=async()=>{
+  const list=await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+  const targets=list.filter(t=>/srcdoc|blob:|check app/i.test(t.url+' '+(t.title||'')));
+  const found=[];
+  for(const target of targets){
+   try{
+    const inner=new WebSocket(target.webSocketDebuggerUrl,{maxPayload:64*1024*1024});
+    await new Promise((res,rej)=>{inner.once('open',res);inner.once('error',rej);});
+    let id=0;const pend=new Map();
+    inner.on('message',raw=>{const m=JSON.parse(raw.toString());if(m.id&&pend.has(m.id)){const p2=pend.get(m.id);pend.delete(m.id);m.error?p2.reject(new Error(m.error.message)):p2.resolve(m.result);}});
+    const send=(method,params={})=>new Promise((resolve,reject)=>{const i=++id;pend.set(i,{resolve,reject});inner.send(JSON.stringify({id:i,method,params}));});
+    const logs=[];
+    inner.on('message',raw=>{
+     try{
+      const m=JSON.parse(raw.toString());
+      if(m.method==='Runtime.exceptionThrown')logs.push('EXC '+(m.params?.exceptionDetails?.exception?.description||m.params?.exceptionDetails?.text||'').slice(0,160));
+      if(m.method==='Log.entryAdded')logs.push('LOG '+(m.params?.entry?.text||'').slice(0,160));
+      if(m.method==='Runtime.consoleAPICalled')logs.push('CON '+(m.params?.args||[]).map(a=>a.value??a.description).join(' ').slice(0,160));
+     }catch{}
+    });
+    await send('Runtime.enable');
+    await send('Log.enable').catch(()=>{});
+    const r=await send('Runtime.evaluate',{expression:"(document.getElementById('state')||{}).textContent||'(no #state)'",returnByValue:true});
+    await new Promise(res=>setTimeout(res,400));
+    found.push({url:target.url.slice(0,40),text:r.result?.value,logs:logs.slice(0,4)});
+    inner.close();
+   }catch(error){found.push({url:target.url.slice(0,40),error:String(error.message).slice(0,60)});}
+  }
+  if(!found.length){
+   found.push({targets:list.map(t=>t.type+':'+String(t.url).slice(0,44)).slice(0,8),
+               contexts:contexts.map(c=>c.origin+'/'+(c.name||'')).slice(0,6)});
+  }
+  return found;
+ }; const until=async(predicate,label,ms=20000)=>{
   const deadline=Date.now()+ms;
   while(Date.now()<deadline){
    if(await predicate())return;
    await sleep(250);
   }
   const diag=await evaluate(`JSON.stringify({frames:document.querySelectorAll('.withu-mcp-frame iframe').length,hosts:document.querySelectorAll('.withu-mcp-host').length,status:[...document.querySelectorAll('.withu-mcp-inline-status,.withu-mcp-curtain-status')].map(n=>n.textContent),vis:document.visibilityState})`).catch(()=>'diag failed');
-  throw new Error('timeout '+label+'\nseen: '+JSON.stringify(seen).slice(-500)+'\ndiag: '+diag+'\nbody: '+(await body()).slice(-300)+'\nstderr: '+stderr.slice(-600));
+  throw new Error('timeout '+label+'\napp: '+JSON.stringify(appProbe)+'\nseen: '+JSON.stringify(seen).slice(-400)+'\ndiag: '+diag+'\nbody: '+(await body()).slice(-300)+'\nstderr: '+stderr.slice(-600));
  };
 
  await type('读一下本地记录');
  await until(async()=>(await body()).includes('annotated:记住这条'),'MCP tool result in the message');
  await until(async()=>(await frames())===1,'inline MCP App iframe');
  assert.ok((await srcdoc())>0,'the iframe really carries the App document');
- results.push('a real MCP tool call renders its App inline in the message');
+ // Sample the App's own state before the 10s host timeout tears the frame down.
+ await sleep(1500);
+ appProbe=await appState().catch(()=>null);
+ await until(async()=>(await statusText()).includes('已连接'),'App handshake completes');
+ assert.ok(!(await statusText()).includes('超时'),'the host must not end in a handshake timeout');
+ results.push('a real MCP tool call renders its App inline and the bridge connects');
 
  // 2. Page hidden -> the App session is released; page visible again -> rebuilt.
  //    Chromium defers React's commit while the page is frozen, so the DOM churn
@@ -177,6 +230,8 @@ try{
  assert.ok(timeline.includes(0),'the App frame was removed while hidden (timeline '+JSON.stringify(timeline)+')');
  assert.ok((await frames())===1,'the frame is back after returning');
  assert.ok((await srcdoc())>0,'the rebuilt iframe carries the App document again');
+ await until(async()=>(await statusText()).includes('已连接'),'rebuilt App handshakes too');
+ results.push('the rebuilt App connects, not just renders');
  results.push('hiding the page releases the App session; returning rebuilds it');
 }catch(error){
  console.error('electron stderr tail:\n'+stderr.slice(-1200));

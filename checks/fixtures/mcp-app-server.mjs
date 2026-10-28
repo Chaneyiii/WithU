@@ -3,10 +3,13 @@
 // a tool call, and two failure modes (unknown tool, silent hang).
 import {createInterface} from 'node:readline';
 import {writeFileSync} from 'node:fs';
+import {buildCheckAppHtml} from './mcp-app-page.mjs';
 
 const mode = process.env.FIXTURE_MODE || 'normal';
 const send = value => process.stdout.write(JSON.stringify(value) + '\n');
 const serverInfo = {name: 'withu-check-app', version: '1.0.0'};
+// 必须是会握手的最小 MCP App：静态页会让 host 永远等不到 ui/initialize。
+const appHtml = await buildCheckAppHtml();
 // run-with-mcp.cmd 用它确认 MCP 服务器真的起来了（手动验收用，测试不设就不写）。
 if (process.env.WITHU_MCP_MARK) { try { writeFileSync(process.env.WITHU_MCP_MARK, String(process.pid)); } catch {} }
 
@@ -34,7 +37,7 @@ rl.on('line', line => {
       return reply({resources: [{uri: 'ui://withu-check/app', name: 'Check App', mimeType: 'text/html'}]});
     case 'resources/read':
       if (message.params?.uri !== 'ui://withu-check/app') return fail(-32002, 'resource not found');
-      return reply({contents: [{uri: 'ui://withu-check/app', mimeType: 'text/html', text: '<!doctype html><html><head><meta charset="utf-8"><title>check app</title></head><body><h1 id="check-app">check app</h1><p>local fixture</p></body></html>'}]});
+      return reply({contents: [{uri: 'ui://withu-check/app', mimeType: 'text/html', text: appHtml}]});
     case 'tools/call':
       if (message.params?.name !== 'annotate') return fail(-32602, 'unknown tool');
       return reply({content: [{type: 'text', text: 'annotated:' + (message.params.arguments?.text ?? '')}]});
