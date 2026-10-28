@@ -155,40 +155,19 @@ try{
  const statusText=async()=>evaluate(`[...document.querySelectorAll('.withu-mcp-inline-status')].map(n=>n.textContent).join(' | ')`);
  // Sandboxed srcdoc iframes are out-of-process, so they show up as their own
  // CDP target instead of an execution context of the page.
+ // Evaluate inside every execution context: the App may be an out-of-process
+ // frame (own target) or share the page's process (extra context).
  const appState=async()=>{
-  const list=await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
-  const targets=list.filter(t=>/srcdoc|blob:|check app/i.test(t.url+' '+(t.title||'')));
-  const found=[];
-  for(const target of targets){
+  const out=[];
+  for(const ctx of contexts){
    try{
-    const inner=new WebSocket(target.webSocketDebuggerUrl,{maxPayload:64*1024*1024});
-    await new Promise((res,rej)=>{inner.once('open',res);inner.once('error',rej);});
-    let id=0;const pend=new Map();
-    inner.on('message',raw=>{const m=JSON.parse(raw.toString());if(m.id&&pend.has(m.id)){const p2=pend.get(m.id);pend.delete(m.id);m.error?p2.reject(new Error(m.error.message)):p2.resolve(m.result);}});
-    const send=(method,params={})=>new Promise((resolve,reject)=>{const i=++id;pend.set(i,{resolve,reject});inner.send(JSON.stringify({id:i,method,params}));});
-    const logs=[];
-    inner.on('message',raw=>{
-     try{
-      const m=JSON.parse(raw.toString());
-      if(m.method==='Runtime.exceptionThrown')logs.push('EXC '+(m.params?.exceptionDetails?.exception?.description||m.params?.exceptionDetails?.text||'').slice(0,160));
-      if(m.method==='Log.entryAdded')logs.push('LOG '+(m.params?.entry?.text||'').slice(0,160));
-      if(m.method==='Runtime.consoleAPICalled')logs.push('CON '+(m.params?.args||[]).map(a=>a.value??a.description).join(' ').slice(0,160));
-     }catch{}
-    });
-    await send('Runtime.enable');
-    await send('Log.enable').catch(()=>{});
-    const r=await send('Runtime.evaluate',{expression:"(document.getElementById('state')||{}).textContent||'(no #state)'",returnByValue:true});
-    await new Promise(res=>setTimeout(res,400));
-    found.push({url:target.url.slice(0,40),text:r.result?.value,logs:logs.slice(0,4)});
-    inner.close();
-   }catch(error){found.push({url:target.url.slice(0,40),error:String(error.message).slice(0,60)});}
+    const r=await cdp('Runtime.evaluate',{expression:"JSON.stringify({state:(document.getElementById('state')||{}).textContent||null,head:(document.documentElement&&document.documentElement.outerHTML||'').slice(0,80)})",contextId:ctx.id,returnByValue:true});
+    out.push({id:ctx.id,origin:ctx.origin,name:ctx.name||'',value:r.result?.value});
+   }catch(error){out.push({id:ctx.id,error:String(error.message).slice(0,60)});}
   }
-  if(!found.length){
-   found.push({targets:list.map(t=>t.type+':'+String(t.url).slice(0,44)).slice(0,8),
-               contexts:contexts.map(c=>c.origin+'/'+(c.name||'')).slice(0,6)});
-  }
-  return found;
- }; const until=async(predicate,label,ms=20000)=>{
+  return out;
+ };
+ const until=async(predicate,label,ms=20000)=>{
   const deadline=Date.now()+ms;
   while(Date.now()<deadline){
    if(await predicate())return;

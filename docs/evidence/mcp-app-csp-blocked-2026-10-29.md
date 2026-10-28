@@ -73,3 +73,34 @@ frame-src 'self' about:; object-src 'none'; base-uri 'none'
   状态停在「握手超时」。
 - 第 6 项（最小化后重建）**一并阻塞**：没有成功的会话可释放/重建。
 - 验收对照表已注明这两项被这个缺陷阻塞，不计入「未通过」的界面问题，而是产品缺陷待修。
+
+## 7. 方案 A 的第一次尝试（2026-10-29 00:26–00:30）与结果
+
+按方案 A 落地了 `withu-app://` 自定义协议：
+
+| 改动 | 内容 |
+|---|---|
+| main.cjs | `protocol.registerSchemesAsPrivileged([{scheme:'withu-app',privileges:{standard:true,secure:true,…}}])`；宿主读到 App 文档时存进 `mcpAppDocs`（uri → html）；`protocol.handle('withu-app', …)` 按 uri 返回文档 |
+| 渲染层 | `McpAppHost` 增加 `resourceUri`；运行时文档改为 `frame.src = 'withu-app://doc/' + encodeURIComponent(uri)`；`Chat` 传 `resourceUri` |
+| CSP | `frame-src 'self' about: withu-app:` |
+| 导航策略 | `mcp-frame-policy` 放行 `withu-app://` |
+
+结果：**没跑通，已全部回退**。
+
+- 第一次启动直接崩：`ReferenceError: protocol is not defined`（解构里漏了 `protocol`）——用户截图里的报错框就是这个。
+- 补上后又跑：iframe 里读到的是 `{"state":null,"head":"<html><head></head><body></body></html>"}`，
+  也就是**空白文档**（about:blank 级别的空壳），说明 `withu-app://` 的文档没有被真正供应出来，
+  握手仍然超时。进程 stderr 里没有 `app protocol failed`，所以不是 handler 注册失败，
+  而是导航/供应这一层还有别的问题（scheme 注册时机、file:// 页面加载特权 scheme、
+  或 handler 返回体的形式）——当晚没继续深挖。
+
+**当前代码状态**：`git checkout` 回到 srcdoc 版，工作区干净；夹具、检查的加固保留。
+也就是说：缺陷仍在，但这次尝试没有留下半成品。
+
+下一步建议（下次开工按顺序）：
+1. 先用最小复现验证 `withu-app://` 能否从 `file://` 页面加载：在 dev 里手动建一个
+   `<iframe src="withu-app://doc/ping">`，handler 固定返回一段文字，看是否显示。
+2. 若 file:// 受限，改为在 `ready` 之后把窗口加载方式换成自定义协议（`app://`），再让
+   App 用子协议；这一步动的是窗口装载路径，影响面更大，需要单独验证。
+3. 或退回方案 B'：让 **server 端**把 App 文档托管在既有本地回环端口上（带一次性 token
+   与 `connect-src` 限制），iframe 走 http；代价是 App 与本地 API 同源风险，需要 token 隔离。
