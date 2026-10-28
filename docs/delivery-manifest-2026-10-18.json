@@ -3,6 +3,8 @@
   "generatedAt": "2026-10-18T00:00:00+08:00",
   "sourceDirectory": "E:\\Orbit\\demobuddy",
   "commit": "621f9822058388bc3dffc8747fedaf2863949cbd",
+  "historical": true,
+  "supersededBy": "docs/delivery-manifest-2026-10-28.md",
   "version": "v0.3.1go1",
   "npmVersion": "0.3.1-go.1",
   "rendererVersion": "export const WITHU_VERSION='v0.3.1go1';",

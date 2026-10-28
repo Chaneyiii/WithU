@@ -1,5 +1,11 @@
 # v0.3.1goX Demo 顺序收尾计划
 
+> **已由 roadmap 取代（2026-10-20）。** 本文件的 T02–T17 复选框未随 roadmap 同步更新，
+> 其状态**不代表当前进度**；权威执行计划是
+> [2026-10-20-demo-phase-roadmap.md](2026-10-20-demo-phase-roadmap.md)，
+> 分解任务见 [2026-10-26-phase6-7-task-plan.md](2026-10-26-phase6-7-task-plan.md)。
+> 本文件仅作历史记录保留。
+
 ## 目标
 
 将现有 D1–D9 分支成果统一收拢到 `codex/d9-demo-closeout`，先完成已经锁定的 GUI 调整，再补齐自然对话链路，最后完成 D9 终审、打包和交付。
