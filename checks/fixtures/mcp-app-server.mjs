@@ -22,7 +22,7 @@ rl.on('line', line => {
     case 'tools/list':
       return reply({tools: [{
         name: 'annotate',
-        description: 'Record a local annotation',
+        description: 'Save a short local note (本地注记) on this device',
         inputSchema: {type: 'object', properties: {text: {type: 'string'}}, required: ['text']},
         // B1: the host reads this document and renders it inline with the result.
         _meta: {ui: {resourceUri: 'ui://withu-check/app'}},
