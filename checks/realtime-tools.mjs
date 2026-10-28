@@ -176,6 +176,21 @@ try{
  assert.equal(busy.decision,'suppressed');
  assert.equal(busy.reason,'voice_busy','got '+JSON.stringify(busy));
 results.push('C5: an active call suppresses candidates with voice_busy before the policy gate');
+ // C5 (second half): ending the call must restore normal delivery. Enable the
+ // policy first, otherwise "recovered" would only mean "a different reason".
+ const policy=(await owner.request('withu:proactivity:policy_get',{})).policy;
+ await owner.request('withu:proactivity:policy_update',{expected_version:policy.version,policy:{...policy,enabled:true,quiet_hours:null,version:policy.version+1}});
+ const stillBusy=await owner.request('withu:proactivity:candidate_offer',{app_running:true,candidate:{schema_version:1,id:'c5-busy-2',source:'d8_greeting',scope:'comfort',dedupe_key:'c5-busy-2',title:'Withu',body:'要不要休息一下'}});
+ assert.equal(stillBusy.reason,'voice_busy','an enabled policy still must not interrupt a live call');
+ await owner.request('withu:realtime:command',{schema_version:1,scope:liveScope,command:'end'});
+ let recovered=null;
+ for(let i=0;i<120;i++){
+  recovered=await owner.request('withu:proactivity:candidate_offer',{app_running:true,candidate:{schema_version:1,id:'c5-after-'+i,source:'d8_greeting',scope:'comfort',dedupe_key:'c5-after-'+i,title:'Withu',body:'要不要休息一下'}});
+  if(recovered.reason!=='voice_busy')break;
+  await delay(50);
+ }
+ assert.equal(recovered.decision,'eligible','after the call ends the policy gate applies again, got '+JSON.stringify(recovered));
+ results.push('C5: ending the call restores normal candidate delivery');
  // 7. Cross-entry A4, the case the plan names: the reminder above was created
  // by voice; the same action now arrives as text and must not duplicate it.
  sse=http.createServer(async(req,res)=>{
