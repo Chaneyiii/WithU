@@ -60,6 +60,7 @@ try{
  assert.ok(update.session.instructions.includes('proposal'),'voice instructions keep the proposal-only rule');
  assert.ok(update.session.instructions.includes('以上是你的灵魂文档'),'voice session injects the soul body, not just a name');
  assert.ok(update.session.instructions.includes('Lumi'),'voice session keeps the persona name');
+ assert.match(update.session.instructions,/现在是 \d{4}-\d{2}-\d{2} \d{2}:\d{2}/,'voice instructions carry the current local time too');
  results.push('comfort voice session carries the same 13 tools as text');
 
  await until(()=>replyEvents('ready').some(e=>e.scope.session_id===scope.session_id),'ready');

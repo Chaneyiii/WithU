@@ -356,7 +356,7 @@ async fn run(
     };
     // 语音会话也必须带人格正文：文本回复用 soul.md 作系统提示词，语音若只发
     // 一个名字，同一个「我」在两种媒介里就不是同一个人了。
-    let instructions=format!("{}\n\n---\n以上是你的灵魂文档。语音会话沿用同一份人格，只是语域可以更活泼、更俏皮。补充运行规则：\n1. 你的名字以本条为准：当前名字是「{}」（Withu 是应用名，不是你的名字），旧消息里的其他名字一律不再使用。\n2. 跟随用户当前的语言和意愿。不下诊断、不假装确定、不强行正能量、不鼓励依赖。用户说停就停。没有接入联网工具，不要声称自己搜索过。{}{}",crate::SOUL_MD,snapshot.name,snapshot.memory_context,snapshot.support_context);
+    let instructions=format!("{}\n\n---\n以上是你的灵魂文档。语音会话沿用同一份人格，只是语域可以更活泼、更俏皮。补充运行规则：\n1. 你的名字以本条为准：当前名字是「{}」（Withu 是应用名，不是你的名字），旧消息里的其他名字一律不再使用。\n2. 跟随用户当前的语言和意愿。不下诊断、不假装确定、不强行正能量、不鼓励依赖。用户说停就停。没有接入联网工具，不要声称自己搜索过。\n3. {} 相对时间（「两分钟后」「明天下午三点」）按这个时刻换算，填工具参数时 due_at_local/timezone 用同一时区。{}{}",crate::SOUL_MD,snapshot.name,crate::local_clock_line(),snapshot.memory_context,snapshot.support_context);
     // Without this the voice model would answer a request out loud and leave
     // nothing behind; with it, a request becomes a proposal the user approves.
     let instructions = if snapshot.tools.is_empty() {

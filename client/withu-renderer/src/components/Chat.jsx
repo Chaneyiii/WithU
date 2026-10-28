@@ -9,7 +9,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Icon, { IconButton, MessageIconScope } from "./Icon";
 import Composer from "./Composer";
 import MessageActions from "./MessageActions";
-import ResponseCard from "./ResponseCard";
 import EmotionalBall from "./EmotionalBall";
 import VoiceCall from "./VoiceCall";
 import {desktopBridge} from '../desktop-bridge';
@@ -74,7 +73,6 @@ export default function Chat({
   onCancelReply,
   onNotice,
   text, onText, mode, ballMood, onBallMood, ballPulse, onBallInteract,
-  onOpenDrawer,
   onWebSearch,
 }) {
   const end = useRef();
@@ -172,7 +170,7 @@ export default function Chat({
                 </div>
               )}
               {mode==='cowork'&&m.role==='assistant'&&(m.thinking||m.work_trace?.length>0)&&<details className="work-trace"><summary>{m.duration_ms!=null?`用时 ${Math.round(m.duration_ms/1000)} 秒`:'思考与工作轨迹'}</summary>{m.thinking&&<p>{m.thinking}</p>}{m.work_trace?.map((step,i)=><p key={i}>{typeof step==='string'?step:step.summary}</p>)}</details>}
-              {correction?.message.id===m.id?<div className="transcript-correction"><textarea aria-label="纠正语音转写" value={correction.text} maxLength={16000} onChange={e=>setCorrection({...correction,text:e.target.value})}/><button disabled={savingCorrection||!correction.text.trim()} onClick={saveCorrection}>保存纠正</button><button disabled={savingCorrection} onClick={()=>setCorrection(null)}>取消</button><small>保存后结束当前通话；重新开始会使用纠正后的文字。</small></div>:m.role==='assistant'?<MarkdownMessage text={(m.summary||m.text).replace(SURFACE_TAG,'').replace(WEB_TAG_RE,'').trim()}/>:m.summary||m.text}              {m.responseCard&&<ResponseCard card={m.responseCard} mode={mode} onOpenInDrawer={onOpenDrawer} />}
+              {correction?.message.id===m.id?<div className="transcript-correction"><textarea aria-label="纠正语音转写" value={correction.text} maxLength={16000} onChange={e=>setCorrection({...correction,text:e.target.value})}/><button disabled={savingCorrection||!correction.text.trim()} onClick={saveCorrection}>保存纠正</button><button disabled={savingCorrection} onClick={()=>setCorrection(null)}>取消</button><small>保存后结束当前通话；重新开始会使用纠正后的文字。</small></div>:m.role==='assistant'?<MarkdownMessage text={(m.summary||m.text).replace(SURFACE_TAG,'').replace(WEB_TAG_RE,'').trim()}/>:m.summary||m.text}
               {m.role==='assistant'&&m.blocks?.length>0&&<MessageBlocks blocks={m.blocks}/>}
               {m.attachments?.map((f) => (
                 <div className="message-attachment" key={f.id}>

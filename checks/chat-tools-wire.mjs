@@ -104,6 +104,10 @@ try{
  const comfortBody=await bodyFor('comfort','comfort-marker-2');
  assert.equal(comfortBody.tools?.length,13,'comfort offers the local life tool catalog plus the honest web stub and schedule listing');
  assert.ok(comfortBody.messages[0].content.includes('proposals only'),'comfort system prompt marks tools as proposal-only');
+ // The model has no clock: "两分钟后提醒我" is unanswerable unless the prompt
+ // states the current local time and zone (real provider asked the user instead).
+ const clock=/现在是 \d{4}-\d{2}-\d{2} \d{2}:\d{2}（[A-Za-z_\/-]+，UTC[+-]\d{2}:\d{2}）/;
+ assert.match(comfortBody.messages[0].content,clock,'the system prompt states the current local time and timezone');
  results.push('tool definitions scoped to Comfort with proposal-only guidance');
 
  // 3. Happy path: proposal -> block -> explicit allow -> execute -> reminder.

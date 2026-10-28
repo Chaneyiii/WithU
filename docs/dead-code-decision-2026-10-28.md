@@ -1,5 +1,10 @@
 # 死代码处置说明（2026-10-28）
 
+> **已执行：选 A（删除）。** 2026-10-28 提交里删除了 `ResponseCard.jsx`、`LifeToolsPanel.jsx`、
+> `MediaBoundaryPreview.jsx`、`life-tools.css`，并移除 `Chat.jsx` / `App.jsx` 里只服务于它们的引用。
+> 执行记录见 [evidence/prompt-clock-and-dead-code-2026-10-28.md](evidence/prompt-clock-and-dead-code-2026-10-28.md)。
+> 下文保留当时的决策分析，供将来要「做抽屉入口」时参考。
+
 涉及两处组件。结论在前：**建议删除**，理由与代价见下。删除属于「移除不可达代码」，不改任何可见界面。
 
 ## 事实：它们是什么、为什么永远不显示

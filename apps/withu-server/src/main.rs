@@ -52,6 +52,62 @@ fn now() -> String {
         .as_millis()
         .to_string()
 }
+
+/// The model has no clock. Without this line a request like "两分钟后提醒我"
+/// is unanswerable and the model asks the user what time it is (observed with a
+/// real provider). chrono::Local only exposes the offset, not the IANA name, so
+/// the name is recovered by matching the current offset against a short list.
+fn local_zone_name(offset_seconds: i32) -> &'static str {
+    if offset_seconds == 0 {
+        return "UTC";
+    }
+    const CANDIDATES: &[&str] = &[
+        "Asia/Shanghai",
+        "Asia/Taipei",
+        "Asia/Hong_Kong",
+        "Asia/Singapore",
+        "Asia/Tokyo",
+        "Asia/Seoul",
+        "Asia/Bangkok",
+        "Asia/Kolkata",
+        "Asia/Dubai",
+        "Europe/London",
+        "Europe/Berlin",
+        "Europe/Paris",
+        "Europe/Moscow",
+        "Europe/Istanbul",
+        "America/New_York",
+        "America/Chicago",
+        "America/Denver",
+        "America/Los_Angeles",
+        "America/Sao_Paulo",
+        "Australia/Sydney",
+        "Australia/Perth",
+        "Pacific/Auckland",
+    ];
+    let utc = chrono::Utc::now().naive_utc();
+    for name in CANDIDATES {
+        if let Ok(tz) = name.parse::<chrono_tz::Tz>() {
+            use chrono::{Offset, TimeZone};
+            if tz.offset_from_utc_datetime(&utc).fix().local_minus_utc() == offset_seconds {
+                return name;
+            }
+        }
+    }
+    "UTC"
+}
+
+/// Wall-clock sentence handed to the model on every turn.
+fn local_clock_line() -> String {
+    let local = chrono::Local::now();
+    let offset = local.offset().local_minus_utc();
+    format!(
+        "现在是 {}（{}，UTC{}）。",
+        local.format("%Y-%m-%d %H:%M"),
+        local_zone_name(offset),
+        local.format("%:z")
+    )
+}
 struct Server {
     store: Store,
     life: life::Owner,
@@ -2382,12 +2438,15 @@ impl Server {
         // 在编译期嵌入，作为真实模型系统提示词的人格正文——不是装潢。
         // 工具与安全规则（guidance）在文档之后追加并声明优先。
         format!(
-            "{}\n\n---\n以上是你的灵魂文档。补充两条具有最高优先级的运行规则：\n\
+            "{}\n\n---\n以上是你的灵魂文档。补充三条具有最高优先级的运行规则：\n\
              1. 你的名字以本条为准：当前名字是「{name}」（Withu 是应用名，不是你的名字），旧消息里的其他名字一律不再使用。\n\
-             2. {guidance}",
+             2. {guidance}\n\
+             3. {clock} 用户说「两分钟后」「明天下午三点」这类相对或口语时间，一律以这个时刻和时区为基准换算；\
+             调用工具时 due_at_local 与 timezone 用同一时区，不要向用户索要当前时间或时区。",
             SOUL_MD,
             name = self.companion_name(),
             guidance = guidance,
+            clock = local_clock_line(),
         )
     }
 
