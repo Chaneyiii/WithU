@@ -9,6 +9,7 @@
 > - 真机待办：[manual-verification-2026-10-27.md](manual-verification-2026-10-27.md)
 > - 交付物状态：[delivery-manifest-2026-10-28.md](delivery-manifest-2026-10-28.md)（并声明 2026-10-18 的 JSON manifest 已过时）
 > - 完成度实测：[../验收前实测报告-2026-10-27.md](../../验收前实测报告-2026-10-27.md)
+> - 参考对照（A6）：[evidence/a6-reference-matrix-2026-10-28.md](evidence/a6-reference-matrix-2026-10-28.md)
 >
 > 一句话结论：**工程包可交接，产品验收未完成**（真实模型、真实连接器、真实声学、Windows 通知真机项未闭合）。
 
