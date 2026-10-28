@@ -4,6 +4,7 @@ import appResource from 'virtual:withu-mcp-app-resource';
 import {createDemoMcpFixture, makeAppDocument, makeRuntimeAppDocument, validateAppSize} from '../../../withu-mcp-app/src/fixture.js';
 import {appIframePolicy, createGuardedAppTransport, invokeD4AppIntent} from '../../../withu-mcp-app/src/host.js';
 import {mediaCoordinator} from '../../../withu-mcp-app/src/media.js';
+import {classifyAppFailure, appFallbackNotice} from '../../../withu-mcp-app/src/app-fallback.js';
 import {desktopBridge} from '../desktop-bridge';
 import {t} from '../i18n';
 import './mcp-app-host.css';
@@ -23,6 +24,8 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
   const [status, setStatus] = useState(t('正在连接本地 MCP App…'));
   const [pending, setPending] = useState(null);
   const [receipt, setReceipt] = useState(null);
+  // B6: set when the App cannot give us a usable UI; the view then shows text only.
+  const [fallback, setFallback] = useState(null);
   // Close-to-tray keeps the renderer alive; a hidden page must not hold the
   // App iframe, media token or MCP session, so the session is torn down while
   // hidden and rebuilt when the window comes back.
@@ -73,10 +76,21 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
           return result;
         }});
         if (!live()) { await fixture.close(); return; }
-        if (!fixture.negotiated) throw new Error('MCP Apps capability negotiation failed');
+        // B6: no UI capability is a normal answer, not a crash. Say so and let
+        // the message text carry the result; do not render an empty App frame.
+        if (!fixture.negotiated) {
+          if (live()) { setFallback('no_ui'); setStatus(t(appFallbackNotice('no_ui'))); }
+          await stop();
+          return;
+        }
         const read = await fixture.client.readResource({uri: fixture.resourceUri});
         const resource = read.contents.find(item => item.uri === fixture.resourceUri && item.mimeType === 'text/html;profile=mcp-app');
-        if (!resource || !live()) throw new Error('MCP App resource unavailable');
+        if (!resource) {
+          if (live()) { setFallback('no_resource'); setStatus(t(appFallbackNotice('no_resource'))); }
+          await stop();
+          return;
+        }
+        if (!live()) { await stop(); return; }
         const nonce = crypto.randomUUID().replaceAll('-', '');
         // A third-party document has no host placeholders; wrap it instead.
         const document = runtime ? makeRuntimeAppDocument(resource.text, nonce) : makeAppDocument(resource.text, nonce);
@@ -110,7 +124,8 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
         timer = setTimeout(() => { if (live()) {setStatus(t('MCP App 握手超时；重新打开可重试')); void stop();} }, 10_000);
         frame.srcdoc = document;
       } catch (error) {
-        if (live()) setStatus(t('MCP App 不可用') + `: ${error.message}`);
+        const kind = classifyAppFailure(error);
+        if (live()) { setFallback(kind); setStatus(t(appFallbackNotice(kind))); }
         await stop();
       }
     })();
@@ -143,7 +158,9 @@ export default function McpAppHost({onClose, proposalContext, variant = 'standal
       <details><summary>查看技术详情</summary><pre>{JSON.stringify(pending, null, 2)}</pre></details>
     </section>}
     {receipt && <p className="withu-mcp-receipt" role="status">{receipt.status === 'applied' && receipt.effect_committed ? '已完成：本地操作已保存。' : '未完成：没有写入本地内容。'}</p>}
-    <div className="withu-mcp-frame" ref={mount}/>
+    {/* B6: without a usable UI there is no frame; the status line above already
+        says the result is text, and an empty box would only pretend otherwise. */}
+    {!fallback && <div className="withu-mcp-frame" ref={mount}/>}
     {!inline && !curtain && <footer>{t('操作请求仅进入可信 host 的 typed intent 边界。缺少 D4 RPC 或已提交的用户消息证据时不提交操作。成功仅以 D4 receipt 为准。')}</footer>}
   </section>;
 }
