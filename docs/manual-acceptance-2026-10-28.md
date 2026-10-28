@@ -77,8 +77,21 @@
 
 1. 完全退出 Withu（含托盘）。
 2. 双击 `checks\run-with-mcp.cmd`。
-3. 看它打印的一行：`OK   MCP 服务器运行中：…` 才继续；出现 `WARN` 就把截图发我。
+3. 看它打印的一行：`[OK] MCP server is running, pid=…` 才继续；出现 `[WARN]` 就把截图发我。
 4. 确认设置里默认模型是**你自己的真实模型**（不是 gui-test 的假模型）。
+
+> **如果双击后窗口一闪就关**（2026-10-28 确实发生过）：改用 PowerShell，效果一样。
+> 先完全退出 Withu，然后执行下面四行：
+>
+> ```
+> cd D:\ccc2\Desktop\ai\withu\WithU-0.3.1go4
+> $env:WITHU_MCP_COMMAND='node'
+> $env:WITHU_MCP_ARGS="$PWD\checks\fixtures\mcp-app-server.mjs"
+> $env:WITHU_MCP_SERVER='local'
+> .\output\p1\windows\Withu-win32-x64\Withu.exe
+> ```
+>
+> 环境变量只对这次启动的进程生效，所以必须从**这个**窗口启动。
 
 | 步骤 | 操作 | 预期 | 结果 |
 |---|---|---|---|

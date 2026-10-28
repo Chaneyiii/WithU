@@ -2,10 +2,13 @@
 // of the protocol to exercise the host client: initialize, tools, resources,
 // a tool call, and two failure modes (unknown tool, silent hang).
 import {createInterface} from 'node:readline';
+import {writeFileSync} from 'node:fs';
 
 const mode = process.env.FIXTURE_MODE || 'normal';
 const send = value => process.stdout.write(JSON.stringify(value) + '\n');
 const serverInfo = {name: 'withu-check-app', version: '1.0.0'};
+// run-with-mcp.cmd 用它确认 MCP 服务器真的起来了（手动验收用，测试不设就不写）。
+if (process.env.WITHU_MCP_MARK) { try { writeFileSync(process.env.WITHU_MCP_MARK, String(process.pid)); } catch {} }
 
 const rl = createInterface({input: process.stdin});
 rl.on('line', line => {
