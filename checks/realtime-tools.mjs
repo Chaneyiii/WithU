@@ -2,6 +2,7 @@
 // realtime worker with a scripted function call, so the claim "同一动作双入口"
 // is asserted on behaviour rather than on reading the diff.
 import assert from 'node:assert/strict';
+import http from 'node:http';
 import {mkdtemp,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -29,7 +30,7 @@ const waitAssistant=async(cid,rid)=>{for(let i=0;i<250;i++){const hit=(await ass
 const results=[];
 // The live-call fixture is created mid-test; keep it reachable so the finally
 // block can close its WebSocket server (an unclosed one keeps Node alive).
-let live=null;
+let live=null,sse=null;
 
 try{
  await owner.start();
@@ -101,6 +102,29 @@ try{
  assert.ok((await owner.request('withu:life:list',{schema_version:1,scope:'comfort'})).reminders.some(r=>r.text===spoken),'approved voice proposal commits the reminder');
  results.push('voice proposal needs the same explicit allow then commits');
 
+ // 4b. A4 (T16-A): the same action spoken again is answered with a notice.
+ // Voice and text share propose_life_action, so this is the cross-entry case:
+ // one reminder total, no second card to approve into a duplicate.
+ const beforeDup=replyEvents('transcript_final').filter(e=>e.text===spoken).length;
+ comfort.send({type:'input_audio_buffer.speech_started',item_id:'u1b'});
+ comfort.send({type:'conversation.item.input_audio_transcription.completed',item_id:'u1b',transcript:spoken});
+ await until(()=>replyEvents('transcript_final').filter(e=>e.text===spoken).length>beforeDup,'duplicate transcript_final');
+ await waitUserMessage('rt-'+scope.session_id+'-u1b');
+ comfort.send({type:'response.created',response:{id:'a1b'}});
+ comfort.send({type:'response.output_item.added',item:{type:'function_call',id:'fc1b',call_id:'call1b',name:'create_local_reminder',arguments:''}});
+ comfort.send({type:'response.function_call_arguments.delta',delta:'{"text":"明天下午三点'});
+ comfort.send({type:'response.function_call_arguments.delta',delta:'提醒我开会","due_at_local":"2026-12-31T15:00",'});
+ comfort.send({type:'response.function_call_arguments.delta',delta:'"timezone":"Asia/Shanghai"}'});
+ comfort.send({type:'response.done',response:{id:'a1b',status:'completed',output:[{type:'function_call',id:'fc1b',call_id:'call1b',name:'create_local_reminder',arguments:JSON.stringify(args)}]}});
+ const dupNotice=await waitAssistant('comfort','rt-'+scope.session_id+'-a1b');
+ assert.equal(dupNotice.blocks?.length,1,'a repeated spoken action still answers exactly once');
+ assert.equal(dupNotice.blocks[0].kind,'text','repeated spoken action yields a notice, not a second approval card');
+ assert.ok(dupNotice.blocks[0].payload.text.includes('已经有了'),'the notice says the reminder already exists');
+ assert.equal(dupNotice.blocks[0].action_ref,null,'the notice carries no action reference');
+ const dupLife=(await owner.request('withu:life:list',{schema_version:1,scope:'comfort'}));
+ assert.equal(dupLife.reminders.filter(r=>r.text===spoken).length,1,'one spoken action, one reminder');
+ results.push('A4: repeating the same spoken action answers with a notice, one reminder total');
+
  // 5. Barge-in: the cancelled response must never produce a card.
  comfort.send({type:'input_audio_buffer.speech_started',item_id:'u2'});
  comfort.send({type:'conversation.item.input_audio_transcription.completed',item_id:'u2',transcript:'再帮我记一件事'});
@@ -152,6 +176,38 @@ try{
  assert.equal(busy.decision,'suppressed');
  assert.equal(busy.reason,'voice_busy','got '+JSON.stringify(busy));
 results.push('C5: an active call suppresses candidates with voice_busy before the policy gate');
+ // 7. Cross-entry A4, the case the plan names: the reminder above was created
+ // by voice; the same action now arrives as text and must not duplicate it.
+ sse=http.createServer(async(req,res)=>{
+  let raw='';for await(const chunk of req)raw+=chunk;
+  let payload={};try{payload=JSON.parse(raw);}catch{}
+  res.writeHead(200,{'Content-Type':'text/event-stream'});
+  const frame=delta=>`data: ${JSON.stringify({choices:[{delta}]})}\n\n`;
+  const armed=(payload.messages||[]).some(m=>m.role==='user'&&m.content===spoken);
+  if(!armed){res.write(frame({content:'好的，我在听。'}));res.end(frame({})+'data: [DONE]\n\n');return;}
+  res.write(frame({content:'我来准备这个本地事务。'}));
+  res.write(frame({tool_calls:[{index:0,id:'tc1',type:'function',function:{name:'create_local_reminder',arguments:''}}]}));
+  res.write(frame({tool_calls:[{index:0,function:{arguments:JSON.stringify(args)}}]}));
+  res.end(`data: ${JSON.stringify({choices:[{delta:{},finish_reason:'tool_calls'}]})}\n\ndata: [DONE]\n\n`);
+ });
+ await new Promise(r=>sse.listen(0,'127.0.0.1',r));
+ const textCfg=(await owner.request('withu:config:get')).config;
+ await owner.request('withu:config:update',{schema_version:1,expected_version:textCfg.config_version,config:{...textCfg,config_version:textCfg.config_version+1,
+  providers:[...textCfg.providers,{provider_id:'typed',service:'llm',endpoint:`http://127.0.0.1:${sse.address().port}/v1`,protocol:'openai-compatible',capabilities:[]}],
+  defaults:{...textCfg.defaults,llm:'typed'},model_overrides:{...textCfg.model_overrides,llm:{provider_ref:'typed',model_ref:'typed-model'}}},
+  credential_changes:[{provider_id:'typed',action:'replace',value:'FICTIONAL-TYPED-ENTRY'}]});
+ const typedMid='typed-'+Date.now();
+ await owner.request('withu:message:submit',{expected_version:0,object:{schema_version:1,id:typedMid,conversation_id:'comfort',role:'user',text:spoken,file_refs:[],submitted_at:String(Date.now()),version:1}});
+ const typedRun=await owner.request('withu:reply:start',{schema_version:1,conversation_id:'comfort',message_id:typedMid,config_version:textCfg.config_version+1});
+ let typedTerm=null;
+ for(let i=0;i<300;i++){const hit=owner.wire.find(e=>e.data?.reply?.operation_id===typedRun.operation_id&&['complete','failed','cancelled'].includes(e.data.reply.state));if(hit){typedTerm=hit.data.reply;break;}await delay(20);}
+ assert.equal(typedTerm?.state,'complete','the typed repeat still answers the user');
+ const typedMsg=await waitAssistant('comfort',typedRun.operation_id);
+ assert.equal(typedMsg.blocks?.[0]?.kind,'text','the typed repeat yields a notice, not a second approval card');
+ assert.ok(typedMsg.blocks[0].payload.text.includes('已经有了'),'the notice says the reminder already exists');
+ assert.equal((await owner.request('withu:life:list',{schema_version:1,scope:'comfort'})).reminders.filter(r=>r.text===spoken).length,1,'voice then text: still exactly one reminder');
+ results.push('A4: voice first, then the same action typed - notice, one reminder total');
+
 }catch(error){
  console.error('server stderr:\n'+(owner.stderr||'(none)'));
  throw error;
@@ -159,6 +215,7 @@ results.push('C5: an active call suppresses candidates with voice_busy before th
  // ClientServerOwner has start/quit/forceStop (no `stop`); an optional-chain call
  // here used to leave the server child alive and the process never exited.
  if(owner&&!owner.exitResult)await owner.forceStop().catch(()=>{});
+ if(sse)await new Promise(r=>sse.close(r)).catch(()=>{});
  await live?.close().catch(()=>{});
  await cowork.close().catch(()=>{});
  await comfort.close().catch(()=>{});

@@ -2722,6 +2722,23 @@ impl Server {
             | Intent::WebSearch { .. }
             | Intent::ScheduleList => return Err(()),
         };
+        // A4 (T16-A): one action, one row. Voice and text funnel through this
+        // single function, so the same sentence said twice - whichever entry
+        // it comes from - must not create a second reminder. Identity is the
+        // semantic action: same text and same due instant.
+        if operation["kind"].as_str() == Some("reminder_create")
+            && self.duplicate_reminder(&operation, now).is_some()
+        {
+            let reason = format!(
+                "这条提醒已经有了：{}。没有重复创建；要改时间或内容，直接说要改哪一条。",
+                preview_lines.join("；")
+            );
+            return Ok(vec![self.tool_notice_block(
+                conversation,
+                reply_id,
+                &reason,
+            )]);
+        }
         // The delegation evidence is the committed user message this reply
         // answers ("reply-{mid}"); assistant or foreign messages fail closed.
         let mid = reply_id.strip_prefix("reply-").ok_or(())?;
@@ -2925,6 +2942,34 @@ impl Server {
     /// Honest conversational notice when a proposal could not be turned into
     /// an executable action (ambiguity, missing target). Not an approval; no
     /// action_ref, no side effects.
+    /// Find an active reminder that already means exactly this action.
+    /// Compared on trimmed, case-folded text plus the resolved due instant, so
+    /// "明天下午三点提醒我开会" spoken now and typed a minute later collapse.
+    fn duplicate_reminder(&mut self, operation: &Value, now: u64) -> Option<Value> {
+        let text = operation["text"].as_str()?.trim().to_lowercase();
+        let due = operation["due_at"].as_u64()?;
+        let list = self
+            .life
+            .handle(
+                &mut self.store,
+                "withu:life:list",
+                &json!({"schema_version":1,"scope":"comfort"}),
+                now,
+            )
+            .ok()?;
+        list["reminders"]
+            .as_array()?
+            .iter()
+            .find(|item| {
+                item["status"] == "active"
+                    && item["due_at"].as_u64() == Some(due)
+                    && item["text"]
+                        .as_str()
+                        .is_some_and(|existing| existing.trim().to_lowercase() == text)
+            })
+            .cloned()
+    }
+
     fn tool_notice_block(&self, conversation: &str, reply_id: &str, message: &str) -> Value {
         json!({
             "schema_version":1,

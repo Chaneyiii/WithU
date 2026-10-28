@@ -26,8 +26,15 @@ const dueDay=new Date(Date.now()+24*3600*1000+8*3600*1000);
 const pad=n=>String(n).padStart(2,'0');
 const DUE_LOCAL=`${dueDay.getUTCFullYear()}-${pad(dueDay.getUTCMonth()+1)}-${pad(dueDay.getUTCDate())}T15:00:00`;
 const DUE_TS=Math.floor(Date.UTC(dueDay.getUTCFullYear(),dueDay.getUTCMonth(),dueDay.getUTCDate(),15,0,0)/1000)-8*3600;
+const dueAt=(text,hour)=>toolCall('create_local_reminder',{text,due_at_local:`${DUE_LOCAL.slice(0,10)}T${pad(hour)}:00:00`,timezone:'Asia/Taipei'});
 const proposals={
-  'tool-reminder':()=>toolCall('create_local_reminder',{text:'明天下午三点提醒我开会',due_at_local:DUE_LOCAL,timezone:'Asia/Taipei'}),
+  'tool-reminder':()=>dueAt('明天下午三点提醒我开会',15),
+  // A4 identity is text + due instant, so each scenario below needs its own
+  // action; otherwise the second one is (correctly) answered with a notice.
+  'tool-reminder-cancel':()=>dueAt('四点提醒我买菜',16),
+  'tool-reminder-supersede':()=>dueAt('五点提醒我倒垃圾',17),
+  'tool-reminder-duplicate':()=>dueAt('明天下午三点提醒我开会',15),
+  'tool-reminder-other-time':()=>dueAt('明天下午三点提醒我开会',18),
   'tool-draft':()=>toolCall('create_message_draft',{text:'这是一条只会保存在本机的草稿'}),
   'tool-edit-reminder':()=>toolCall('edit_local_reminder',{find_text:'提醒我开会',new_text:'开会（改到线上）'}),
   'tool-edit-missing':()=>toolCall('edit_local_reminder',{find_text:'不存在的条目',new_text:'x'}),
@@ -129,6 +136,21 @@ try{
  assert.equal(decidedMsg.blocks[0].payload.decision,'allow','persisted block mirrors the allow decision');
  results.push('proposal -> preview card -> allow -> execute applies once with correct timezone instant');
 
+ // 3b. A4 (T16-A): the same action proposed again - same text, same instant -
+ // must not become a second reminder, and must not become a second card the
+ // user could approve into a duplicate. It answers with a notice instead.
+ const dupRun=await startTool('comfort','明天下午三点提醒我开会','tool-reminder-duplicate');
+ assert.equal((await terminal(dupRun)).state,'complete','a repeated proposal still answers the user');
+ const dupMsg=(await messages()).find(m=>m.id===dupRun.operation_id);
+ assert.ok(dupMsg,'the answer to a repeated proposal is persisted');
+ assert.equal(dupMsg.blocks.length,1,'the answer is a single block');
+ assert.equal(dupMsg.blocks[0].kind,'text','a repeated proposal yields a notice, not a second approval card');
+ assert.ok(dupMsg.blocks[0].payload.text.includes('已经有了'),'the notice says the reminder already exists');
+ assert.equal(dupMsg.blocks[0].action_ref,null,'the notice carries no action reference');
+ life=(await owner.request('withu:life:list',{schema_version:1,scope:'comfort'}));
+ assert.equal(life.reminders.filter(r=>r.text==='明天下午三点提醒我开会').length,1,'one action, one reminder');
+ results.push('A4: an identical proposal becomes a notice, never a second reminder');
+
  // 4. Restart recovery: the reminder survives a server restart.
  await owner.quit();
  owner=new ClientServerOwner(binary,{dataDir:root,test:true});await owner.start();
@@ -137,7 +159,7 @@ try{
  results.push('approved reminder recoverable after server restart');
 
  // 5. Cancel path: zero side effects, block mirrors deny.
- const cancelRun=await startTool('comfort','再建一个提醒然后取消','tool-reminder');
+ const cancelRun=await startTool('comfort','再建一个提醒然后取消','tool-reminder-cancel');
  await terminal(cancelRun);
  const cancelBlock=pendingBlock((await messages()).find(m=>m.id===cancelRun.operation_id));
  await owner.request('withu:life:cancel',{schema_version:1,scope:'comfort',operation_id:cancelBlock.turn_id});
@@ -148,7 +170,7 @@ try{
  results.push('cancel has zero side effects and never creates data');
 
  // 6. Supersede: a second proposal invalidates the first pending card.
- const firstRun=await startTool('comfort','第一次提议','tool-reminder');
+ const firstRun=await startTool('comfort','第一次提议','tool-reminder-supersede');
  await terminal(firstRun);
  const firstBlock=pendingBlock((await messages()).find(m=>m.id===firstRun.operation_id));
  const secondRun=await startTool('comfort','改成草稿','tool-draft');
@@ -243,6 +265,17 @@ try{
  assert.equal(life.reminders.length,1,'invalid proposals created nothing beyond the approved one');
  assert.ok(!JSON.stringify(owner.wire).includes(key),'no credential material in any event');
  results.push('offset/unknown-timezone/unknown-tool proposals rejected honestly with zero persistence');
+
+ // 12. A4 scope guard: identity is text + instant. The same words at another
+ // time are a different action, so they must still get their own card.
+ const otherRun=await startTool('comfort','明天下午六点提醒我开会','tool-reminder-other-time');
+ assert.equal((await terminal(otherRun)).state,'complete');
+ const otherMsg=(await messages()).find(m=>m.id===otherRun.operation_id);
+ assert.equal(otherMsg.blocks[0].kind,'approval','the same words at another instant is a different action');
+ assert.equal(otherMsg.blocks[0].payload.decision,'pending');
+ life=(await owner.request('withu:life:list',{schema_version:1,scope:'comfort'}));
+ assert.equal(life.reminders.length,1,'nothing is applied before the user decides');
+ results.push('A4 scope: the same words at another instant still need their own approval');
 
  await writeFile(path.join(root,'results.json'),JSON.stringify({success:true,results,fixture:'local SSE fixture, not a real cloud model',requests:wire.length,root},null,2));
  console.log('PASS '+results.length+' chat tool-proposal wire checks\nEvidence '+root);
