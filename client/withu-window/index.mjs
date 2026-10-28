@@ -25,7 +25,10 @@ export class ClientServerOwner extends EventEmitter {
  async start(){if(this.child)throw new Error('server already owned');this.child=spawn(this.executable,[],{stdio:['pipe','pipe','pipe'],windowsHide:true,env:{...process.env,WITHU_CLIENT_SESSION:this.session,...(this.options.dataDir?{WITHU_DATA_DIR:this.options.dataDir}:{}),WITHU_FAKE_SPEECH_MODE:this.options.fakeSpeech?'1':'0',...(this.options.test?{WITHU_TEST_MODE:'1'}:{}),...(this.options.testStart?{WITHU_TEST_START:this.options.testStart}:{})}});
  this.child.stderr.on('data',b=>{this.stderr=(this.stderr+b).slice(-8192);});this.child.stdin.on('error',e=>this.fail(e));
  this.exited=new Promise(resolve=>{this.child.once('error',error=>{this.fail(error);resolve({code:null,error:error.message});});this.child.once('exit',(code,signal)=>{this.exitResult={code,signal};this.fail(new Error('server exited: '+code));resolve(this.exitResult);});});
- createInterface({input:this.child.stdout}).on('line',line=>{try{if(line.length>1048576)throw new Error('server frame too large');const m=JSON.parse(line);this.receive(m);}catch(e){this.fail(new Error('malformed server stdout: '+e.message));void this.forceStop();}});
+ // A single frame can legitimately carry an MCP App document (contract allows
+ // app.html up to 1 MiB); JSON escaping ~doubles it and message:list batches many
+ // messages, so 1 MiB was too tight and broke message:list (measured 2026-10-29).
+ createInterface({input:this.child.stdout,crlfDelay:Infinity}).on('line',line=>{try{if(line.length>8388608)throw new Error('server frame too large');const m=JSON.parse(line);this.receive(m);}catch(e){this.fail(new Error('malformed server stdout: '+e.message));void this.forceStop();}});
  try {this.ready=await this.waitFor('server.ready',0,this.config.startupDeadlineMs);return this.ready;}catch(e){await this.forceStop();throw e;}
  }
  receive(m){const type=m.record?'event-envelope':m.error?'error-response':'response';if(!valid(type,m)||m.client_session_id!==this.session)throw new Error('envelope validation');const seq=m.record?.sequence??m.sequence;if(seq<=this.lastSequence)throw new Error('nonmonotonic sequence');this.lastSequence=seq;

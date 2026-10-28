@@ -103,8 +103,21 @@ try{
  assert.equal(msg.blocks[0].kind,'text');
  assert.equal(msg.blocks[0].payload.text,'annotated:记住这条');
  assert.equal(msg.blocks[0].payload.app?.uri,'ui://withu-check/app','the App resource rides along with the result block');
- assert.equal(msg.blocks[0].payload.app?.uri,'ui://withu-check/app','the App resource rides along with the result block');
  results.push('host result becomes a text block on the same message');
+
+ // message:list shares the stdio line channel; a real App document (contract
+ // allows 1 MiB) used to exceed the 1 MiB line cap and killed message:list
+ // outright (measured 2026-10-29). Guard the cap with a ~400 KiB document.
+ const bigTurn=await submit('comfort','读取一下');
+ const bigInvoke=owner.wire.find(e=>e.data?.mcp?.operation_id===bigTurn.run.operation_id);
+ assert.ok(bigInvoke,'a second read proposal also reaches the host');
+ const bigHtml='<!doctype html><html><body>'+'x'.repeat(400000)+'</body></html>';
+ await owner.request('withu:mcp:invoke_result',{operation_id:bigTurn.run.operation_id,ok:true,text:'annotated:大块',app:{uri:'ui://withu-check/big',html:bigHtml}});
+ const listed=await owner.request('withu:message:list',{conversation_id:'comfort'});
+ const bigMsg=listed.items.find(m=>m.id===bigTurn.run.operation_id);
+ assert.ok(bigMsg?.blocks?.length,'message:list survives a ~400 KiB App document');
+ assert.equal(bigMsg.blocks[0].payload.app?.html.length,bigHtml.length,'the document is delivered intact');
+ results.push('a 400 KiB App document survives message:list (stdio frame limit raised)');
 
  const writeTurn=await submit('comfort','写入一下');
  const writeCall=owner.wire.find(e=>e.data?.mcp?.operation_id===writeTurn.run.operation_id);
