@@ -59,6 +59,12 @@ const binary=app.isPackaged?path.join(process.resourcesPath,'withu-server.exe'):
 // are registered with the session, and every `mcp.invoke` is executed here —
 // write-class tools only after the user agrees in a native dialog.
 let mcpClient=null,mcpWrites=new Set();
+// B1: a tool may point at an App document through `_meta.ui.resourceUri`.
+// The host reads that document and hands it to the server with the result, so
+// the message can render the App inline. Without this map the resource is
+// never read and the UI never reaches the conversation.
+let mcpAppUris=new Map();
+const MCP_APP_LIMIT=512*1024;
 async function startMcp(){
  if(!process.env.WITHU_MCP_COMMAND)return;
  try{
@@ -73,6 +79,7 @@ async function startMcp(){
   const server=process.env.WITHU_MCP_SERVER||'local';
   const defs=tools.map(tool=>({name:`mcp__${server}__${tool.name}`,description:tool.description||'',input_schema:tool.inputSchema||{type:'object'},write:Boolean(tool.annotations&&tool.annotations.destructiveHint)}));
   mcpWrites=new Set(defs.filter(entry=>entry.write).map(entry=>entry.name));
+  mcpAppUris=new Map(tools.map(tool=>[`mcp__${server}__${tool.name}`,tool._meta?.ui?.resourceUri||tool.meta?.ui?.resourceUri||null]).filter(entry=>Boolean(entry[1])));
   await owner.request('withu:mcp:tools_register',{tools:defs});
  }catch(error){console.error('mcp bootstrap failed:',error&&(error.code||error.message));}
 }
@@ -87,7 +94,19 @@ async function handleMcpEvent(event){
   }
   const result=await mcpClient.callTool(localName,call.arguments||{});
   const text=(result.content||[]).filter(item=>item.type==='text').map(item=>item.text).join('\n')||'（没有文本结果）';
-  await owner.request('withu:mcp:invoke_result',{operation_id:call.operation_id,ok:true,text});
+  // B1 M3c: read the App document the server declared for this tool. A failure
+  // here must not fail the call - the text result already stands on its own.
+  let app=null;
+  const appUri=mcpAppUris.get(call.name);
+  if(appUri){
+   try{
+    const read=await mcpClient.readResource(appUri);
+    const doc=(read.contents||[]).find(item=>item.uri===appUri&&/^text\/html/.test(item.mimeType||''));
+    if(doc&&typeof doc.text==='string'&&doc.text.length<=MCP_APP_LIMIT)app={uri:appUri,html:doc.text};
+    else if(doc)console.error('mcp app resource too large or not html:',doc.mimeType,doc.text&&doc.text.length);
+   }catch(error){console.error('mcp app resource failed:',error&&(error.code||error.message));}
+  }
+  await owner.request('withu:mcp:invoke_result',{operation_id:call.operation_id,ok:true,text,...(app?{app}:{})});
  }catch(error){
   await owner?.request('withu:mcp:invoke_result',{operation_id:call.operation_id,ok:false,text:error.code||error.message}).catch(()=>{});
  }

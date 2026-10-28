@@ -37,6 +37,14 @@ function validateItem(item, label) {
   integer(item.version, `${label}.version`);
 }
 
+function payload_app(payload) { return payload ? payload.app : undefined; }
+function validateApp(app) {
+  if (!app || typeof app !== 'object' || Array.isArray(app)) throw new TypeError('payload.app must be an object');
+  hasOnly(app, ['uri', 'html'], 'payload.app');
+  if (typeof app.uri !== 'string' || !app.uri || app.uri.length > 512) throw new TypeError('payload.app.uri is invalid');
+  if (typeof app.html !== 'string' || app.html.length > 1048576) throw new TypeError('payload.app.html is invalid');
+}
+
 export function validateReplyBlock(block) {
   hasOnly(block, ['schema_version', 'block_id', 'conversation_id', 'turn_id', 'source', 'status_version', 'visibility', 'kind', 'action_ref', 'payload'], 'reply_block');
   if (block.schema_version !== 1) throw new TypeError('reply_block.schema_version must be 1');
@@ -46,7 +54,12 @@ export function validateReplyBlock(block) {
   if (!['conversation', 'turn', 'private_preview'].includes(block.visibility)) throw new TypeError('reply_block.visibility is unknown');
   if (!REPLY_KINDS.includes(block.kind)) throw new TypeError('reply_block.kind is unknown');
   validateActionRef(block.action_ref);
-  hasOnly(block.payload, ['text', 'title', 'body', 'code', 'message', 'retryable', 'items', 'options', 'decision'], 'reply_block.payload');
+  hasOnly(block.payload, ['text', 'title', 'body', 'code', 'message', 'retryable', 'items', 'options', 'decision', 'app'], 'reply_block.payload');
+  // MCP results carry their App document here. The JSON contract has always
+  // allowed it (contracts/v1/reply-block.schema.json); this allowlist did not,
+  // so the first real App block threw and the window fell into the error
+  // boundary instead of rendering it.
+  if (payload_app(block.payload) !== undefined) validateApp(block.payload.app);
   const payload = block.payload;
   if (block.kind === 'text') string(payload.text, 'payload.text');
   if (block.kind === 'summary') { string(payload.title, 'payload.title'); string(payload.body, 'payload.body'); }

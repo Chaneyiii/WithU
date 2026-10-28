@@ -20,12 +20,18 @@ rl.on('line', line => {
     case 'initialize':
       return reply({protocolVersion: '2024-11-05', capabilities: {tools: {}, resources: {}}, serverInfo});
     case 'tools/list':
-      return reply({tools: [{name: 'annotate', description: 'Record a local annotation', inputSchema: {type: 'object', properties: {text: {type: 'string'}}, required: ['text']}}]});
+      return reply({tools: [{
+        name: 'annotate',
+        description: 'Record a local annotation',
+        inputSchema: {type: 'object', properties: {text: {type: 'string'}}, required: ['text']},
+        // B1: the host reads this document and renders it inline with the result.
+        _meta: {ui: {resourceUri: 'ui://withu-check/app'}},
+      }]});
     case 'resources/list':
       return reply({resources: [{uri: 'ui://withu-check/app', name: 'Check App', mimeType: 'text/html'}]});
     case 'resources/read':
       if (message.params?.uri !== 'ui://withu-check/app') return fail(-32002, 'resource not found');
-      return reply({contents: [{uri: 'ui://withu-check/app', mimeType: 'text/html', text: '<!doctype html><html><body>check app</body></html>'}]});
+      return reply({contents: [{uri: 'ui://withu-check/app', mimeType: 'text/html', text: '<!doctype html><html><head><meta charset="utf-8"><title>check app</title></head><body><h1 id="check-app">check app</h1><p>local fixture</p></body></html>'}]});
     case 'tools/call':
       if (message.params?.name !== 'annotate') return fail(-32602, 'unknown tool');
       return reply({content: [{type: 'text', text: 'annotated:' + (message.params.arguments?.text ?? '')}]});
