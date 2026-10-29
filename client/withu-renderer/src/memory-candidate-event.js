@@ -2,8 +2,7 @@
 // 1) server 的 `memory.candidate.created` payload 是扁平字段
 //    （conversation_id/kind/subject/content/state_version/message_id 直接在 data 上）；
 // 2) 兼容旧嵌套形状（data.memory_candidate / memory_candidate_created / candidate）。
-// 此前渲染层只读嵌套键导致胶囊永远不弹；该模块由 checks/renderer-mapping.mjs
-// 用与 server 实发一致的样本回归。
+// 此前渲染层只读嵌套键导致胶囊永远不弹。
 export function memoryCandidateFromEvent(event) {
   const data = event?.data;
   if (!data || typeof data !== 'object') return null;

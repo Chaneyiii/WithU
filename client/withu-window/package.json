@@ -1,8 +1,5 @@
 {
   "name": "withu-window",
   "private": true,
-  "version": "0.3.1-go.4",
-  "scripts": {
-    "check": "node check.mjs"
-  }
+  "version": "0.3.1-go.4"
 }

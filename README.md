@@ -4,16 +4,11 @@
 
 ### 本地优先的桌面陪伴 Agent
 
+对话、提醒、日程、草稿与记忆，都保存在你自己的机器上
+
 [English](README.en.md) · 中文
 
-把对话、提醒、日程、草稿与记忆都放在你自己的机器上
-
-<a href="docs/releases/freeze-v0.1-rc.4.md">冻结记录</a> · <a href="docs/manual-acceptance-2026-10-28.md">真机验收</a> · <a href="docs/demo-acceptance-index.md">文档地图</a> · <a href="https://github.com/Chaneyiii/WithU/issues">Issues</a> · <a href="https://github.com/Chaneyiii/WithU/releases">Releases</a>
-
 <p>
-  <a href="https://github.com/Chaneyiii/WithU/commits/main"><img src="https://img.shields.io/github/last-commit/Chaneyiii/WithU?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
-  <a href="https://github.com/Chaneyiii/WithU"><img src="https://img.shields.io/github/stars/Chaneyiii/WithU?labelColor=black&style=flat-square&color=ffcb47" alt="stars"></a>
-  <a href="https://github.com/Chaneyiii/WithU/issues"><img src="https://img.shields.io/github/issues/Chaneyiii/WithU?labelColor=black&style=flat-square&color=ff80eb" alt="issues"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue?labelColor=black&style=flat-square" alt="license"></a>
   <a href="https://github.com/Chaneyiii/WithU"><img src="https://img.shields.io/badge/version-v0.1--rc.4-369eff?labelColor=black&style=flat-square" alt="version"></a>
 </p>
@@ -22,142 +17,65 @@
 
 ***
 
-## What is Withu
+## 简介
 
-Withu 是一个跑在本机的桌面陪伴应用：Electron 负责窗口，**Rust server 持有全部持久化**（SQLite），模型走你自己配置的 provider。
+Withu 是一个运行在本机的桌面陪伴应用。Electron 负责窗口与交互，Rust 服务端负责持久化和工具执行，数据保存在本机 SQLite 数据库中，模型通过你自己配置的服务商调用。
 
-和把记忆放在云端的助手不同，提醒、日程、草稿、记忆和每次工具调用都落在本机数据库里，界面上能翻、能改、能删。模型只负责提议，**真正写入需要你点一次允许**。
+提醒、日程、草稿、记忆以及每一次工具调用都记录在本机，可以在界面里查看、修改和删除。模型只负责提出建议，真正写入需要你在审批卡上点一次允许。
 
-它也不做另外一些事：不替你发消息、不静默联网、没有依据时不编答案。
+## 核心能力
 
-## Why Withu
+- **对话**：流式回复，系统提示中包含当前时间与时区。
+- **提醒、日程与草稿**：通过审批卡确认后写入，支持改期、取消与删除。
+- **主动提醒**：到点弹出系统通知，可设置安静时段。
+- **记忆**：显式保存与删除，支持语义检索。
+- **语音通话**：豆包全双工实时语音。
+- **MCP App**：第三方应用以内联面板的形式运行在独立源中，可隐藏释放、恢复重建。
+- **本地优先**：数据与密钥都留在本机，API Key 保存在 Windows 凭据管理器。
 
-- **模型提案，用户裁决。** 提醒/日程/草稿的新增、修改、删除都经过消息内审批卡：允许一次才落盘，取消零副作用，重复确认不重复执行，改期后旧卡失效。→ [验收 §1](docs/manual-acceptance-2026-10-28.md)
-- **诚实降级。** 联网检索未配置、MCP App 连不上、语义检索不可用时，如实说明或降级成文字卡，不留空框。→ [证据](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
-- **运行时 App 独立源。** MCP App 不走会继承宿主 CSP 的 `srcdoc`，改用 `withu-app:` 特权协议：独立源、独立 CSP、隐藏时释放、恢复时重建。→ [原因](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
-- **主动打扰有限。** 通知默认通用文案（不含提醒内容），可设安静时段；完全退出后没有任何主动行为。→ [验收 §3–4](docs/manual-acceptance-2026-10-28.md)
-- **密钥不进数据库。** provider 的 API Key 存在 Windows 凭据管理器，配置里只有引用 ID。→ [安全](#security-and-privacy)
+## 快速开始
 
-## Proof it works
-
-当前版本 **`v0.1-rc.4`**，构建提交与四个哈希见[冻结记录](docs/releases/freeze-v0.1-rc.4.md)。
-
-| 验证 | 结果 |
-|---|---|
-| 自动化检查 | 全部通过：契约 98 · chat:tools 14 · realtime:tools 11 · realtime-wire 9 · output-safety 25 · mcp:app 19 · mcp:client 10 · mcp:tools 10 · mcp:lifecycle 3 · chat:gui 5 · renderer 6 · product 357·276 · desktop 6/6 · packaged 6/6 |
-| 真机验收 | 通知弹出 / 点击回窗口 / 安静时段 / 退出后零主动 / MCP 内联 App 握手 / 最小化 3 秒重建 —— **6 项全过** |
-| 打包 | 未签名 Windows 包；四个 SHA-256 与冻结记录逐字节一致 |
-
-哈希与检查明细见冻结记录 §2、§4；真机六项见[验收表](docs/manual-acceptance-2026-10-28.md)。
-
-## Quick start
-
-需要 Windows、Rust/Cargo、Node.js 20+、Git。
+需要 Windows 10/11 x64、Node.js 20 及以上、Rust 与 Cargo、Git。
 
 ```powershell
 npm ci
-npm run build     # Rust workspace + 渲染层，产出 target\debug\withu-server.exe
+npm run build
 npm start
 ```
 
-首次启动后到 **设置 → 模型** 填 provider（OpenAI 兼容地址 / 模型名 / API Key），Key 存进 Windows 凭据管理器。
+首次启动后，进入 **设置 → 通用**，在「模型与语音」中填写服务商地址、模型名称与 API Key。
 
-<details>
-<summary>Windows 安装排障</summary>
+## 项目结构
 
-- `npm ci` 后 vite/electron 不可用 → npm 阻止了 postinstall：`npm install-scripts approve esbuild electron` 再 `npm rebuild`
-- electron 二进制下载失败 → `ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npx install-electron --no`
-- 检查脚本默认读 `target\debug\withu-server.exe`；换产物时设 `WITHU_SERVER_BINARY`
+```mermaid
+flowchart LR
+    R["client/withu-renderer<br/>界面 · React"]
+    P["client/withu-preload<br/>预加载桥 · 通道白名单"]
+    W["client/withu-window<br/>主进程 · 窗口 · 托盘 · MCP 宿主"]
+    M["client/withu-mcp-app<br/>内联 MCP App 宿主 · 沙箱 iframe"]
+    S["apps/withu-server<br/>Rust 服务端 · 生命周期 · 工具执行"]
+    C["crates/*<br/>领域模块 · 运行时 · 记忆 · 语音 · 调度"]
+    K["contracts/v1<br/>数据契约 · 事件 · 错误"]
+    DB[("SQLite")]
+    CM[("Windows 凭据管理器")]
 
-</details>
-
-### 打包与真机验收
-
-```powershell
-npm run package:windows     # 输出到 output/p1/windows
-npm run check:packaged      # 打包态六场景回放
+    R <-->|IPC| P
+    P <-->|白名单通道| W
+    W <-->|withu-app: 协议| M
+    W <-->|stdio| S
+    W -.->|client/withu-ipc| K
+    S -.->|crates/withu-ipc| K
+    S ---|读写| DB
+    S -.->|凭据引用| CM
+    S --> C
 ```
 
-MCP 端到端：先完全退出 Withu，双击 `checks\run-with-mcp.cmd`，然后说「用本地工具记一条注记：上课」。
-看到 `annotated:上课` 和「本地 MCP App 已连接」即通过；最小化 3 秒再恢复，App 内 4 位 token 变化 = 会话已释放并重建。
+## 安全与隐私
 
-## 能力现状
+- API Key 只保存在 Windows 凭据管理器，数据库中只保存引用 ID。
+- 内联 MCP App 运行在独立源与独立 CSP 中，没有同源权限，也没有网络能力。
+- 数据保存在本机，联网行为需要显式配置。
 
-| 能力 | 状态 | 边界 |
-|---|---|---|
-| 文字对话（Comfort） | ✅ | 流式；系统提示注入当前时间与时区 |
-| 提醒 / 日程 / 草稿 | ✅ | 全部走审批卡；取消零副作用 |
-| 主动提醒 | ✅ | 系统通知 + 安静时段；文案不含内容 |
-| 记忆 | ✅ | 显式保存、删除走墓碑；语义检索不可用时降级 |
-| 语音（豆包全双工） | ✅ 部分 | 通话结束恢复本地媒体播放；真实声学未验收 |
-| MCP App 内联 | ✅ | `withu-app:` 协议；仅环境变量配置 |
-| 联网检索 | ⚠️ 桩 | 未配置时如实说明 |
+## 许可
 
-## 架构
-
-```
-Electron main ──stdio──> withu-server (Rust)
-     │                        │
-     │  withu-app: 协议        ├─ SQLite（会话/提醒/记忆）
-     ├─ 内联 MCP App           ├─ 工具执行（提案 → 审批 → 落盘）
-     └─ 窗口 / 托盘 / 通知     └─ Windows 凭据管理器（API Key）
-```
-
-| 目录 | 职责 |
-|---|---|
-| `apps/withu-server` | 本机 server：stdio 生命周期、SQLite、工具执行、凭据 |
-| `crates/` | 运行时 / 记忆 / 语音 / IPC 等领域边界 |
-| `client/withu-window` | 可信主进程：窗口、托盘、MCP 宿主与 `withu-app:` 协议 |
-| `client/withu-preload` | 预加载桥（通道白名单） |
-| `client/withu-renderer` | React GUI |
-| `client/withu-mcp-app` | MCP App 宿主与 demo 视图 |
-| `contracts/v1` | 版本化 schema、事件、错误 |
-| `checks/` | 自动化检查与本地 fixture（不访问云端） |
-| `docs/` | 证据、发布记录、验收表、仓库清点 |
-
-## 检查
-
-| 命令 | 覆盖 |
-|---|---|
-| `npm run check` | 契约：schema / IPC / 公开配置边界（98 个 schema） |
-| `npm run check:version` | 5 处版本号一致 |
-| `npm run check:chat:tools` / `check:realtime:tools` | 聊天 / 实时语音工具线（14 / 11 组） |
-| `npm run check:mcp-app` / `check:mcp:client` / `check:mcp:tools` | MCP 组件、客户端、工具线（19 / 10 / 10） |
-| `npm run check:mcp:lifecycle` | 内联握手 / 隐藏释放 / 恢复重建（3 组） |
-| `npm run check:chat:gui` / `check:renderer` | GUI 端到端（5 组）/ 渲染映射（6 组） |
-| `npm run check:product` | 源码与包内一致性扫描 |
-| `npm run check:desktop` / `check:packaged` | 开发态 / 打包态六场景回放 |
-
-## 文档地图
-
-- **冻结与发布**：[freeze-v0.1-rc.4.md](docs/releases/freeze-v0.1-rc.4.md) · [releases/](docs/releases/)
-- **证据库**：[docs/evidence/](docs/evidence/)（通知投递、CSP 阻塞、时钟注入、死代码决策…）
-- **真机验收**：[manual-acceptance-2026-10-28.md](docs/manual-acceptance-2026-10-28.md)
-- **产品权威**：[docs/product/withu-v3-spec.md](docs/product/withu-v3-spec.md)（用户当面确认优先于文档）
-- **历史归档**：[docs/archive/README.md](docs/archive/README.md)
-
-## Community & Contributing
-
-- **Issue**：bug 与新功能都欢迎，建议附上复现步骤与相关证据目录
-- **改动流程**：先加一条会失败的断言 → 修 → 断言转绿 → 重打包 → 更新冻结记录里的哈希
-- **提交规范**：一个提交只做一件事，提交信息写清「症状 / 根因 / 验证」
-- 详见 [CONTRIBUTING.md](CONTRIBUTING.md)
-
-## Security and privacy
-
-- API Key 只进 Windows 凭据管理器，数据库只存引用 ID；仓库与日志里没有明文密钥
-- 内联 MCP App 跑在 `withu-app:` 独立源 + `sandbox="allow-scripts"` 里，无同源权限、无网络能力
-- 联网与遥测需显式配置；未配置时如实降级，不静默外发
-- 漏洞报告：开 issue 标注 `security`，不要公开利用细节
-
-## License
-
-Apache License 2.0，全文见 [LICENSE](LICENSE)。Copyright © 2026 Withu contributors.
-
-<details>
-<summary>历史阶段（go1 → go5）</summary>
-
-- [releases/v0.3.1go2.md](docs/releases/v0.3.1go2.md) · [go3](docs/releases/v0.3.1go3.md) · [go4](docs/releases/v0.3.1go4.md) · [go5](docs/releases/v0.3.1go5.md)
-- 已被取代的交接与阶段材料在 [docs/archive/](docs/archive/README.md)
-
-</details>
+Apache License 2.0，见 [LICENSE](LICENSE)。

@@ -7,32 +7,7 @@ if(fakeSpeech&&(!process.env.WITHU_CHECK_DATA||path.resolve(process.env.WITHU_CH
 const {trustedGuiUrl,permitsAudio}=require('./device-policy.cjs');
 const {showProactivityNotification,settleInterruptedNotifications}=require('./proactivity-notifications.cjs');
 const {createProactivityRunner}=require('./proactivity-runner.cjs');
-const {createMcpClient}=require('../withu-mcp-client/index.mjs');// A dev run should not require hand-typing the fixture endpoint: if no LLM
-// provider is configured, register the local fixture one. Explicit opt-in
-// (--withu-fixture-model) is required in a packaged build, so a real user never
-// silently ends up talking to a fake model.
-async function ensureFixtureModel(){
- const explicit=process.argv.includes('--withu-fixture-model');
- // Checks start from a deliberately empty profile, so they can switch this off.
- if(process.env.WITHU_FIXTURE_MODEL==='off')return;
- if(app.isPackaged&&!explicit)return;
- if(!devData&&!explicit)return;
- try{
-  const current=(await owner.request('withu:config:get')).config;
-  // The flag means "use the fixture", not "use the fixture if nothing is
-  // configured": an existing real provider would otherwise win and the user
-  // gets a 401 they cannot explain.
-  const hasLlm=(current.providers||[]).some(provider=>provider.service==='llm'&&provider.endpoint);
-  if(hasLlm&&!explicit)return;
-  const version=Number(current.config_version||0);
-  const config={...current,config_version:version+1,
-   providers:[...(current.providers||[]),{provider_id:'fixture',service:'llm',endpoint:'http://127.0.0.1:48171/v1',protocol:'openai-compatible',capabilities:[]}],
-   defaults:{...(current.defaults||{}),llm:'fixture'},
-   model_overrides:{...(current.model_overrides||{}),llm:{provider_ref:'fixture',model_ref:'gui-model'}}};
-  await owner.request('withu:config:update',{schema_version:1,expected_version:version,config,credential_changes:[{provider_id:'fixture',action:'replace',value:'FICTIONAL-DESKTOP-ONLY'}]});
-  console.error('fixture model registered at 127.0.0.1:48171');
- }catch(error){console.error('fixture model registration failed:',error.message);}
-}
+const {createMcpClient}=require('../withu-mcp-client/index.mjs');
 
 const {randomUUID}=require('node:crypto');
 let rendererId=randomUUID(),audioArmedUntil=0,audioCaptureAuthorized=false,cleanupWaiter=null,cleanRendererId=null;
@@ -159,7 +134,6 @@ app.whenReady().then(async()=>{
  owner=new ClientServerOwner(binary,{dataDir:path.join(app.getPath('userData'),'withu'),test:check,fakeSpeech});
  owner.on('event',e=>{void handleMcpEvent(e);if(owner?.ready&&!exiting&&win&&!win.isDestroyed())win.webContents.send('withu:server:event',e);});owner.on('status',s=>{serverFailure=s;if(owner?.ready&&!exiting&&win&&!win.isDestroyed())win.webContents.send('withu:server:connection',s);});
  try{await owner.start();}catch(e){serverFailure={lifecycle:'failed',reason:e.message};}
-  await ensureFixtureModel().catch(()=>{});
   await startMcp().catch(()=>{});
  async function deliverProactivity(candidateId){if(!candidateId||!owner?.ready||exiting)return null;const entries=(await owner.request('withu:proactivity:feed_list')).items;const entry=entries.find(item=>item.candidate_id===candidateId);if(!entry||entry.notification_status!=='pending')return null;return showProactivityNotification({Notification:require('electron').Notification,eligible:true,appRunning:owner?.ready&&app.isReady()&&!exiting,preview:false,onClick:()=>{if(!win||win.isDestroyed())return;if(!win.isVisible())win.show();if(win.isMinimized())win.restore();win.focus();}});}
  if(owner.ready)await settleInterruptedNotifications({owner,appRunning:()=>!exiting}).catch(()=>{});
@@ -191,6 +165,5 @@ app.whenReady().then(async()=>{
  register('withu:app:quit',()=>{void completeExit();return true;});
  const image=nativeImage.createFromPath(path.resolve(__dirname,'./withu-icon.png'));tray=new Tray(image);tray.setToolTip('Withu');tray.setContextMenu(Menu.buildFromTemplate([{label:'打开 Withu',click:()=>void createWindow()},{label:'退出 Withu',click:()=>void completeExit()}]));tray.on('click',()=>void createWindow());
  await createWindow();
- if(check){try{const {runElectronChecks}=await import(speechCheck?'../../checks/speech-electron.mjs':'../../checks/electron.mjs');await runElectronChecks({app,owner,getWindow:()=>win,createWindow,completeExit,packaged:app.isPackaged});tray.destroy();app.exit(0);}catch(e){console.error(e);await completeExit();tray.destroy();app.exit(1);}}
 }).catch(async e=>{console.error(e);await owner?.forceStop();app.exit(1);});
 }

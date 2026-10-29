@@ -8,5 +8,5 @@
    a new contract version; compatibility shims for earlier products are out of scope.
 4. Provider credentials are references to the OS credential store. Never place a
    secret value in bridge payloads, logs, memory, fixtures, or exports.
-5. Run the complete build and check command list in `README.md` before committing.
+5. Run `npm ci` and `npm run build` before committing; the app must start with `npm start`.
 
