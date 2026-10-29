@@ -4,15 +4,18 @@
 
 ### 本地优先的桌面陪伴 Agent
 
+[English](README.en.md) · 中文
+
 把对话、提醒、日程、草稿与记忆都放在你自己的机器上
 
-<a href="docs/releases/freeze-2026-10-29.md">冻结记录</a> · <a href="docs/manual-acceptance-2026-10-28.md">真机验收</a> · <a href="docs/demo-acceptance-index.md">文档地图</a> · <a href="https://github.com/Chaneyiii/WithU/issues">Issues</a> · <a href="https://github.com/Chaneyiii/WithU/releases">Releases</a>
+<a href="docs/releases/freeze-v0.1-rc.4.md">冻结记录</a> · <a href="docs/manual-acceptance-2026-10-28.md">真机验收</a> · <a href="docs/demo-acceptance-index.md">文档地图</a> · <a href="https://github.com/Chaneyiii/WithU/issues">Issues</a> · <a href="https://github.com/Chaneyiii/WithU/releases">Releases</a>
 
 <p>
   <a href="https://github.com/Chaneyiii/WithU/commits/main"><img src="https://img.shields.io/github/last-commit/Chaneyiii/WithU?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
   <a href="https://github.com/Chaneyiii/WithU"><img src="https://img.shields.io/github/stars/Chaneyiii/WithU?labelColor=black&style=flat-square&color=ffcb47" alt="stars"></a>
   <a href="https://github.com/Chaneyiii/WithU/issues"><img src="https://img.shields.io/github/issues/Chaneyiii/WithU?labelColor=black&style=flat-square&color=ff80eb" alt="issues"></a>
-  <a href="https://github.com/Chaneyiii/WithU"><img src="https://img.shields.io/badge/version-v0.3.1--go.5-blue?labelColor=black&style=flat-square" alt="version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue?labelColor=black&style=flat-square" alt="license"></a>
+  <a href="https://github.com/Chaneyiii/WithU"><img src="https://img.shields.io/badge/version-v0.1--rc.4-369eff?labelColor=black&style=flat-square" alt="version"></a>
 </p>
 
 </div>
@@ -37,7 +40,7 @@ Withu 是一个跑在本机的桌面陪伴应用。Electron 负责窗口，**Rus
 
 ## Proof it works
 
-当前冻结版本 **`v0.3.1-go.5`**（构建提交 `c0f658f`，2026-10-29）。
+当前版本 **`v0.1-rc.4`**（构建提交与四哈希见冻结记录）。
 
 | 验证 | 结果 |
 |---|---|
@@ -45,7 +48,7 @@ Withu 是一个跑在本机的桌面陪伴应用。Electron 负责窗口，**Rus
 | 真机验收（人工） | 通知弹出 / 点击回窗口 / 安静时段 / 退出后零主动 / MCP 内联 App 握手 / 最小化 3 秒重建 —— **6 项全过** |
 | 打包 | `output/p1/windows` 未签名；四哈希与冻结记录逐字节一致 |
 
-四哈希、检查明细、已知缺口见 [冻结记录](docs/releases/freeze-2026-10-29.md)。
+四哈希、检查明细、已知缺口见 [冻结记录](docs/releases/freeze-v0.1-rc.4.md)。
 
 ## Quick start
 
@@ -130,7 +133,7 @@ Electron main ──stdio──> withu-server (Rust)
 
 ## 文档地图
 
-- **冻结与发布**：[freeze-2026-10-29.md](docs/releases/freeze-2026-10-29.md) · [releases/](docs/releases/)
+- **冻结与发布**：[freeze-v0.1-rc.4.md](docs/releases/freeze-v0.1-rc.4.md) · [releases/](docs/releases/)
 - **证据库**：[docs/evidence/](docs/evidence/)（通知投递、CSP 阻塞、时钟注入、死代码决策…）
 - **真机验收**：[manual-acceptance-2026-10-28.md](docs/manual-acceptance-2026-10-28.md)
 - **产品权威**：[docs/product/withu-v3-spec.md](docs/product/withu-v3-spec.md)（用户当面确认优先于文档）
@@ -152,8 +155,7 @@ Electron main ──stdio──> withu-server (Rust)
 
 ## License
 
-本仓库**尚未添加 LICENSE 文件**，在许可证明确之前保留所有权利（All rights reserved）。
-如需开源发布，请先补 `LICENSE` 与本段说明——这是当前唯一的"发布前必须补齐"项。
+Apache License 2.0，全文见 [LICENSE](LICENSE)。Copyright © 2026 Withu contributors.
 
 <details>
 <summary>历史阶段（go1 → go4）</summary>

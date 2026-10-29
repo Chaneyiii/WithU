@@ -49,7 +49,7 @@ app.setName('Withu');
 // scripts were refused and the bridge timed out (measured 2026-10-29).
 protocol.registerSchemesAsPrivileged([{scheme:'withu-app',privileges:{standard:true,secure:true,supportFetchAPI:false,corsEnabled:false}}]);
 const mcpAppDocs=new Map();
-const withuVersion='v0.3.1go5';
+const withuVersion='v0.1-rc.4';
 // A custom AppUserModelID only helps when a matching Start Menu shortcut exists.
 // shell.writeShortcutLink returns false on hosts that block the IShellLink COM
 // object, so the shortcut never appeared and the taskbar fell back to a generic

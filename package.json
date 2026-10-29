@@ -1,7 +1,8 @@
 {
   "name": "withu-client",
-  "version": "0.3.1-go.5",
+  "version": "0.1.0-rc.4",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "workspaces": [
     "client/*"

@@ -13,9 +13,12 @@ const fail=[];
 const ok=[];
 
 const version=(await readFile(path.join(root,'VERSION'),'utf8')).trim();
-const parsed=/^v(\d+)\.(\d+)\.(\d+)go(\d+)$/.exec(version);
-if(!parsed)throw Error(`VERSION must look like vMAJOR.MINOR.PATCHgoN, got ${JSON.stringify(version)}`);
-const npmVersion=`${parsed[1]}.${parsed[2]}.${parsed[3]}-go.${parsed[4]}`;
+const goForm=/^v(\d+)\.(\d+)\.(\d+)go(\d+)$/.exec(version);
+const rcForm=/^v(\d+)\.(\d+)-rc\.(\d+)$/.exec(version);
+if(!goForm&&!rcForm)throw Error(`VERSION must look like vMAJOR.MINOR.PATCHgoN or vMAJOR.MINOR-rc.N, got ${JSON.stringify(version)}`);
+const npmVersion=goForm
+  ?`${goForm[1]}.${goForm[2]}.${goForm[3]}-go.${goForm[4]}`
+  :`${rcForm[1]}.${rcForm[2]}.0-rc.${rcForm[3]}`;
 ok.push(`VERSION=${version} (npm form ${npmVersion})`);
 
 const expect=(label,actual)=>{
@@ -48,7 +51,7 @@ if(!bundles.length){
   for(const name of bundles){
     const text=await readFile(path.join(assets,name),'utf8');
     if(text.includes(version))seen=true;
-    for(const hit of text.matchAll(/v\d+\.\d+\.\d+go\d+/g))if(hit[0]!==version)stale.add(hit[0]);
+    for(const hit of text.matchAll(/v\d+\.\d+\.\d+go\d+|v\d+\.\d+-rc\.\d+/g))if(hit[0]!==version)stale.add(hit[0]);
   }
   if(!seen)fail.push(`dist bundle does not carry ${version}; rebuild with \`vite build\``);
   if(stale.size)fail.push(`dist bundle still carries stale ${[...stale].join(', ')}; rebuild with \`vite build\``);

@@ -1,4 +1,4 @@
-# 交付物状态（2026-10-29 00:43，已与源码对齐）
+# 交付物状态（2026-10-29 13:44，v0.1-rc.4 已与源码对齐）
 
 > 本文记录**当前交付包**与源码的对应关系。最终机器可读的 manifest 由
 > `npm run package:windows` 生成在 `output/p1/windows/manifest.json`（含三哈希）。
@@ -14,19 +14,19 @@
 ## 2. 当前包
 
 - 目录：`output/p1/windows/Withu-win32-x64/`（未签名）
-- 压缩包：`output/p1/windows/Withu-v0.3.1go5-win32-x64.zip`（192,733,201 B）
+- 压缩包：`output/p1/windows/Withu-v0.1-rc.4-win32-x64.zip`（193,316,509 B）
 - 构建提交：`5f14841`+`06bbfc9`+本轮帧上限修复（工作区干净）
 
 | 文件 | SHA-256 |
 |---|---|
-| `Withu.exe` | `b225f1b80c2f3888f573aaf25aac95b5d1cd48c2eea77db86a522ef731f1bd68` |
+| `Withu.exe` | `54623193d6d0128bce4a26862e20192cc9cc5effded4f7fcc2f9bff8e1b8c290` |
 | `withu-server.exe` | `a0ff300c5ff487296818655ce02c9f1095d78eb4d21d93ceaf72ee01d797ef4a` |
-| `app.asar` | `3b7ae08b49d0396473762d0a883ae94e445af6032a6dc104d58bcf544806a1e8` |
-| `Withu-v0.3.1go5-win32-x64.zip` | `09c8be2b8518bf8811a69d08a130ff5ed2afa3f45e5be9639a7ca59730c56ec4` |
+| `app.asar` | `ad2722b5451e1891446219084361bcd230d05a6c0172f7be83cce4a225f9f00d` |
+| `Withu-v0.3.1go5-win32-x64.zip` | `382690b703371f014a2aa7e2ec21fbb3fcd5004d18281d2cea716508006f7354` |
 
 包内抽查（拆 asar / 扫二进制）：
 
-- bundle = `client/withu-renderer/dist/assets/index-DtYdcKuB.js`，含 `withu-app://doc/` 与 `payload.app` 校验文案
+- bundle = `client/withu-renderer/dist/assets/index-pDVQWAYq.js`，含 `withu-app://doc/` 与 `payload.app` 校验文案
 - `main.cjs` 含 `readResource` 与 `mcpAppUris`（B1 宿主资源读取）
 - `withu-server.exe` 含「现在是 」（时钟注入）与 A4 文案「这条提醒已经有了」
 - asar 内**没有** `ResponseCard` / `LifeToolsPanel`（死代码已删）

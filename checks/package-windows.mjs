@@ -4,8 +4,11 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 const version=(await fs.readFile(new URL('../VERSION',import.meta.url),'utf8')).trim();
-const release=/^v(\d+)\.(\d+)\.(\d+)go(\d+)$/.exec(version);if(!release)throw Error('unsupported VERSION format; expected vMAJOR.MINOR.PATCHgoN');
-const windowsVersion=`${release[1]}.${release[2]}.${release[3]}.${release[4]}`;
+const goForm=/^v(\d+)\.(\d+)\.(\d+)go(\d+)$/.exec(version);
+const rcForm=/^v(\d+)\.(\d+)-rc\.(\d+)$/.exec(version);
+if(!goForm&&!rcForm)throw Error('unsupported VERSION format; expected vMAJOR.MINOR.PATCHgoN or vMAJOR.MINOR-rc.N');
+// PE 文件版本必须是纯数字：go 形式直接用四段，rc 形式把 RC 序号放在第四段（0.1.0.4）。
+const windowsVersion=goForm?`${goForm[1]}.${goForm[2]}.${goForm[3]}.${goForm[4]}`:`${rcForm[1]}.${rcForm[2]}.0.${rcForm[3]}`;
 const p2=process.argv.includes('--p2'),p3=process.argv.includes('--p3');
 if(p2&&p3)throw Error('choose one package stage');
 const out=path.resolve(process.env.WITHU_PACKAGE_OUTPUT||(p3?'output/p3/windows':p2?'output/p2/windows':'output/p1/windows'));await fs.mkdir(out,{recursive:true});

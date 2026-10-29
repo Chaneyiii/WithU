@@ -9,7 +9,7 @@
 > - 真机待办：[manual-verification-2026-10-27.md](manual-verification-2026-10-27.md)
 > - 真机对照表（可勾选）：[manual-acceptance-2026-10-28.md](manual-acceptance-2026-10-28.md)
 > - 冻结终审清单：[releases/t17a-freeze-checklist-2026-10-29.md](releases/t17a-freeze-checklist-2026-10-29.md)
-> - **冻结记录**：[releases/freeze-2026-10-29.md](releases/freeze-2026-10-29.md)
+> - **冻结记录**：[releases/freeze-v0.1-rc.4.md](releases/freeze-v0.1-rc.4.md)
 > - 归档说明：[archive/README.md](archive/README.md)（已归档与被取代的文档一览）
 > - 文件夹清点审计：[audit/folder-audit-2026-10-29.md](audit/folder-audit-2026-10-29.md)（三档清单 + 2026-10-29 执行结果）（构建提交 `c0f658f`，四哈希、检查结果、已知缺口）
 > - 交付物状态：[delivery-manifest-2026-10-28.md](delivery-manifest-2026-10-28.md)（并声明 2026-10-18 的 JSON manifest 已过时）

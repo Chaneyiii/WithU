@@ -20,3 +20,7 @@
 | v0.3alpha4 | 2026-10-11 | 放大服务卡片箭头；提供商仅显示Logo并直达详情；朗读按钮移至语音通话右侧。聚合已配置 provider 的账号模型目录，以 models.dev 静态元数据补充模型参数，并将官方 effort 档位接入配置与协议请求。自动朗读在首段文字到达时启动短段合成，完整覆盖回复且限制请求段长。 |
 | v0.3alpha5 | 2026-10-11 | 按 models.dev 增加 Perplexity、NVIDIA NIM、OpenCode Zen/Go、Azure AI Foundry 和 Amazon Bedrock；保留唯一 OpenRouter 预置。新增 Azure `api-key` 请求头适配及 AWS SDK Bedrock 区域目录发现、ConverseStream 回复。AWS 凭据通过本机系统凭据库保存。 |
 | v0.3alpha1 | 2026-10-11 | 通用设置卡片弹窗、语音开关、原录音电平条、Markdown、侧栏毛玻璃、活动图标和语音通话入口。ball 提示/presence 接线、新建会话快捷入口及模型生成标题。全双工后端尚未实现。 |
+
+## v0.1-rc.4（2026-10-29）
+
+与 v0.3.1-go.5 功能等价，重新编号并整理发布形态：版本串统一、Apache-2.0、README 中英双语、删除 `.zcode`。
