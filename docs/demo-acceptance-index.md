@@ -10,9 +10,9 @@
 > - 真机对照表（可勾选）：[manual-acceptance-2026-10-28.md](manual-acceptance-2026-10-28.md)
 > - 冻结终审清单：[releases/t17a-freeze-checklist-2026-10-29.md](releases/t17a-freeze-checklist-2026-10-29.md)
 > - **冻结记录**：[releases/freeze-2026-10-29.md](releases/freeze-2026-10-29.md)
-> - 文件夹清点审计：[audit/folder-audit-2026-10-29.md](audit/folder-audit-2026-10-29.md)（必留/可归档/可删三档，只读未删）（构建提交 `c0f658f`，四哈希、检查结果、已知缺口）
+> - 归档说明：[archive/README.md](archive/README.md)（已归档与被取代的文档一览）
+> - 文件夹清点审计：[audit/folder-audit-2026-10-29.md](audit/folder-audit-2026-10-29.md)（三档清单 + 2026-10-29 执行结果）（构建提交 `c0f658f`，四哈希、检查结果、已知缺口）
 > - 交付物状态：[delivery-manifest-2026-10-28.md](delivery-manifest-2026-10-28.md)（并声明 2026-10-18 的 JSON manifest 已过时）
-> - 完成度实测：[验收前实测报告-2026-10-27.md](../../验收前实测报告-2026-10-27.md)
 > - 参考对照（A6）：[evidence/a6-reference-matrix-2026-10-28.md](evidence/a6-reference-matrix-2026-10-28.md)
 >
 > 一句话结论：**工程包可交接，产品验收未完成**（真实模型、真实连接器、真实声学、Windows 通知真机项未闭合）。

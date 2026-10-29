@@ -187,7 +187,7 @@ Phase 0–2（界面里程碑）已完成；Phase 3–5 为自然对话能力里
 
 > 本节为按日期追加的执行流水，各条反映记录当时的状态；最新状态以上方「当前事实」表为准。
 
-- Phase 0｜2026-10-20｜bb8ac13、2fa8337｜[基线审计](../../demo-phase0-baseline-2026-10-20.md)，独立复核通过｜功能缺口、真实服务与人工验收分别保留。
+- Phase 0｜2026-10-20｜bb8ac13、2fa8337｜[基线审计](../../archive/demo-phase0-baseline-2026-10-20.md)，独立复核通过｜功能缺口、真实服务与人工验收分别保留。
 - T02｜2026-10-21｜codex/demo-phase-0-1｜图标族/侧栏颜色/列表交互实施完成（[task-2-report](../../../.superpowers/sdd/2026-10-20-demo-phase-roadmap/task-2-report.md)）｜43 个 Beside 遮罩带来源记录，29 个缺口保留 legacy；本地三件套验证通过；用户视觉验收待进行。
 - T03｜2026-10-21｜codex/demo-phase-0-1｜顶部栏菜单文字改为功能页标签（[task-3-report](../../../.superpowers/sdd/2026-10-20-demo-phase-roadmap/task-3-report.md)）｜14 个菜单项能力守恒已逐项核查；本地三件套验证通过；用户视觉验收待进行。
 - T04｜2026-10-21｜codex/demo-phase-0-1｜原子通知胶囊 + 主舞台顶栏重构（[task-4-report](../../../.superpowers/sdd/2026-10-20-demo-phase-roadmap/task-4-report.md)）｜通知统一入胶囊（transient + 未投递 proactivity）；会话标题撤掉、新建移至语音左侧、支持/生活事务入口移除且能力保留；本地四件套验证通过；用户视觉验收待进行。
