@@ -40,7 +40,12 @@ asar 内无 `.zcode`；含 `README.md` / `README.en.md` / `LICENSE`。
 | 检查 | 结果 |
 |---|---|
 | `check:version` | PASS（5 处一致于 v0.1-rc.4） |
-| 其余 15 组 | 与 v0.3.1-go.5 冻结时相同结论（本次未改产品逻辑） |
+| `check`（契约） | PASS（98 个 schema + IPC 对齐） |
+| `check:product` | PASS（357 源 / 276 包内） |
+| `check:packaged` | 6/6 PASS（normal / restart / malformed / crash / eof / timeout） |
+| 其余各组 | 与 v0.3.1-go.5 冻结时相同结论（本次未改产品逻辑） |
+
+包已换入 `output/p1/windows/`，三哈希与 §2 逐字节一致；旧 go5 包与旧 zip 已移除。
 
 ## 5. 已知缺口
 
