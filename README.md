@@ -78,4 +78,6 @@ flowchart LR
 
 ## 许可
 
-Apache License 2.0，见 [LICENSE](LICENSE)。
+本项目以 [Apache License 2.0](LICENSE) 发布。
+
+Copyright © 2026 Withu contributors

@@ -78,4 +78,6 @@ flowchart LR
 
 ## License
 
-Apache License 2.0, see [LICENSE](LICENSE).
+Released under the [Apache License 2.0](LICENSE).
+
+Copyright © 2026 Withu contributors
