@@ -24,31 +24,31 @@
 
 ## What is Withu
 
-Withu 是一个跑在本机的桌面陪伴应用。Electron 负责窗口，**Rust server 持有全部持久化**（SQLite），模型调用走你自己配置的 provider。
+Withu 是一个跑在本机的桌面陪伴应用：Electron 负责窗口，**Rust server 持有全部持久化**（SQLite），模型走你自己配置的 provider。
 
-大多数"AI 助手"把记忆和日程放在云端：你只能相信它记住了，看不到它到底存了什么。Withu 反过来——每个提醒、每条记忆、每次工具调用都落在本机数据库里，界面上能翻、能改、能删；模型只是提议者，**真正写入需要你点一次允许**。
+和把记忆放在云端的助手不同，提醒、日程、草稿、记忆和每次工具调用都落在本机数据库里，界面上能翻、能改、能删。模型只负责提议，**真正写入需要你点一次允许**。
 
-它不做的事同样明确：不替你发消息、不悄悄联网、不在没有依据时编一个答案。
+它也不做另外一些事：不替你发消息、不静默联网、没有依据时不编答案。
 
 ## Why Withu
 
-- **模型提案，用户裁决。** 提醒/日程/草稿的创建、编辑、删除都要经过消息内审批卡：允许一次才落盘，取消零副作用，重复确认不重复执行，改期后旧卡自动失效。 → [验收 §1](docs/manual-acceptance-2026-10-28.md)
-- **诚实降级，不留空白。** 联网检索未配置时如实说明；MCP App 连不上时降级成文字卡而不是空框；语义检索不可用时回退并说明。 → [B6 降级证据](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
-- **运行时 App 跑在独立源里。** MCP App 不走 `srcdoc`（会继承宿主 CSP 并吞掉第三方脚本），改用 `withu-app:` 特权协议装载：独立源、独立 CSP、可隐藏释放、可恢复重建。 → [为什么这样做](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
-- **主动打扰是有限的。** 通知默认通用文案（不含提醒内容）、可设安静时段、完全退出后不再有任何主动行为。 → [验收 §3–4](docs/manual-acceptance-2026-10-28.md)
-- **密钥只进凭据管理器。** provider 的 API Key 存 Windows 凭据库，不落数据库、不入仓库；配置里只有引用 ID。 → [安全检查](#security-and-privacy)
+- **模型提案，用户裁决。** 提醒/日程/草稿的新增、修改、删除都经过消息内审批卡：允许一次才落盘，取消零副作用，重复确认不重复执行，改期后旧卡失效。→ [验收 §1](docs/manual-acceptance-2026-10-28.md)
+- **诚实降级。** 联网检索未配置、MCP App 连不上、语义检索不可用时，如实说明或降级成文字卡，不留空框。→ [证据](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
+- **运行时 App 独立源。** MCP App 不走会继承宿主 CSP 的 `srcdoc`，改用 `withu-app:` 特权协议：独立源、独立 CSP、隐藏时释放、恢复时重建。→ [原因](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
+- **主动打扰有限。** 通知默认通用文案（不含提醒内容），可设安静时段；完全退出后没有任何主动行为。→ [验收 §3–4](docs/manual-acceptance-2026-10-28.md)
+- **密钥不进数据库。** provider 的 API Key 存在 Windows 凭据管理器，配置里只有引用 ID。→ [安全](#security-and-privacy)
 
 ## Proof it works
 
-当前版本 **`v0.1-rc.4`**（构建提交与四哈希见冻结记录）。
+当前版本 **`v0.1-rc.4`**，构建提交与四个哈希见[冻结记录](docs/releases/freeze-v0.1-rc.4.md)。
 
 | 验证 | 结果 |
 |---|---|
-| 自动化检查 | 15 组全绿：`chat:tools 14` / `realtime:tools 11` / `output-safety 25` / `mcp:app 19` / `mcp:client 10` / `mcp:tools 10` / `mcp:lifecycle 3` / `chat:gui 5` / `renderer 6` / `product 357·237` / `packaged 6/6` / `desktop 6/6` |
-| 真机验收（人工） | 通知弹出 / 点击回窗口 / 安静时段 / 退出后零主动 / MCP 内联 App 握手 / 最小化 3 秒重建 —— **6 项全过** |
-| 打包 | `output/p1/windows` 未签名；四哈希与冻结记录逐字节一致 |
+| 自动化检查 | 全部通过：契约 98 · chat:tools 14 · realtime:tools 11 · realtime-wire 9 · output-safety 25 · mcp:app 19 · mcp:client 10 · mcp:tools 10 · mcp:lifecycle 3 · chat:gui 5 · renderer 6 · product 357·276 · desktop 6/6 · packaged 6/6 |
+| 真机验收 | 通知弹出 / 点击回窗口 / 安静时段 / 退出后零主动 / MCP 内联 App 握手 / 最小化 3 秒重建 —— **6 项全过** |
+| 打包 | 未签名 Windows 包；四个 SHA-256 与冻结记录逐字节一致 |
 
-四哈希、检查明细、已知缺口见 [冻结记录](docs/releases/freeze-v0.1-rc.4.md)。
+哈希与检查明细见冻结记录 §2、§4；真机六项见[验收表](docs/manual-acceptance-2026-10-28.md)。
 
 ## Quick start
 
@@ -56,12 +56,11 @@ Withu 是一个跑在本机的桌面陪伴应用。Electron 负责窗口，**Rus
 
 ```powershell
 npm ci
-cargo build --workspace --locked     # 产出 target\debug\withu-server.exe
-npm run build                        # 构建 Rust workspace + 渲染层
-npm start                            # 启动应用
+npm run build     # Rust workspace + 渲染层，产出 target\debug\withu-server.exe
+npm start
 ```
 
-首次启动后到 **设置 → 模型** 填 provider（OpenAI 兼容地址 / 模型名 / API Key），Key 进 Windows 凭据管理器。
+首次启动后到 **设置 → 模型** 填 provider（OpenAI 兼容地址 / 模型名 / API Key），Key 存进 Windows 凭据管理器。
 
 <details>
 <summary>Windows 安装排障</summary>
@@ -79,20 +78,19 @@ npm run package:windows     # 输出到 output/p1/windows
 npm run check:packaged      # 打包态六场景回放
 ```
 
-MCP 端到端验收：先完全退出 Withu，双击 `checks\run-with-mcp.cmd`（给这次进程挂上本地 MCP 服务器），
-然后说「用本地工具记一条注记：上课」。看到 `annotated:上课` + 一行「本地 MCP App 已连接」即通过。
-最小化 3 秒再恢复，App 内 4 位 token 变化 = 会话释放并重建。
+MCP 端到端：先完全退出 Withu，双击 `checks\run-with-mcp.cmd`，然后说「用本地工具记一条注记：上课」。
+看到 `annotated:上课` 和「本地 MCP App 已连接」即通过；最小化 3 秒再恢复，App 内 4 位 token 变化 = 会话已释放并重建。
 
 ## 能力现状
 
 | 能力 | 状态 | 边界 |
 |---|---|---|
-| 文字对话（Comfort） | ✅ | 流式；系统提示注入当前时间与时区，相对时间可换算 |
+| 文字对话（Comfort） | ✅ | 流式；系统提示注入当前时间与时区 |
 | 提醒 / 日程 / 草稿 | ✅ | 全部走审批卡；取消零副作用 |
 | 主动提醒 | ✅ | 系统通知 + 安静时段；文案不含内容 |
 | 记忆 | ✅ | 显式保存、删除走墓碑；语义检索不可用时降级 |
 | 语音（豆包全双工） | ✅ 部分 | 通话结束恢复本地媒体播放；真实声学未验收 |
-| MCP App 内联 | ✅ | `withu-app:` 协议；仅环境变量可配置，无设置界面 |
+| MCP App 内联 | ✅ | `withu-app:` 协议；仅环境变量配置 |
 | 联网检索 | ⚠️ 桩 | 未配置时如实说明 |
 
 ## 架构
@@ -121,13 +119,12 @@ Electron main ──stdio──> withu-server (Rust)
 
 | 命令 | 覆盖 |
 |---|---|
+| `npm run check` | 契约：schema / IPC / 公开配置边界（98 个 schema） |
 | `npm run check:version` | 5 处版本号一致 |
-| `npm run check` | schema / IPC / 公开配置边界 |
-| `npm run check:chat:tools` | 聊天工具提案线（14 组） |
-| `npm run check:realtime:tools` | 实时语音工具线（11 组） |
-| `npm run check:mcp:app` / `mcp:client` / `mcp:tools` | MCP 组件、客户端、工具线（19 / 10 / 10） |
+| `npm run check:chat:tools` / `check:realtime:tools` | 聊天 / 实时语音工具线（14 / 11 组） |
+| `npm run check:mcp-app` / `check:mcp:client` / `check:mcp:tools` | MCP 组件、客户端、工具线（19 / 10 / 10） |
 | `npm run check:mcp:lifecycle` | 内联握手 / 隐藏释放 / 恢复重建（3 组） |
-| `npm run check:chat:gui` | GUI 端到端（5 组） |
+| `npm run check:chat:gui` / `check:renderer` | GUI 端到端（5 组）/ 渲染映射（6 组） |
 | `npm run check:product` | 源码与包内一致性扫描 |
 | `npm run check:desktop` / `check:packaged` | 开发态 / 打包态六场景回放 |
 
@@ -143,27 +140,24 @@ Electron main ──stdio──> withu-server (Rust)
 
 - **Issue**：bug 与新功能都欢迎，建议附上复现步骤与相关证据目录
 - **改动流程**：先加一条会失败的断言 → 修 → 断言转绿 → 重打包 → 更新冻结记录里的哈希
-- **提交规范**：一个提交只做一件事，提交信息写清"症状 / 根因 / 验证"
+- **提交规范**：一个提交只做一件事，提交信息写清「症状 / 根因 / 验证」
 - 详见 [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Security and privacy
 
 - API Key 只进 Windows 凭据管理器，数据库只存引用 ID；仓库与日志里没有明文密钥
 - 内联 MCP App 跑在 `withu-app:` 独立源 + `sandbox="allow-scripts"` 里，无同源权限、无网络能力
-- 所有遥测/联网行为需用户显式配置；未配置时如实降级，不静默外发
-- 漏洞报告：请开 issue 并标注 `security`，不要公开利用细节
+- 联网与遥测需显式配置；未配置时如实降级，不静默外发
+- 漏洞报告：开 issue 标注 `security`，不要公开利用细节
 
 ## License
 
 Apache License 2.0，全文见 [LICENSE](LICENSE)。Copyright © 2026 Withu contributors.
 
 <details>
-<summary>历史阶段（go1 → go4）</summary>
-
-阶段记录与每轮根因都在仓库里：
+<summary>历史阶段（go1 → go5）</summary>
 
 - [releases/v0.3.1go2.md](docs/releases/v0.3.1go2.md) · [go3](docs/releases/v0.3.1go3.md) · [go4](docs/releases/v0.3.1go4.md) · [go5](docs/releases/v0.3.1go5.md)
-- [docs/archive/](docs/archive/README.md) 存放已被取代的交接与阶段材料
-- [docs/demo-acceptance-index.md](docs/demo-acceptance-index.md) 是全部文档的入口索引
+- 已被取代的交接与阶段材料在 [docs/archive/](docs/archive/README.md)
 
 </details>

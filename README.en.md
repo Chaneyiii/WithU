@@ -4,9 +4,9 @@
 
 ### A local-first desktop companion agent
 
-Conversations, reminders, schedules, drafts and memories stay on your own machine
-
 English · [中文](README.md)
+
+Conversations, reminders, schedules, drafts and memories stay on your own machine
 
 <a href="docs/releases/freeze-v0.1-rc.4.md">Freeze record</a> · <a href="docs/manual-acceptance-2026-10-28.md">Acceptance</a> · <a href="docs/demo-acceptance-index.md">Doc index</a> · <a href="https://github.com/Chaneyiii/WithU/issues">Issues</a> · <a href="https://github.com/Chaneyiii/WithU/releases">Releases</a>
 
@@ -26,27 +26,29 @@ English · [中文](README.md)
 
 Withu is a desktop companion that runs entirely on your machine. Electron draws the window, a **Rust server owns all persistence** (SQLite), and models are called through providers you configure yourself.
 
-Most "AI assistants" keep your memory and schedule in the cloud: you can only trust that something was remembered, never see what was actually stored. Withu inverts that — every reminder, memory and tool call lives in a local database you can browse, edit and delete. The model only proposes; **writing anything requires your explicit consent**.
+Unlike assistants that keep memory in the cloud, every reminder, schedule, draft, memory and tool call lives in a local database you can browse, edit and delete. The model only proposes; **writing anything requires your explicit consent**.
 
 What it deliberately does not do: send messages on your behalf, reach the network silently, or invent an answer when it has no evidence.
 
 ## Why Withu
 
 - **Model proposes, user decides.** Creating, editing and deleting reminders/schedules/drafts all go through an in-message approval card: allow once and it lands, cancel and nothing happens, repeated confirmation does not duplicate, a rescheduled card becomes invalid. → [Acceptance §1](docs/manual-acceptance-2026-10-28.md)
-- **Honest degradation, never a blank box.** Unconfigured web search says so; a failed MCP App degrades to a text card instead of an empty frame; unavailable semantic search falls back and reports it. → [Evidence](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
-- **Runtime apps run on their own origin.** MCP Apps are not loaded through `srcdoc` (which inherits the host CSP and swallows third-party scripts). They are served from a `withu-app:` privileged scheme: own origin, own CSP, released on hide, rebuilt on return. → [Rationale](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
+- **Honest degradation.** Unconfigured web search says so; a failed MCP App degrades to a text card instead of an empty frame; unavailable semantic search falls back and reports it. → [Evidence](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
+- **Runtime apps run on their own origin.** MCP Apps are not loaded through `srcdoc` (which inherits the host CSP). They are served from a `withu-app:` privileged scheme: own origin, own CSP, released on hide, rebuilt on return. → [Rationale](docs/evidence/mcp-app-csp-blocked-2026-10-29.md)
 - **Interruption is bounded.** Notifications carry generic text (no reminder content), quiet hours are configurable, and a fully quit app does nothing in the background. → [Acceptance §3–4](docs/manual-acceptance-2026-10-28.md)
-- **Keys never touch the database.** Provider API keys live in Windows Credential Manager; config only stores a reference ID.
+- **Keys never touch the database.** Provider API keys live in Windows Credential Manager; config only stores a reference ID. → [Security](#security-and-privacy)
 
 ## Proof it works
 
-Current version **`v0.1-rc.4`** (build commit and four hashes in the [freeze record](docs/releases/freeze-v0.1-rc.4.md)).
+Current version **`v0.1-rc.4`**; build commit and four hashes are in the [freeze record](docs/releases/freeze-v0.1-rc.4.md).
 
 | Check | Result |
 |---|---|
-| Automated suites | 15 groups green: `chat:tools 14` / `realtime:tools 11` / `output-safety 25` / `mcp:app 19` / `mcp:client 10` / `mcp:tools 10` / `mcp:lifecycle 3` / `chat:gui 5` / `renderer 6` / `product 357·237` / `packaged 6/6` / `desktop 6/6` |
+| Automated suites | All green: contracts 98 · chat:tools 14 · realtime:tools 11 · realtime-wire 9 · output-safety 25 · mcp:app 19 · mcp:client 10 · mcp:tools 10 · mcp:lifecycle 3 · chat:gui 5 · renderer 6 · product 357·276 · desktop 6/6 · packaged 6/6 |
 | Manual device acceptance | notification toast / click returns to window / quiet hours / zero activity after quit / inline MCP App handshake / rebuild after 3s minimize — **6 of 6** |
-| Packaging | `output/p1/windows`, unsigned; four hashes match the freeze record byte for byte |
+| Packaging | Unsigned Windows build; all four SHA-256 values match the freeze record byte for byte |
+
+Hashes and per-suite details are in freeze record §2 and §4; the six device checks are in the [acceptance table](docs/manual-acceptance-2026-10-28.md).
 
 ## Quick start
 
@@ -54,9 +56,8 @@ Windows, Rust/Cargo, Node.js 20+, Git.
 
 ```powershell
 npm ci
-cargo build --workspace --locked     # produces target\debug\withu-server.exe
-npm run build                        # Rust workspace + renderer
-npm start                            # launch the app
+npm run build     # Rust workspace + renderer, produces target\debug\withu-server.exe
+npm start
 ```
 
 Then open **Settings → Model** and add a provider (OpenAI-compatible endpoint, model name, API key). The key goes to Windows Credential Manager.
@@ -118,13 +119,12 @@ Electron main ──stdio──> withu-server (Rust)
 
 | Command | Coverage |
 |---|---|
+| `npm run check` | Contracts: schema / IPC / public config boundaries (98 schemas) |
 | `npm run check:version` | Version string consistent in 5 places |
-| `npm run check` | Schema / IPC / public config boundaries |
-| `npm run check:chat:tools` | Chat tool-proposal wire (14 groups) |
-| `npm run check:realtime:tools` | Realtime voice tool wire (11 groups) |
-| `npm run check:mcp:app` / `mcp:client` / `mcp:tools` | MCP component, client, tool wire (19 / 10 / 10) |
+| `npm run check:chat:tools` / `check:realtime:tools` | Chat / realtime voice tool wire (14 / 11 groups) |
+| `npm run check:mcp-app` / `check:mcp:client` / `check:mcp:tools` | MCP component, client, tool wire (19 / 10 / 10) |
 | `npm run check:mcp:lifecycle` | Inline handshake / release on hide / rebuild (3 groups) |
-| `npm run check:chat:gui` | GUI end to end (5 groups) |
+| `npm run check:chat:gui` / `check:renderer` | GUI end to end (5) / renderer mapping (6) |
 | `npm run check:product` | Source vs packaged consistency scan |
 | `npm run check:desktop` / `check:packaged` | Six-scenario replay, dev and packaged |
 
@@ -147,7 +147,7 @@ Electron main ──stdio──> withu-server (Rust)
 
 - API keys live only in Windows Credential Manager; the database stores reference IDs. No plaintext secrets in the repo or logs.
 - Inline MCP Apps run in a `withu-app:` origin with `sandbox="allow-scripts"`: no same-origin access, no network capability.
-- Network use requires explicit configuration; when unconfigured the app degrades honestly and never sends silently.
+- Network use and telemetry require explicit configuration; when unconfigured the app degrades honestly and never sends silently.
 - Vulnerability reports: open an issue tagged `security`, without public exploit details.
 
 ## License
@@ -158,7 +158,6 @@ Apache License 2.0, see [LICENSE](LICENSE). Copyright © 2026 Withu contributors
 <summary>Earlier milestones (go1 → go5)</summary>
 
 - [releases/v0.3.1go2.md](docs/releases/v0.3.1go2.md) · [go3](docs/releases/v0.3.1go3.md) · [go4](docs/releases/v0.3.1go4.md) · [go5](docs/releases/v0.3.1go5.md)
-- [docs/archive/](docs/archive/README.md) holds superseded handover and phase material
-- [docs/demo-acceptance-index.md](docs/demo-acceptance-index.md) indexes every document
+- Superseded handover and phase material lives in [docs/archive/](docs/archive/README.md)
 
 </details>
